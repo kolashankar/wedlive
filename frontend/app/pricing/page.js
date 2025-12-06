@@ -18,7 +18,7 @@ export default function PricingPage() {
   const [currentSubscription, setCurrentSubscription] = useState(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && typeof window !== 'undefined') {
       loadSubscription();
     }
   }, [user]);
@@ -121,6 +121,14 @@ export default function PricingPage() {
       recommended: false
     }
   ];
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50">
