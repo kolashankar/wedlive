@@ -21,7 +21,6 @@ email-validator==2.3.0
 fastapi==0.110.1
 flake8==7.3.0
 frozenlist==1.8.0
-getstream==3.17.1
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
@@ -47,8 +46,6 @@ pathspec==0.12.1
 platformdirs==4.5.0
 pluggy==1.6.0
 propcache==0.4.1
-stream-chat==5.3.3
-stream-video==1.0.0
 pyasn1==0.6.1
 pycodestyle==2.14.0
 pycparser==2.23
