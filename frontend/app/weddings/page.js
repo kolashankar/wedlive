@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 export default function WeddingsPage() {
   const router = useRouter();
@@ -52,14 +52,38 @@ export default function WeddingsPage() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(w => 
-        w.title.toLowerCase().includes(query) ||
-        w.bride_name.toLowerCase().includes(query) ||
-        w.groom_name.toLowerCase().includes(query) ||
+        w.title?.toLowerCase().includes(query) ||
+        w.bride_name?.toLowerCase().includes(query) ||
+        w.groom_name?.toLowerCase().includes(query) ||
         w.location?.toLowerCase().includes(query)
       );
     }
 
     setFilteredWeddings(filtered);
+  };
+
+  const formatWeddingDate = (dateString) => {
+    try {
+      if (!dateString) return 'Date not set';
+      
+      // Try parsing as ISO string first
+      let date = parseISO(dateString);
+      
+      // If not valid, try creating a new Date
+      if (!isValid(date)) {
+        date = new Date(dateString);
+      }
+      
+      // Check if date is valid
+      if (!isValid(date)) {
+        return 'Invalid date';
+      }
+      
+      return format(date, 'PPP');
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return 'Date unavailable';
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -228,7 +252,7 @@ export default function WeddingsPage() {
                     {wedding.cover_image ? (
                       <img 
                         src={wedding.cover_image} 
-                        alt={wedding.title}
+                        alt={wedding.title || 'Wedding'}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -242,9 +266,9 @@ export default function WeddingsPage() {
                   </div>
 
                   <CardHeader>
-                    <CardTitle className="text-xl">{wedding.title}</CardTitle>
+                    <CardTitle className="text-xl">{wedding.title || 'Untitled Wedding'}</CardTitle>
                     <CardDescription className="text-base">
-                      {wedding.bride_name} & {wedding.groom_name}
+                      {wedding.bride_name || 'Bride'} & {wedding.groom_name || 'Groom'}
                     </CardDescription>
                   </CardHeader>
 
@@ -257,7 +281,7 @@ export default function WeddingsPage() {
                     
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {format(new Date(wedding.scheduled_date), 'PPP')}
+                      {formatWeddingDate(wedding.scheduled_date)}
                     </div>
                     
                     {wedding.location && (
