@@ -187,11 +187,38 @@ export default function DashboardPage() {
 
         {/* Create Wedding Button */}
         <div className="mb-6">
+          {/* Free Plan Limitation Alert */}
+          {subscription && subscription.plan === 'free' && weddings.length >= 1 && (
+            <Alert className="mb-4 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+              <Crown className="w-4 h-4 text-amber-600" />
+              <AlertDescription>
+                <span className="font-semibold text-amber-900">Free Plan Limit Reached</span>
+                <p className="text-sm text-gray-700 mt-1">
+                  You've created your 1 free wedding event. Upgrade to Premium for unlimited events!
+                </p>
+                <Link href="/pricing">
+                  <Button 
+                    size="sm" 
+                    className="bg-gradient-to-r from-rose-500 to-purple-600 text-white mt-2"
+                  >
+                    View Plans
+                  </Button>
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-rose-500 to-purple-600">
+              <Button 
+                className="bg-gradient-to-r from-rose-500 to-purple-600"
+                disabled={subscription && subscription.plan === 'free' && weddings.length >= 1}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Wedding Event
+                {subscription && subscription.plan === 'free' && weddings.length >= 1 && (
+                  <span className="ml-2 text-xs">(Upgrade Required)</span>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
