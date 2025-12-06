@@ -169,6 +169,30 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Free Plan Wedding Limit"
+    implemented: true
+    working: true
+    file: "backend/app/routes/weddings.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added subscription plan check to enforce free plan limitation - users can only create 1 wedding event on free plan"
+
+  - task: "Dashboard Free Plan UI"
+    implemented: true
+    working: true
+    file: "frontend/app/dashboard/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added visual alerts and disabled Create button when free users reach their 1 wedding limit. Shows upgrade prompts"
+
 agent_communication:
   - agent: "main"
     message: |
@@ -186,3 +210,25 @@ agent_communication:
       - User should test creating a wedding event to get RTMP credentials
       - Configure OBS Studio with the provided RTMP URL and Stream Key
       - Test streaming connection
+  
+  - agent: "main"
+    message: |
+      Free Plan Limitation Implemented:
+      
+      BACKEND CHANGES:
+      - Added subscription plan check in wedding creation endpoint
+      - Free users are limited to creating only 1 wedding event
+      - Returns 403 error with message: "Free plan users can only create 1 wedding event. Please upgrade to Premium to create unlimited weddings."
+      
+      FRONTEND CHANGES:
+      - Dashboard shows warning alert when free users reach their limit
+      - Create Wedding button becomes disabled for free users with 1+ weddings
+      - Visual alerts guide users to upgrade to Premium
+      - Pricing page clearly shows "1 wedding event" limitation for free plan
+      
+      SUBSCRIPTION TIERS:
+      - Free: 1 wedding event, 100 viewers, 24h storage
+      - Premium Monthly ($18/mo): Unlimited events, unlimited viewers, unlimited storage
+      - Premium Yearly ($180/yr): Same as monthly + 20% discount
+      
+      Services Status: All running ✅
