@@ -26,10 +26,14 @@ export default function PricingPage() {
   const loadSubscription = async () => {
     try {
       const response = await api.get('/api/subscriptions/my-subscription');
-      setCurrentSubscription(response.data);
+      // Ensure response.data is an object with expected structure
+      if (response.data && typeof response.data === 'object') {
+        setCurrentSubscription(response.data);
+      }
     } catch (error) {
       console.error('Failed to load subscription:', error);
       // Don't set any state that could cause hydration issues
+      setCurrentSubscription(null);
     }
   };
 
