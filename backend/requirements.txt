@@ -46,6 +46,14 @@ pathspec==0.12.1
 platformdirs==4.5.0
 pluggy==1.6.0
 propcache==0.4.1
+stream-chat==4.28.0
+stream-video==0.0.6
+protobuf==4.25.8
+structlog==25.5.0
+aiodns==3.6.0
+aiofile==3.9.0
+twirp==0.0.7
+typed-ast==1.5.5
 pyasn1==0.6.1
 pycodestyle==2.14.0
 pycparser==2.23
