@@ -29,6 +29,7 @@ export default function PricingPage() {
       setCurrentSubscription(response.data);
     } catch (error) {
       console.error('Failed to load subscription:', error);
+      // Don't set any state that could cause hydration issues
     }
   };
 
