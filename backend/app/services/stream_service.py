@@ -2,6 +2,9 @@ import os
 import httpx
 from typing import Dict
 import uuid
+import hmac
+import hashlib
+import time
 
 class StreamService:
     def __init__(self):
@@ -15,14 +18,24 @@ class StreamService:
         
         # Generate unique call ID
         call_id = str(uuid.uuid4())
+        timestamp = str(int(time.time()))
+        
+        # Generate signature for Stream.com API
+        # Format: signature = hmac_sha256(api_secret, call_id + timestamp)
+        message = f"{call_id}{timestamp}"
+        signature = hmac.new(
+            self.api_secret.encode('utf-8'),
+            message.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
         
         # For Stream.com, we create a livestream call
         # The RTMP URL format for Stream is:
         # rtmp://live.stream-io-api.com/app/{app_id}
-        # Stream key: {call_id}?api_key={api_key}&signature={signature}
+        # Stream key: {call_id}?api_key={api_key}&signature={signature}&timestamp={timestamp}
         
         rtmp_url = f"rtmp://live.stream-io-api.com/app/{self.app_id}"
-        stream_key = f"{call_id}?api_key={self.api_key}"
+        stream_key = f"{call_id}?api_key={self.api_key}&signature={signature}&timestamp={timestamp}"
         playback_url = f"https://stream-io-api.com/video/call/livestream/{call_id}"
         
         return {
