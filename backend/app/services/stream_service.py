@@ -2,7 +2,7 @@ import os
 from typing import Dict
 import uuid
 import logging
-from stream_video import StreamVideoClient
+from stream_video import StreamVideo
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class StreamService:
             raise ValueError("STREAM_API_KEY and STREAM_API_SECRET must be set in environment")
         
         # Initialize Stream Video Client
-        self.client = StreamVideoClient(
+        self.client = StreamVideo(
             api_key=self.api_key,
             api_secret=self.api_secret
         )
