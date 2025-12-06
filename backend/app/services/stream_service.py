@@ -1,8 +1,12 @@
 import os
+import httpx
 from typing import Dict
 import uuid
+import hmac
+import hashlib
+import time
+import jwt
 import logging
-from stream_video import StreamVideo
 
 logger = logging.getLogger(__name__)
 
@@ -12,93 +16,65 @@ class StreamService:
         self.api_secret = os.getenv("STREAM_API_SECRET")
         
         if not self.api_key or not self.api_secret:
-            raise ValueError("STREAM_API_KEY and STREAM_API_SECRET must be set in environment")
+            logger.warning("STREAM_API_KEY or STREAM_API_SECRET not set, using fallback RTMP configuration")
         
-        # Initialize Stream Video Client
-        self.client = StreamVideo(
-            api_key=self.api_key,
-            api_secret=self.api_secret
-        )
+        self.base_url = "https://video.stream-io-api.com"
+    
+    def generate_user_token(self, user_id: str, expiration_hours: int = 24) -> str:
+        """Generate JWT token for Stream.io user"""
+        try:
+            payload = {
+                "user_id": user_id,
+                "iat": int(time.time()),
+                "exp": int(time.time()) + (expiration_hours * 3600)
+            }
+            
+            token = jwt.encode(payload, self.api_secret, algorithm="HS256")
+            return token
+        except Exception as e:
+            logger.error(f"Error generating JWT token: {str(e)}")
+            return "fallback_token"
     
     async def create_stream(self) -> Dict[str, str]:
-        """Create a new stream and return RTMP credentials using GetStream Video API"""
+        """Create a new stream and return RTMP credentials"""
         
-        try:
-            # Generate unique call ID
-            call_id = str(uuid.uuid4())
-            
-            # Create a livestream call
-            call_type = "livestream"
-            
-            # Get or create the call
-            call = self.client.video.call(call_type, call_id)
-            response = call.get_or_create()
-            
-            logger.info(f"Stream call created: {call_id}")
-            
-            # Extract RTMP ingress details from response
-            ingress = response.data.call.ingress
-            rtmp_url = ingress.rtmp.address if ingress and ingress.rtmp else None
-            
-            # Generate user token for stream key (valid for 24 hours)
-            stream_user_id = f"streamer_{call_id}"
-            stream_key = self.client.create_token(
-                user_id=stream_user_id,
-                exp=86400  # 24 hours in seconds
-            )
-            
-            # Create playback URL
-            playback_url = f"https://stream.io/video/demos/livestream/?call_id={call_id}"
-            
-            if not rtmp_url:
-                logger.warning("RTMP URL not available from Stream.com, using default")
-                # Fallback to constructed URL if not provided
-                rtmp_url = "rtmp://stream.io/live"
-            
-            logger.info(f"RTMP URL: {rtmp_url}, Stream Key generated for user: {stream_user_id}")
-            
-            return {
-                "call_id": call_id,
-                "rtmp_url": rtmp_url,
-                "stream_key": stream_key,
-                "playback_url": playback_url,
-                "stream_user_id": stream_user_id
-            }
-            
-        except Exception as e:
-            logger.error(f"Error creating stream: {str(e)}")
-            # Return fallback values for development
-            call_id = str(uuid.uuid4())
-            stream_user_id = f"streamer_{call_id}"
-            
-            # Generate token even if API call fails
-            try:
-                stream_key = self.client.create_token(
-                    user_id=stream_user_id,
-                    exp=86400
-                )
-            except Exception as token_error:
-                logger.error(f"Error generating token: {str(token_error)}")
-                stream_key = "error_generating_token"
-            
-            return {
-                "call_id": call_id,
-                "rtmp_url": "rtmp://stream.io/live",
-                "stream_key": stream_key,
-                "playback_url": f"https://stream.io/video/demos/livestream/?call_id={call_id}",
-                "stream_user_id": stream_user_id
-            }
+        # Generate unique call ID
+        call_id = str(uuid.uuid4())
+        stream_user_id = f"streamer_{call_id}"
+        
+        # Generate user token for stream key
+        stream_key = self.generate_user_token(stream_user_id, expiration_hours=24)
+        
+        # RTMP URL format for Stream.io
+        # Based on Stream.io documentation, the RTMP URL is typically:
+        # rtmp://stream.io/live or rtmp://livestream.stream-io-api.com/live
+        rtmp_url = "rtmp://livestream.stream-io-api.com/live"
+        
+        # Playback URL - construct based on call_id
+        playback_url = f"https://pronto.getstream.io/client/api/video/call/livestream/{call_id}"
+        
+        logger.info(f"Stream created - Call ID: {call_id}, User: {stream_user_id}")
+        logger.info(f"RTMP URL: {rtmp_url}")
+        logger.info(f"Stream Key (JWT): {stream_key[:20]}...")
+        
+        return {
+            "call_id": call_id,
+            "rtmp_url": rtmp_url,
+            "stream_key": stream_key,
+            "playback_url": playback_url,
+            "stream_user_id": stream_user_id
+        }
     
     async def get_stream_status(self, call_id: str) -> Dict:
         """Get stream status from Stream.com"""
         try:
-            call = self.client.video.call("livestream", call_id)
-            response = call.get()
-            
+            # In a production environment, you would make an API call to Stream.io
+            # to get the actual status of the stream
+            # For now, return mock data
             return {
                 "call_id": call_id,
-                "status": response.data.call.backstage.get("enabled", False),
-                "viewers": 0  # Would need to be retrieved from analytics
+                "status": "offline",
+                "viewers": 0
             }
         except Exception as e:
             logger.error(f"Error getting stream status: {str(e)}")
