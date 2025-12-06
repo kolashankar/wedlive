@@ -63,17 +63,32 @@ export default function WeddingsPage() {
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'live':
-        return <Badge className="bg-red-500 text-white animate-pulse" data-testid="status-badge-live"><Video className="w-3 h-3 mr-1" />LIVE</Badge>;
-      case 'scheduled':
-        return <Badge variant="secondary" data-testid="status-badge-scheduled"><Clock className="w-3 h-3 mr-1" />Upcoming</Badge>;
-      case 'ended':
-      case 'recorded':
-        return <Badge variant="outline" data-testid="status-badge-recorded">Recording Available</Badge>;
-      default:
-        return null;
-    }
+    const badges = {
+      'live': (
+        <Badge className="bg-red-500 text-white animate-pulse" data-testid="status-badge-live">
+          <Video className="w-3 h-3 mr-1" />
+          LIVE
+        </Badge>
+      ),
+      'scheduled': (
+        <Badge variant="secondary" data-testid="status-badge-scheduled">
+          <Clock className="w-3 h-3 mr-1" />
+          Upcoming
+        </Badge>
+      ),
+      'ended': (
+        <Badge variant="outline" data-testid="status-badge-recorded">
+          Recording Available
+        </Badge>
+      ),
+      'recorded': (
+        <Badge variant="outline" data-testid="status-badge-recorded">
+          Recording Available
+        </Badge>
+      )
+    };
+    
+    return badges[status] || null;
   };
 
   return (
