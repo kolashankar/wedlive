@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const SOCKET_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
 export function useSocket(weddingId) {
   const socketRef = useRef(null);

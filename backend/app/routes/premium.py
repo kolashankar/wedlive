@@ -373,7 +373,7 @@ async def get_api_documentation(current_user: dict = Depends(require_premium)):
     
     docs = {
         "version": "1.0.0",
-        "base_url": os.getenv("NEXT_PUBLIC_API_URL", "https://api.wedlive.com"),
+        "base_url": os.getenv("REACT_APP_BACKEND_URL", "https://api.wedlive.com"),
         "authentication": {
             "type": "API Key",
             "header": "X-API-Key",

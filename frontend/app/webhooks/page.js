@@ -6,7 +6,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { Webhook, Plus, Trash2, Play, Pause, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000/api';
 
 const EVENT_TYPES = [
   { value: 'stream.started', label: 'Stream Started', description: 'Triggered when a stream goes live' },
