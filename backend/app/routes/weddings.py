@@ -22,6 +22,19 @@ async def create_wedding(
     """Create a new wedding event"""
     db = get_db()
     
+    # Get user's subscription plan
+    user = await db.users.find_one({"id": current_user["user_id"]})
+    subscription_plan = user.get("subscription_plan", "free") if user else "free"
+    
+    # Check if user is on free plan and already has a wedding
+    if subscription_plan == "free":
+        existing_weddings_count = await db.weddings.count_documents({"creator_id": current_user["user_id"]})
+        if existing_weddings_count >= 1:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Free plan users can only create 1 wedding event. Please upgrade to Premium to create unlimited weddings."
+            )
+    
     # Generate RTMP credentials using Stream.com
     stream_creds = await stream_service.create_stream()
     
