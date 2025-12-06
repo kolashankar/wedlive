@@ -338,7 +338,7 @@ JWT_SECRET=your_super_secret_jwt_key
 
 # URLs
 NEXT_PUBLIC_BASE_URL=https://liveknot.preview.emergentagent.com
-REACT_APP_BACKEND_URL=https://liveknot.preview.emergentagent.com/api
+NEXT_PUBLIC_API_URL=https://liveknot.preview.emergentagent.com/api
 ```
 
 ## 🧪 Testing

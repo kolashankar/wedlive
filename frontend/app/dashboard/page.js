@@ -227,7 +227,7 @@ export default function DashboardPage() {
                     <Label htmlFor="title">Event Title *</Label>
                     <Input
                       id="title"
-                      placeholder="e.g., Parvathi & Shiva's Wedding"
+                      placeholder="e.g., Sarah & John's Wedding"
                       value={formData.title}
                       onChange={(e) => setFormData({...formData, title: e.target.value})}
                       required
