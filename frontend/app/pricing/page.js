@@ -56,10 +56,16 @@ export default function PricingPage() {
         plan: plan
       });
       
-      // Redirect to Stripe Checkout
-      window.location.href = response.data.checkout_url;
+      // Ensure we have a valid checkout URL
+      if (response.data && response.data.checkout_url) {
+        // Redirect to Stripe Checkout
+        window.location.href = response.data.checkout_url;
+      } else {
+        throw new Error('Invalid checkout response');
+      }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create checkout session');
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to create checkout session';
+      toast.error(errorMessage);
       setLoading(false);
       setSelectedPlan(null);
     }
