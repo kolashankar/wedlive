@@ -431,12 +431,12 @@ export default function FloralGarden({ wedding, onEnter }) {
           </p>
         </motion.div>
 
-        {/* Animated Wedding Card - Hero Section */}
+        {/* Enhanced Romantic Wedding Card with Photos */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, rotateX: -15 }}
           animate={{ opacity: 1, scale: 1, rotateX: 0 }}
           transition={{ duration: 1.2, delay: 1.8 }}
-          className="mb-16 mx-auto max-w-4xl"
+          className="mb-16 mx-auto max-w-6xl"
           style={{
             perspective: '1000px',
           }}
@@ -444,107 +444,248 @@ export default function FloralGarden({ wedding, onEnter }) {
           <div 
             className="relative p-12 rounded-3xl shadow-2xl overflow-hidden"
             style={{
-              background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(252,231,243,0.95) 100%)`,
+              background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(252,231,243,0.98) 100%)`,
               border: `3px solid ${secondaryColor}`,
               boxShadow: `0 25px 80px rgba(244, 63, 94, 0.3), 0 0 0 1px ${primaryColor}20`,
             }}
           >
-            {/* Card Background Texture */}
+            {/* Soft Background Pattern */}
             <div 
-              className="absolute inset-0 opacity-10"
+              className="absolute inset-0 opacity-5"
               style={{
-                backgroundImage: 'url(https://images.unsplash.com/photo-1566305977571-5666677c6e98?w=800&h=600&fit=crop)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundImage: `radial-gradient(circle at 20% 50%, ${primaryColor} 1px, transparent 1px), radial-gradient(circle at 80% 50%, ${secondaryColor} 1px, transparent 1px)`,
+                backgroundSize: '40px 40px'
               }}
             />
             
-            {/* Decorative Corners */}
-            <div className="absolute top-4 left-4">
-              <svg width="40" height="40" viewBox="0 0 40 40">
-                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
-              </svg>
-            </div>
-            <div className="absolute top-4 right-4 transform rotate-90">
-              <svg width="40" height="40" viewBox="0 0 40 40">
-                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
-              </svg>
-            </div>
-            <div className="absolute bottom-4 left-4 transform -rotate-90">
-              <svg width="40" height="40" viewBox="0 0 40 40">
-                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
-              </svg>
-            </div>
-            <div className="absolute bottom-4 right-4 transform rotate-180">
-              <svg width="40" height="40" viewBox="0 0 40 40">
-                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
-              </svg>
+            {/* Floating Hearts Background */}
+            <div className="absolute inset-0 pointer-events-none">
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute"
+                  style={{
+                    left: `${15 + (i * 10)}%`,
+                    top: `${20 + (i * 8)}%`,
+                  }}
+                  animate={{
+                    y: [0, -15, 0],
+                    opacity: [0.3, 0.7, 0.3],
+                  }}
+                  transition={{
+                    duration: 3 + i * 0.5,
+                    repeat: Infinity,
+                    delay: i * 0.3,
+                  }}
+                >
+                  <Heart className="w-4 h-4" style={{ color: primaryColor }} fill={primaryColor} opacity="0.3" />
+                </motion.div>
+              ))}
             </div>
 
-            {/* Card Content */}
-            <div className="relative z-10 text-center">
-              <h1
-                className="text-6xl md:text-8xl mb-6"
-                style={{
-                  fontFamily: `${customFont}, cursive`,
-                  color: primaryColor,
-                  textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
-                }}
-              >
-                {wedding.bride_name}
-              </h1>
+            {/* Romantic Layout: Photos on sides, Names in center */}
+            <div className="flex items-center justify-center gap-8 md:gap-16 relative z-10">
               
-              <motion.div
-                className="flex justify-center items-center my-8"
-                animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <div className="relative">
-                  <Heart className="w-12 h-12" style={{ color: primaryColor }} fill={primaryColor} />
-                  {/* Sparkle effects around heart */}
+              {/* Bride Photo - Left Side */}
+              {coverPhotos[0] && (
+                <motion.div
+                  initial={{ opacity: 0, x: -100, rotate: -5 }}
+                  animate={{ opacity: 1, x: 0, rotate: 0 }}
+                  transition={{ duration: 1.5, delay: 2.2, type: "spring" }}
+                  className="hidden md:block"
+                >
+                  <div className="relative group">
+                    {/* Soft Glow Effect */}
+                    <div className="absolute -inset-3 bg-gradient-to-br from-pink-200 to-rose-200 rounded-2xl opacity-40 blur-xl group-hover:opacity-60 transition-opacity" />
+                    
+                    {/* Photo Frame */}
+                    <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: primaryColor }}>
+                      <img
+                        src={coverPhotos[0]}
+                        alt="Bride"
+                        className="w-36 h-48 object-cover"
+                        style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                      />
+                      
+                      {/* Soft Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-pink-100/20 to-transparent" />
+                      
+                      {/* Floral Corner Decorations */}
+                      <div className="absolute top-2 left-2">
+                        <Flower2 className="w-6 h-6" style={{ color: primaryColor }} opacity="0.7" />
+                      </div>
+                      <div className="absolute bottom-2 right-2">
+                        <Heart className="w-5 h-5" style={{ color: primaryColor }} fill={primaryColor} opacity="0.7" />
+                      </div>
+                    </div>
+                    
+                    {/* Bride Label */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 2.8 }}
+                      className="text-center mt-4"
+                    >
+                      <p className="text-sm font-medium text-gray-600" style={{ fontFamily: customFont }}>Bride</p>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Names in Center */}
+              <div className="flex-1 text-center px-4">
+                <div className="space-y-6">
+                  {/* Bride Name */}
+                  <motion.h1
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 2.4 }}
+                    className="text-5xl md:text-7xl font-light"
+                    style={{
+                      fontFamily: `${customFont}, cursive`,
+                      color: primaryColor,
+                      textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    {wedding.bride_name}
+                  </motion.h1>
+                  
+                  {/* Enhanced Heart Separator */}
                   <motion.div
-                    className="absolute -top-2 -right-2"
-                    animate={{ scale: [0, 1, 0], rotate: [0, 180, 360] }}
+                    className="flex justify-center items-center my-8"
+                    animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <Sparkles className="w-4 h-4" style={{ color: secondaryColor }} />
+                    <div className="relative">
+                      <Heart className="w-16 h-16" style={{ color: primaryColor }} fill={primaryColor} />
+                      
+                      {/* Sparkle effects around heart */}
+                      <motion.div
+                        className="absolute -top-3 -right-3"
+                        animate={{ scale: [0, 1, 0], rotate: [0, 180, 360] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Sparkles className="w-6 h-6" style={{ color: secondaryColor }} />
+                      </motion.div>
+                      <motion.div
+                        className="absolute -bottom-3 -left-3"
+                        animate={{ scale: [0, 1, 0], rotate: [360, 180, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                      >
+                        <Sparkles className="w-6 h-6" style={{ color: secondaryColor }} />
+                      </motion.div>
+                    </div>
                   </motion.div>
-                  <motion.div
-                    className="absolute -bottom-2 -left-2"
-                    animate={{ scale: [0, 1, 0], rotate: [360, 180, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  
+                  {/* Groom Name */}
+                  <motion.h1
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 2.6 }}
+                    className="text-5xl md:text-7xl font-light"
+                    style={{
+                      fontFamily: `${customFont}, cursive`,
+                      color: primaryColor,
+                      textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
+                    }}
                   >
-                    <Sparkles className="w-4 h-4" style={{ color: secondaryColor }} />
-                  </motion.div>
-                </div>
-              </motion.div>
-              
-              <h1
-                className="text-6xl md:text-8xl"
-                style={{
-                  fontFamily: `${customFont}, cursive`,
-                  color: primaryColor,
-                  textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
-                }}
-              >
-                {wedding.groom_name}
-              </h1>
+                    {wedding.groom_name}
+                  </motion.h1>
 
-              {/* Ribbon decoration */}
-              <div className="flex justify-center gap-4 mt-8">
-                <motion.div 
-                  className="w-16 h-1 rounded-full"
-                  style={{ backgroundColor: primaryColor }}
-                  animate={{ scaleX: [1, 1.5, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <motion.div 
-                  className="w-16 h-1 rounded-full"
-                  style={{ backgroundColor: secondaryColor }}
-                  animate={{ scaleX: [1, 1.5, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                />
+                  {/* Enhanced Ribbon decoration */}
+                  <div className="flex justify-center gap-6 mt-8">
+                    <motion.div 
+                      className="w-20 h-1.5 rounded-full"
+                      style={{ backgroundColor: primaryColor }}
+                      animate={{ scaleX: [1, 1.5, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div 
+                      className="w-20 h-1.5 rounded-full"
+                      style={{ backgroundColor: secondaryColor }}
+                      animate={{ scaleX: [1, 1.5, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </div>
+                </div>
               </div>
+              
+              {/* Groom Photo - Right Side */}
+              {coverPhotos[1] && (
+                <motion.div
+                  initial={{ opacity: 0, x: 100, rotate: 5 }}
+                  animate={{ opacity: 1, x: 0, rotate: 0 }}
+                  transition={{ duration: 1.5, delay: 2.2, type: "spring" }}
+                  className="hidden md:block"
+                >
+                  <div className="relative group">
+                    {/* Soft Glow Effect */}
+                    <div className="absolute -inset-3 bg-gradient-to-br from-rose-200 to-pink-200 rounded-2xl opacity-40 blur-xl group-hover:opacity-60 transition-opacity" />
+                    
+                    {/* Photo Frame */}
+                    <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: secondaryColor }}>
+                      <img
+                        src={coverPhotos[1]}
+                        alt="Groom"
+                        className="w-36 h-48 object-cover"
+                        style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                      />
+                      
+                      {/* Soft Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-rose-100/20 to-transparent" />
+                      
+                      {/* Floral Corner Decorations */}
+                      <div className="absolute top-2 right-2">
+                        <Flower2 className="w-6 h-6" style={{ color: secondaryColor }} opacity="0.7" />
+                      </div>
+                      <div className="absolute bottom-2 left-2">
+                        <Heart className="w-5 h-5" style={{ color: secondaryColor }} fill={secondaryColor} opacity="0.7" />
+                      </div>
+                    </div>
+                    
+                    {/* Groom Label */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 2.8 }}
+                      className="text-center mt-4"
+                    >
+                      <p className="text-sm font-medium text-gray-600" style={{ fontFamily: customFont }}>Groom</p>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Mobile Photos - Below Names */}
+            <div className="md:hidden flex justify-center gap-6 mt-12 relative z-10">
+              {coverPhotos.slice(0, 2).map((photo, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 3 + index * 0.2 }}
+                  className="relative"
+                >
+                  <div className="relative group">
+                    <div className="absolute -inset-2 bg-gradient-to-br from-pink-200 to-rose-200 rounded-xl opacity-40 blur-lg" />
+                    <div className="relative rounded-xl overflow-hidden border-3" style={{ borderColor: index === 0 ? primaryColor : secondaryColor }}>
+                      <img
+                        src={photo}
+                        alt={index === 0 ? "Bride" : "Groom"}
+                        className="w-28 h-36 object-cover"
+                        style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-pink-100/20 to-transparent" />
+                    </div>
+                    <div className="text-center mt-2">
+                      <p className="text-xs font-medium text-gray-600" style={{ fontFamily: customFont }}>
+                        {index === 0 ? "Bride" : "Groom"}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </motion.div>

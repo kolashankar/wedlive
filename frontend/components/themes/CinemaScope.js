@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Play, Film, Video } from 'lucide-react';
+import { Calendar, MapPin, Play, Film, Video, Star, Sparkles, Camera, Heart, Flower2 } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactPlayer from 'react-player';
 
@@ -19,9 +19,7 @@ export default function CinemaScope({ wedding, onEnter }) {
     'Caveat': "'Caveat', cursive",
     'Bebas Neue': "'Bebas Neue', cursive",
     'Rozha One': "'Rozha One', serif",
-    'Pinyon Script': "'Pinyon Script', cursive",
-    'Merriweather': "'Merriweather', serif",
-    'Merriweather Sans': "'Merriweather Sans', sans-serif"
+    'Pinyon Script': "'Pinyon Script', cursive"
   };
   
   const customFontName = theme.custom_font || 'Bebas Neue';
@@ -37,136 +35,247 @@ export default function CinemaScope({ wedding, onEnter }) {
   // Film strip effect
   const filmHoles = Array.from({ length: 40 }, (_, i) => i);
 
+  // Floating particles for cinematic effect
+  const particles = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    duration: Math.random() * 20 + 10
+  }));
+
   return (
     <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-      {/* Film strip top */}
-      <div className="fixed top-0 left-0 right-0 h-12 bg-slate-950 border-y-4 border-red-600 z-50 flex items-center justify-between px-2">
+      {/* Animated Background Gradient */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: `radial-gradient(circle at 20% 50%, ${primaryColor}40 0%, transparent 50%), radial-gradient(circle at 80% 50%, ${secondaryColor}40 0%, transparent 50%)`
+          }}
+        />
+      </div>
+      
+      {/* Floating Particles */}
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute w-1 h-1 bg-white rounded-full"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+          }}
+          animate={{
+            y: [0, -100, 0],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: particle.duration,
+            repeat: Infinity,
+            ease: "linear",
+            delay: Math.random() * particle.duration,
+          }}
+        />
+      ))}
+      
+      {/* Film strip top with enhanced styling */}
+      <div className="fixed top-0 left-0 right-0 h-16 bg-gradient-to-b from-slate-950 to-slate-900 border-b-4 border-red-600 z-50 flex items-center justify-between px-4 shadow-2xl">
+        <div className="flex items-center gap-2">
+          <Camera className="w-6 h-6 text-red-500" />
+          <span className="text-red-500 font-bold text-sm tracking-widest">CINEMASCOPE</span>
+        </div>
         {filmHoles.map((i) => (
-          <div key={i} className="w-3 h-6 bg-slate-900 rounded-sm" />
+          <div key={i} className="w-4 h-8 bg-slate-900 rounded-full border-2 border-red-600" />
         ))}
+        <div className="text-red-500 text-xs font-mono">PREMIERE</div>
       </div>
 
-      {/* Vignette effect */}
+      {/* Enhanced Vignette effect */}
       <div className="fixed inset-0 pointer-events-none z-40">
-        <div className="w-full h-full bg-gradient-radial from-transparent via-transparent to-black opacity-50" />
+        <div className="w-full h-full bg-gradient-radial from-transparent via-transparent to-black opacity-70" />
+        <div className="absolute inset-0 border-8 border-black opacity-20" />
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-32 pb-16">
-        {/* Movie Title Card with Photos */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-16">
+        {/* Enhanced Movie Title Card with Photos */}
         <motion.div
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5 }}
-          className="text-center mb-16"
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="text-center mb-20"
         >
+          {/* Enhanced Film Icon with Animation */}
           <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="inline-block mb-8"
+            animate={{ 
+              opacity: [0.5, 1, 0.5],
+              scale: [1, 1.1, 1],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="inline-block mb-12"
           >
-            <Film className="w-16 h-16 mx-auto" style={{ color: primaryColor }} />
+            <div className="relative">
+              <Film className="w-20 h-20 mx-auto" style={{ color: primaryColor }} />
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 border-2 border-red-500 rounded-full opacity-30"
+                style={{ transform: 'scale(1.5)' }}
+              />
+            </div>
           </motion.div>
-          <p
-            className="text-xl uppercase tracking-[0.5em] mb-8"
-            style={{ color: primaryColor, fontFamily: `${customFont}, sans-serif` }}
+          
+          {/* Enhanced Welcome Text */}
+          <motion.p
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="text-2xl uppercase tracking-[0.3em] mb-12 font-bold"
+            style={{ 
+              color: primaryColor, 
+              fontFamily: `${customFont}, sans-serif`,
+              textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}80`,
+              letterSpacing: '0.3em'
+            }}
           >
             {welcomeText}
-          </p>
+          </motion.p>
           
-          {/* Names with Side Photos */}
-          <div className="flex items-center justify-center gap-8 md:gap-16 mb-12">
-            {/* Bride Photo */}
+          {/* Enhanced Names with Side Photos */}
+          <div className="flex items-center justify-center gap-12 md:gap-20 mb-16">
+            {/* Enhanced Bride Photo */}
             {coverPhotos[0] && (
               <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.8 }}
-                className="hidden md:block"
+                initial={{ opacity: 0, x: -100, rotate: -10 }}
+                animate={{ opacity: 1, x: 0, rotate: 0 }}
+                transition={{ duration: 1.5, delay: 0.8, type: "spring" }}
+                className="hidden lg:block"
               >
-                <div className="relative">
-                  <img
-                    src={coverPhotos[0]}
-                    alt="Bride"
-                    className="w-32 h-48 object-cover rounded-lg"
-                    style={{ filter: 'contrast(1.2) saturate(1.1)' }}
-                  />
-                  {/* Film strip effect */}
-                  <div className="absolute top-0 left-0 right-0 h-2 bg-black opacity-50" />
-                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-black opacity-50" />
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 rounded-lg opacity-75 group-hover:opacity-100 blur transition duration-300" />
+                  <div className="relative">
+                    <img
+                      src={coverPhotos[0]}
+                      alt="Bride"
+                      className="w-40 h-60 object-cover rounded-lg"
+                      style={{ filter: 'contrast(1.3) saturate(1.2)' }}
+                    />
+                    {/* Enhanced Film strip effect */}
+                    <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black to-transparent opacity-80" />
+                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black to-transparent opacity-80" />
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black to-transparent opacity-60" />
+                    <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-l from-black to-transparent opacity-60" />
+                  </div>
                 </div>
               </motion.div>
             )}
             
-            {/* Names in Center */}
+            {/* Enhanced Names in Center */}
             <div className="flex-1 text-center">
-              <div className="space-y-4">
-                <h1
-                  className="text-6xl md:text-8xl uppercase tracking-wider"
+              <div className="space-y-6">
+                <motion.h1
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 1, type: "spring" }}
+                  className="text-7xl md:text-9xl uppercase tracking-wider font-black"
                   style={{
                     fontFamily: `${customFont}, sans-serif`,
                     color: 'white',
-                    textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`,
+                    textShadow: `0 0 30px ${primaryColor}, 0 0 60px ${primaryColor}80, 0 0 90px ${primaryColor}40, 4px 4px 0px ${primaryColor}40`,
+                    lineHeight: '0.9'
                   }}
                 >
                   {wedding.bride_name}
-                </h1>
-                <div className="flex items-center justify-center gap-6 my-6">
-                  <div className="h-1 w-24 bg-gradient-to-r from-transparent to-red-600" />
-                  <Video className="w-6 h-6" style={{ color: primaryColor }} />
-                  <div className="h-1 w-24 bg-gradient-to-l from-transparent to-red-600" />
-                </div>
-                <h1
-                  className="text-6xl md:text-8xl uppercase tracking-wider"
+                </motion.h1>
+                
+                {/* Enhanced Separator */}
+                <motion.div
+                  initial={{ opacity: 0, scaleX: 0 }}
+                  animate={{ opacity: 1, scaleX: 1 }}
+                  transition={{ duration: 1, delay: 1.5 }}
+                  className="flex items-center justify-center gap-8 my-8"
+                >
+                  <div className="h-2 w-32 bg-gradient-to-r from-transparent to-red-600 rounded-full" />
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="relative"
+                  >
+                    <Video className="w-8 h-8" style={{ color: primaryColor }} />
+                    <div className="absolute inset-0 bg-red-500 rounded-full opacity-30 blur-xl" />
+                  </motion.div>
+                  <div className="h-2 w-32 bg-gradient-to-l from-transparent to-red-600 rounded-full" />
+                </motion.div>
+                
+                <motion.h1
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 1.2, type: "spring" }}
+                  className="text-7xl md:text-9xl uppercase tracking-wider font-black"
                   style={{
                     fontFamily: `${customFont}, sans-serif`,
                     color: 'white',
-                    textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`,
+                    textShadow: `0 0 30px ${primaryColor}, 0 0 60px ${primaryColor}80, 0 0 90px ${primaryColor}40, 4px 4px 0px ${primaryColor}40`,
+                    lineHeight: '0.9'
                   }}
                 >
                   {wedding.groom_name}
-                </h1>
+                </motion.h1>
               </div>
             </div>
             
-            {/* Groom Photo */}
+            {/* Enhanced Groom Photo */}
             {coverPhotos[1] && (
               <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.8 }}
-                className="hidden md:block"
+                initial={{ opacity: 0, x: 100, rotate: 10 }}
+                animate={{ opacity: 1, x: 0, rotate: 0 }}
+                transition={{ duration: 1.5, delay: 0.8, type: "spring" }}
+                className="hidden lg:block"
               >
-                <div className="relative">
-                  <img
-                    src={coverPhotos[1]}
-                    alt="Groom"
-                    className="w-32 h-48 object-cover rounded-lg"
-                    style={{ filter: 'contrast(1.2) saturate(1.1)' }}
-                  />
-                  {/* Film strip effect */}
-                  <div className="absolute top-0 left-0 right-0 h-2 bg-black opacity-50" />
-                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-black opacity-50" />
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 rounded-lg opacity-75 group-hover:opacity-100 blur transition duration-300" />
+                  <div className="relative">
+                    <img
+                      src={coverPhotos[1]}
+                      alt="Groom"
+                      className="w-40 h-60 object-cover rounded-lg"
+                      style={{ filter: 'contrast(1.3) saturate(1.2)' }}
+                    />
+                    {/* Enhanced Film strip effect */}
+                    <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black to-transparent opacity-80" />
+                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black to-transparent opacity-80" />
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black to-transparent opacity-60" />
+                    <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-l from-black to-transparent opacity-60" />
+                  </div>
                 </div>
               </motion.div>
             )}
           </div>
           
-          {/* Mobile: Show photos below names if no side photos */}
-          <div className="md:hidden flex justify-center gap-4 mt-8">
+          {/* Enhanced Mobile Photos */}
+          <div className="lg:hidden flex justify-center gap-6 mt-12">
             {coverPhotos.slice(0, 2).map((photo, index) => (
-              <img
+              <motion.div
                 key={index}
-                src={photo}
-                alt={index === 0 ? "Bride" : "Groom"}
-                className="w-24 h-36 object-cover rounded-lg"
-                style={{ filter: 'contrast(1.2) saturate(1.1)' }}
-              />
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.5 + index * 0.2 }}
+                className="relative"
+              >
+                <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 rounded-lg opacity-60 blur" />
+                <img
+                  src={photo}
+                  alt={index === 0 ? "Bride" : "Groom"}
+                  className="relative w-28 h-44 object-cover rounded-lg"
+                  style={{ filter: 'contrast(1.3) saturate(1.2)' }}
+                />
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Enhanced Studio Presentation - Replaces Cinematic Photo */}
+        {/* Enhanced Studio Presentation */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -175,109 +284,112 @@ export default function CinemaScope({ wedding, onEnter }) {
         >
           <div className="relative max-w-6xl mx-auto">
             {/* Cinematic Frame */}
-            <div className="relative bg-slate-900 rounded-lg overflow-hidden border-2" style={{ borderColor: primaryColor }}>
+            <div className="relative bg-slate-900 rounded-2xl overflow-hidden border-2" style={{ borderColor: primaryColor }}>
               {/* Letterbox bars */}
-              <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black to-transparent z-10" />
-              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent z-10" />
+              <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black to-transparent z-10" />
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent z-10" />
               
               {/* Studio Content */}
-              <div className="relative py-20 px-8 text-center">
+              <div className="relative py-24 px-12 text-center">
                 {/* Animated Film Strip Background */}
                 <div className="absolute inset-0 opacity-10">
                   <div className="h-full w-full bg-repeat-y" style={{
-                    backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, ${primaryColor} 20px, ${primaryColor} 22px, transparent 22px, transparent 40px)`
+                    backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 30px, ${primaryColor} 30px, ${primaryColor} 34px, transparent 34px, transparent 60px)`
                   }} />
                 </div>
                 
-                {/* Studio Logo with Animation */}
+                {/* Studio Logo with Enhanced Animation */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+                  initial={{ opacity: 0, scale: 0.3, rotate: -180 }}
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ duration: 1.5, delay: 1, type: "spring" }}
-                  className="relative z-10 mb-8"
+                  transition={{ duration: 2, delay: 1, type: "spring", damping: 10 }}
+                  className="relative z-10 mb-12"
                 >
                   {studioDetails.logo_url ? (
                     <div className="relative inline-block">
+                      <div className="absolute -inset-4 bg-gradient-to-r from-red-600 to-red-400 rounded-full opacity-60 blur-2xl animate-pulse" />
                       <img 
                         src={studioDetails.logo_url} 
                         alt={`${studioDetails.name} Logo`} 
-                        className="h-24 object-contain"
-                        style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' }}
+                        className="relative h-32 object-contain"
+                        style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.8))' }}
                       />
-                      {/* Animated Glow Ring */}
+                      {/* Enhanced Glow Ring */}
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-0 border-2 rounded-full"
+                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 border-4 rounded-full"
                         style={{ 
                           borderColor: primaryColor,
-                          filter: 'blur(2px)',
-                          transform: 'scale(1.5)'
+                          filter: 'blur(4px)',
+                          transform: 'scale(1.8)'
                         }}
                       />
                     </div>
                   ) : (
-                    <div className="w-32 h-32 mx-auto bg-slate-800 rounded-full flex items-center justify-center border-2" style={{ borderColor: primaryColor }}>
-                      <Film className="w-16 h-16" style={{ color: primaryColor }} />
+                    <div className="w-40 h-40 mx-auto bg-gradient-to-br from-slate-800 to-slate-900 rounded-full flex items-center justify-center border-4 shadow-2xl" style={{ borderColor: primaryColor }}>
+                      <Film className="w-20 h-20" style={{ color: primaryColor }} />
                     </div>
                   )}
                 </motion.div>
                 
-                {/* Studio Name with Typewriter Effect */}
+                {/* Studio Name with Enhanced Typewriter Effect */}
                 <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "auto" }}
-                  transition={{ duration: 2, delay: 1.5, ease: "easeOut" }}
-                  className="relative z-10 overflow-hidden"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  transition={{ duration: 3, delay: 2, ease: "easeOut" }}
+                  className="relative z-10 overflow-hidden mb-8"
                 >
                   <h2
-                    className="text-5xl md:text-7xl uppercase tracking-widest font-bold whitespace-nowrap"
+                    className="text-6xl md:text-8xl uppercase tracking-widest font-black whitespace-nowrap"
                     style={{ 
                       color: 'white',
                       fontFamily: `${customFont}, sans-serif`,
-                      textShadow: `0 0 30px ${primaryColor}, 0 0 60px ${primaryColor}, 0 0 90px ${primaryColor}`
+                      textShadow: `0 0 40px ${primaryColor}, 0 0 80px ${primaryColor}80, 0 0 120px ${primaryColor}40, 6px 6px 0px ${primaryColor}40`,
+                      lineHeight: '0.8'
                     }}
                   >
                     {studioDetails.name || 'STUDIO PRODUCTIONS'}
                   </h2>
                 </motion.div>
                 
-                {/* Studio Tagline */}
+                {/* Enhanced Studio Tagline */}
                 <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1, delay: 2.5 }}
-                  className="text-xl text-gray-300 mt-4 relative z-10"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.5, delay: 3 }}
+                  className="text-2xl text-gray-200 mb-12 relative z-10 font-light tracking-wide"
+                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}
                 >
                   {studioDetails.contact || 'Professional Wedding Cinematography'}
                 </motion.p>
                 
-                {/* Additional Studio Details */}
+                {/* Enhanced Studio Details */}
                 {(studioDetails.email || studioDetails.phone || studioDetails.website) && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 3 }}
-                    className="mt-8 space-y-2 text-gray-400 relative z-10"
+                    transition={{ duration: 1.5, delay: 3.5 }}
+                    className="space-y-3 text-gray-300 relative z-10"
                   >
-                    {studioDetails.email && <p className="text-sm">{studioDetails.email}</p>}
-                    {studioDetails.phone && <p className="text-sm">{studioDetails.phone}</p>}
-                    {studioDetails.website && <p className="text-sm">{studioDetails.website}</p>}
+                    {studioDetails.email && <p className="text-lg font-medium">{studioDetails.email}</p>}
+                    {studioDetails.phone && <p className="text-lg font-medium">{studioDetails.phone}</p>}
+                    {studioDetails.website && <p className="text-lg font-medium">{studioDetails.website}</p>}
                   </motion.div>
                 )}
                 
-                {/* Film Reel Animation */}
+                {/* Enhanced Film Reel Animation */}
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  className="absolute -right-8 -top-8 w-16 h-16 opacity-20"
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="absolute -right-12 -top-12 w-20 h-20 opacity-30"
                 >
                   <Film className="w-full h-full" style={{ color: primaryColor }} />
                 </motion.div>
                 <motion.div
                   animate={{ rotate: -360 }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="absolute -left-8 -bottom-8 w-12 h-12 opacity-20"
+                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  className="absolute -left-12 -bottom-12 w-16 h-16 opacity-30"
                 >
                   <Film className="w-full h-full" style={{ color: primaryColor }} />
                 </motion.div>
@@ -286,74 +398,88 @@ export default function CinemaScope({ wedding, onEnter }) {
           </div>
         </motion.div>
 
-        {/* Film Credits Style Details */}
+        {/* Enhanced Film Credits Style Details */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="text-center mb-20 space-y-6"
+          transition={{ duration: 1, delay: 1.5 }}
+          className="text-center mb-24 space-y-8"
         >
-          <div className="text-white space-y-3">
-            <p className="text-sm uppercase tracking-widest text-gray-400">Starring</p>
-            <p className="text-3xl font-light" style={{ fontFamily: `${customFont}, sans-serif` }}>
+          <div className="text-white space-y-4">
+            <p className="text-sm uppercase tracking-widest text-gray-400 font-bold">Starring</p>
+            <p className="text-4xl font-light" style={{ fontFamily: `${customFont}, sans-serif` }}>
               {wedding.bride_name} & {wedding.groom_name}
             </p>
           </div>
           
-          <div className="flex items-center justify-center gap-12 text-gray-300">
-            <div>
-              <Calendar className="w-6 h-6 mx-auto mb-2" style={{ color: primaryColor }} />
-              <p className="text-sm uppercase tracking-widest text-gray-500">Release Date</p>
-              <p className="text-lg">
+          <div className="flex items-center justify-center gap-16 text-gray-300">
+            <div className="text-center">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Calendar className="w-8 h-8 mx-auto mb-3" style={{ color: primaryColor }} />
+              </motion.div>
+              <p className="text-xs uppercase tracking-widest text-gray-500 font-bold mb-2">Release Date</p>
+              <p className="text-xl font-medium">
                 {wedding.scheduled_date ? format(new Date(wedding.scheduled_date), 'MMM d, yyyy') : 'TBD'}
               </p>
             </div>
             {wedding.location && (
-              <div>
-                <MapPin className="w-6 h-6 mx-auto mb-2" style={{ color: primaryColor }} />
-                <p className="text-sm uppercase tracking-widest text-gray-500">Location</p>
-                <p className="text-lg">{wedding.location}</p>
+              <div className="text-center">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                >
+                  <MapPin className="w-8 h-8 mx-auto mb-3" style={{ color: primaryColor }} />
+                </motion.div>
+                <p className="text-xs uppercase tracking-widest text-gray-500 font-bold mb-2">Location</p>
+                <p className="text-xl font-medium">{wedding.location}</p>
               </div>
             )}
           </div>
 
           {description && (
-            <div className="max-w-3xl mx-auto mt-8">
-              <p className="text-sm uppercase tracking-widest text-gray-500 mb-3">Synopsis</p>
-              <p className="text-gray-300 text-lg leading-relaxed">
+            <div className="max-w-4xl mx-auto mt-12">
+              <p className="text-sm uppercase tracking-widest text-gray-500 font-bold mb-4">Synopsis</p>
+              <p className="text-gray-200 text-xl leading-relaxed font-light" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
                 {description}
               </p>
             </div>
           )}
         </motion.div>
 
-        {/* Trailer Section */}
+        {/* Enhanced Trailer Section */}
         {preWeddingVideo && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.3 }}
-            className="mb-20"
+            transition={{ duration: 1.5, delay: 2 }}
+            className="mb-24"
           >
             <h2
-              className="text-5xl uppercase text-center mb-10 tracking-widest"
+              className="text-6xl uppercase text-center mb-16 tracking-widest font-black"
               style={{ fontFamily: `${customFont}, sans-serif`, color: primaryColor }}
             >
               Official Trailer
             </h2>
-            <div className="max-w-6xl mx-auto relative">
-              <div className="absolute -inset-4 bg-red-600 opacity-20 blur-xl" />
-              <div className="relative">
+            <div className="max-w-7xl mx-auto relative">
+              <div className="absolute -inset-8 bg-gradient-to-r from-red-600 to-red-400 opacity-30 blur-3xl animate-pulse" />
+              <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: primaryColor }}>
                 <ReactPlayer
                   url={preWeddingVideo}
                   width="100%"
-                  height="600px"
+                  height="700px"
                   controls
                   light
                   playIcon={
-                    <button className="w-24 h-24 rounded-full bg-red-600 flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
-                      <Play className="w-12 h-12 text-white ml-2" fill="white" />
-                    </button>
+                    <motion.button 
+                      className="w-32 h-32 rounded-full bg-gradient-to-r from-red-600 to-red-400 flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Play className="w-16 h-16 text-white ml-3" fill="white" />
+                    </motion.button>
                   }
                 />
               </div>
@@ -361,35 +487,35 @@ export default function CinemaScope({ wedding, onEnter }) {
           </motion.div>
         )}
 
-        {/* Behind the Scenes - Photo Gallery */}
-        {coverPhotos.length > 1 && (
+        {/* Enhanced Behind the Scenes - Photo Gallery */}
+        {coverPhotos.length > 2 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.5 }}
-            className="mb-20"
+            transition={{ duration: 1.5, delay: 2.5 }}
+            className="mb-24"
           >
             <h2
-              className="text-4xl uppercase text-center mb-10 tracking-widest"
+              className="text-5xl uppercase text-center mb-16 tracking-widest font-black"
               style={{ fontFamily: `${customFont}, sans-serif`, color: 'white' }}
             >
               Behind The Scenes
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {coverPhotos.slice(1).map((photo, idx) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {coverPhotos.slice(2).map((photo, index) => (
                 <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 1.7 + idx * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  className="aspect-square overflow-hidden border-2"
-                  style={{ borderColor: primaryColor, filter: 'contrast(1.1)' }}
+                  transition={{ duration: 0.5, delay: 3 + index * 0.1 }}
+                  className="relative group"
                 >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 rounded-lg opacity-0 group-hover:opacity-100 blur transition duration-300" />
                   <img
                     src={photo}
-                    alt={`BTS ${idx + 1}`}
-                    className="w-full h-full object-cover"
+                    alt={`Behind the scenes ${index + 1}`}
+                    className="relative w-full h-48 object-cover rounded-lg"
+                    style={{ filter: 'contrast(1.3) saturate(1.2)' }}
                   />
                 </motion.div>
               ))}
@@ -397,125 +523,39 @@ export default function CinemaScope({ wedding, onEnter }) {
           </motion.div>
         )}
 
-        {/* Watch Live CTA */}
+        {/* Enhanced Watch Live Button */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 1.8 }}
-          className="text-center mb-20"
-        >
-          <Button
-            onClick={onEnter}
-            size="lg"
-            className="px-16 py-8 text-2xl uppercase tracking-[0.3em] rounded-none border-4 hover:scale-105 transition-all duration-300"
-            style={{
-              backgroundColor: primaryColor,
-              color: 'white',
-              borderColor: primaryColor,
-              fontFamily: `${customFont}, sans-serif`,
-              boxShadow: `0 0 30px ${primaryColor}`,
-            }}
-          >
-            <Play className="w-8 h-8 mr-4" fill="white" />
-            Watch Live
-          </Button>
-        </motion.div>
-
-        {/* Production Company - Enhanced */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 2 }}
-          className="text-center py-16 border-t-2"
-          style={{ borderColor: primaryColor }}
+          transition={{ duration: 1.5, delay: 3 }}
+          className="text-center"
         >
-          <p className="text-sm uppercase tracking-[0.5em] text-gray-400 mb-8">Presented By</p>
-          
-          {studioDetails.name ? (
-            <div className="space-y-6">
-              {/* Studio Logo */}
-              {studioDetails.logo_url && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 2.3 }}
-                  className="flex justify-center"
-                >
-                  <div className="relative">
-                    <img 
-                      src={studioDetails.logo_url} 
-                      alt={`${studioDetails.name} Logo`} 
-                      className="h-20 object-contain"
-                      style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
-                    />
-                    {/* Glow effect */}
-                    <div 
-                      className="absolute inset-0 opacity-30 blur-xl"
-                      style={{ backgroundColor: primaryColor }}
-                    />
-                  </div>
-                </motion.div>
-              )}
-              
-              {/* Studio Name */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 2.5 }}
-              >
-                <p
-                  className="text-4xl md:text-5xl uppercase tracking-widest font-bold"
-                  style={{ 
-                    color: 'white',
-                    fontFamily: `${customFont}, sans-serif`,
-                    textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`
-                  }}
-                >
-                  {studioDetails.name}
-                </p>
-              </motion.div>
-              
-              {/* Studio Contact Info */}
-              {(studioDetails.contact || studioDetails.email || studioDetails.phone) && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1, delay: 2.7 }}
-                  className="space-y-2"
-                >
-                  {studioDetails.contact && (
-                    <p className="text-gray-300 text-lg">{studioDetails.contact}</p>
-                  )}
-                  {studioDetails.email && (
-                    <p className="text-gray-400">{studioDetails.email}</p>
-                  )}
-                  {studioDetails.phone && (
-                    <p className="text-gray-400">{studioDetails.phone}</p>
-                  )}
-                  {studioDetails.website && (
-                    <p className="text-gray-400">{studioDetails.website}</p>
-                  )}
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            // Default placeholder when no studio is set
-            <div className="space-y-4">
-              <div className="w-32 h-32 mx-auto bg-slate-800 rounded-lg flex items-center justify-center">
-                <Film className="w-16 h-16 text-gray-500" />
-              </div>
-              <p className="text-gray-500 text-lg">Studio Productions</p>
-              <p className="text-gray-600 text-sm">Professional Wedding Cinematography</p>
-            </div>
-          )}
+          <motion.button
+            onClick={onEnter}
+            className="px-12 py-6 text-2xl font-bold rounded-full transition-all duration-300 transform hover:scale-105"
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+              color: 'white',
+              fontFamily: `${customFont}, sans-serif`,
+              boxShadow: `0 10px 40px ${primaryColor}60, 0 0 60px ${primaryColor}40`,
+              textShadow: '0 2px 10px rgba(0,0,0,0.5)'
+            }}
+            whileHover={{ scale: 1.05, boxShadow: `0 15px 50px ${primaryColor}80, 0 0 80px ${primaryColor}60` }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Play className="w-8 h-8 mr-4 inline" fill="white" />
+            Watch Live Premiere
+          </motion.button>
         </motion.div>
       </div>
 
-      {/* Film strip bottom */}
-      <div className="fixed bottom-0 left-0 right-0 h-12 bg-slate-950 border-y-4 border-red-600 z-50 flex items-center justify-between px-2">
+      {/* Enhanced Film strip bottom */}
+      <div className="fixed bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-950 to-slate-900 border-t-4 border-red-600 z-50 flex items-center justify-between px-4 shadow-2xl">
+        <div className="text-red-500 text-xs font-mono">WEDDING CINEMA</div>
         {filmHoles.map((i) => (
-          <div key={`bottom-${i}`} className="w-3 h-6 bg-slate-900 rounded-sm" />
+          <div key={`bottom-${i}`} className="w-4 h-8 bg-slate-900 rounded-full border-2 border-red-600" />
         ))}
+        <div className="text-red-500 text-xs font-mono">PREMIERE EVENT</div>
       </div>
     </div>
   );
