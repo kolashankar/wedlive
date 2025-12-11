@@ -40,6 +40,7 @@ export default function ThemeManager({ weddingId, wedding }) {
   const [previewThemeId, setPreviewThemeId] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showMediaSelector, setShowMediaSelector] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     loadThemeSettings();
@@ -286,7 +287,50 @@ export default function ThemeManager({ weddingId, wedding }) {
       toast.success(`${selectedMedia.length} photo(s) added to cover photos!`);
     } catch (error) {
       console.error('Error adding selected photos:', error);
-      toast.error('Failed to add selected photos');
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Upload timeout. Please try again with smaller files or check your connection.');
+      } else {
+        toast.error('Failed to add selected photos');
+      }
+    }
+  };
+
+  const handleCategorizedMediaSelection = async (selectedMedia, category) => {
+    try {
+      // Process selected media items with category assignment
+      const processedMedia = selectedMedia.map(item => ({
+        url: item.cdn_url || item.file_url || item.url,
+        category: category,
+        type: item.type || (item.file_type?.includes('video') ? 'video' : 'photo')
+      }));
+      
+      // Get existing photos
+      const existingPhotos = theme?.cover_photos || [];
+      
+      // Filter out existing photos of the same category (for single photo categories)
+      let updatedPhotos;
+      if (category === 'moment') {
+        // For precious moments, allow multiple (up to 5)
+        const existingMoments = existingPhotos.filter(photo => photo.category !== 'moment');
+        const allMoments = [...existingPhotos.filter(photo => photo.category === 'moment'), ...processedMedia];
+        updatedPhotos = [...existingMoments, ...allMoments.slice(-5)]; // Keep only last 5 moments
+      } else {
+        // For groom, bride, couple - replace existing photo of same category
+        updatedPhotos = [
+          ...existingPhotos.filter(photo => photo.category !== category),
+          ...processedMedia
+        ];
+      }
+      
+      await handleUpdateTheme({ cover_photos: updatedPhotos });
+      toast.success(`${selectedMedia.length} media item(s) assigned to ${category}!`);
+    } catch (error) {
+      console.error('Error assigning media to category:', error);
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Assignment timeout. Please try again.');
+      } else {
+        toast.error(`Failed to assign media to ${category}`);
+      }
     }
   };
 
@@ -492,71 +536,70 @@ export default function ThemeManager({ weddingId, wedding }) {
             </Button>
           </div>
           
-          {/* Categorized Upload Options */}
+          {/* Categorized Selection from Gallery */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Groom Photo Upload */}
+            {/* Groom Photo Selection */}
             <div className="relative group">
-              <label className="aspect-square border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-blue-50">
-                <Upload className="w-6 h-6 text-blue-400 mb-1" />
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('groom');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-blue-50 w-full"
+              >
+                <ImageIcon className="w-6 h-6 text-blue-400 mb-1" />
                 <span className="text-xs text-blue-600 font-medium">Groom Photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleCategorizedPhotoUpload(e, 'groom')}
-                  className="hidden"
-                  disabled={uploadingPhoto}
-                />
-              </label>
+              </button>
             </div>
             
-            {/* Bride Photo Upload */}
+            {/* Bride Photo Selection */}
             <div className="relative group">
-              <label className="aspect-square border-2 border-dashed border-pink-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 transition-colors bg-pink-50">
-                <Upload className="w-6 h-6 text-pink-400 mb-1" />
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('bride');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-pink-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 transition-colors bg-pink-50 w-full"
+              >
+                <ImageIcon className="w-6 h-6 text-pink-400 mb-1" />
                 <span className="text-xs text-pink-600 font-medium">Bride Photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleCategorizedPhotoUpload(e, 'bride')}
-                  className="hidden"
-                  disabled={uploadingPhoto}
-                />
-              </label>
+              </button>
             </div>
             
-            {/* Couple Photo Upload */}
+            {/* Couple Photo Selection */}
             <div className="relative group">
-              <label className="aspect-square border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50">
-                <Upload className="w-6 h-6 text-purple-400 mb-1" />
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('couple');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50 w-full"
+              >
+                <ImageIcon className="w-6 h-6 text-purple-400 mb-1" />
                 <span className="text-xs text-purple-600 font-medium">Couple Photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleCategorizedPhotoUpload(e, 'couple')}
-                  className="hidden"
-                  disabled={uploadingPhoto}
-                />
-              </label>
+              </button>
             </div>
             
-            {/* Precious Moments Upload */}
+            {/* Precious Moments Selection */}
             <div className="relative group">
-              <label className="aspect-square border-2 border-dashed border-green-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors bg-green-50">
-                <Upload className="w-6 h-6 text-green-400 mb-1" />
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('moment');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-green-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors bg-green-50 w-full"
+              >
+                <ImageIcon className="w-6 h-6 text-green-400 mb-1" />
                 <span className="text-xs text-green-600 font-medium">Precious Moments</span>
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  onChange={(e) => handleCategorizedPhotoUpload(e, 'moment')}
-                  className="hidden"
-                  disabled={uploadingPhoto}
-                />
-              </label>
+              </button>
             </div>
           </div>
           
-          {/* Display Uploaded Photos by Category */}
+          {/* Display Selected Photos by Category */}
           <div className="space-y-4">
             {/* Groom Photos */}
             {safeTheme.cover_photos?.filter(photo => photo.category === 'groom').length > 0 && (
@@ -669,7 +712,7 @@ export default function ThemeManager({ weddingId, wedding }) {
           </div>
           
           <p className="text-xs text-gray-500">
-            Upload photos by category: Groom, Bride, Couple, or Precious Moments (up to 5)
+            Select photos from your uploaded media gallery for each category
           </p>
         </div>
 
@@ -800,12 +843,24 @@ export default function ThemeManager({ weddingId, wedding }) {
       {/* Media Selector Modal */}
       <MediaSelector
         isOpen={showMediaSelector}
-        onClose={() => setShowMediaSelector(false)}
-        onSelect={handleMediaSelection}
+        onClose={() => {
+          setShowMediaSelector(false);
+          setSelectedCategory(null);
+        }}
+        onSelect={(selectedMedia) => {
+          if (selectedCategory) {
+            handleCategorizedMediaSelection(selectedMedia, selectedCategory);
+          } else {
+            handleMediaSelection(selectedMedia);
+          }
+          setShowMediaSelector(false);
+          setSelectedCategory(null);
+        }}
         weddingId={weddingId}
-        maxSelection={10}
-        allowedTypes={['photo']}
+        maxSelection={selectedCategory === 'moment' ? 5 : 1}
+        allowedTypes={selectedCategory === 'moment' ? ['photo', 'video'] : ['photo']}
         selectedMedia={[]}
+        title={selectedCategory ? `Select ${selectedCategory === 'groom' ? 'Groom' : selectedCategory === 'bride' ? 'Bride' : selectedCategory === 'couple' ? 'Couple' : 'Precious Moments'} Media` : 'Select Media'}
       />
     </Card>
   );
