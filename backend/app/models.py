@@ -1,6 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
-from datetime import datetime
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
+from typing import List, Optional, Union
 from enum import Enum
 
 class UserRole(str, Enum):
@@ -146,6 +145,11 @@ class StudioDetails(BaseModel):
     address: str = ""
     contact: str = ""  # Keep for backward compatibility
 
+class CoverPhoto(BaseModel):
+    url: str
+    category: Optional[str] = "general"  # groom, bride, couple, moment, general
+    type: Optional[str] = "photo"  # photo, video
+
 class CustomMessages(BaseModel):
     welcome_text: str = "Welcome to our big day"
     description: str = ""
@@ -156,7 +160,7 @@ class ThemeSettings(BaseModel):
     primary_color: str = "#f43f5e"  # Primary theme color
     secondary_color: str = "#a855f7"  # Secondary theme color
     pre_wedding_video: str = ""  # URL (Youtube or Uploaded)
-    cover_photos: List[str] = []  # Array of photo URLs for carousel/grid
+    cover_photos: List[Union[str, CoverPhoto]] = []  # Array of photo URLs or objects
     studio_details: StudioDetails = StudioDetails()
     custom_messages: CustomMessages = CustomMessages()
 
@@ -166,7 +170,7 @@ class UpdateThemeSettings(BaseModel):
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
     pre_wedding_video: Optional[str] = None
-    cover_photos: Optional[List[str]] = None
+    cover_photos: Optional[List[Union[str, CoverPhoto]]] = None
     studio_details: Optional[StudioDetails] = None
     custom_messages: Optional[CustomMessages] = None
 

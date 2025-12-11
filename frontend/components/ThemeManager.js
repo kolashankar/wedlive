@@ -130,6 +130,19 @@ export default function ThemeManager({ weddingId, wedding }) {
         cleanUpdates.custom_messages = { ...cleanUpdates.custom_messages };
       }
       
+      // CRITICAL FIX: Handle cover_photos data structure - backend expects List[str]
+      if (cleanUpdates.cover_photos) {
+        // Convert objects back to strings for API compatibility
+        cleanUpdates.cover_photos = cleanUpdates.cover_photos.map(photo => {
+          if (typeof photo === 'string') {
+            return photo;
+          } else if (photo && typeof photo === 'object') {
+            return photo.url || photo;
+          }
+          return photo;
+        }).filter(Boolean); // Remove any null/undefined items
+      }
+      
       console.log('Sending theme update:', cleanUpdates);
       
       await api.put(`/api/weddings/${weddingId}/theme`, cleanUpdates);
