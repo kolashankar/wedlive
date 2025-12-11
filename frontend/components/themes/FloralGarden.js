@@ -32,11 +32,12 @@ export default function FloralGarden({ wedding, onEnter }) {
   const welcomeText = theme.custom_messages?.welcome_text || 'Welcome to our celebration';
   const description = theme.custom_messages?.description || '';
   const coverPhotos = theme.cover_photos || [];
-  // Enhanced Cover Photos with Categories
-  const groomPhoto = coverPhotos.find(photo => photo.category === 'groom') || coverPhotos[1];
-  const bridePhoto = coverPhotos.find(photo => photo.category === 'bride') || coverPhotos[0];
-  const couplePhoto = coverPhotos.find(photo => photo.category === 'couple') || coverPhotos[2];
-  const preciousMoments = coverPhotos.filter(photo => photo.category === 'moment') || coverPhotos.slice(3, 8);
+  
+  // Enhanced Cover Photos with Categories - Fix media endpoints
+  const groomPhoto = coverPhotos.find(photo => photo.category === 'groom') || (coverPhotos[1]?.url ? coverPhotos[1] : null);
+  const bridePhoto = coverPhotos.find(photo => photo.category === 'bride') || (coverPhotos[0]?.url ? coverPhotos[0] : null);
+  const couplePhoto = coverPhotos.find(photo => photo.category === 'couple') || (coverPhotos[2]?.url ? coverPhotos[2] : null);
+  const preciousMoments = coverPhotos.filter(photo => photo.category === 'moment') || coverPhotos.slice(3, 8).filter(photo => photo?.url);
   const preWeddingVideo = theme.pre_wedding_video || '';
   const studioDetails = theme.studio_details || {};
 
@@ -521,7 +522,7 @@ export default function FloralGarden({ wedding, onEnter }) {
             <div className="flex items-center justify-center gap-8 md:gap-16 relative z-10">
               
               {/* Bride Photo - Left Side */}
-              {bridePhoto && (
+              {bridePhoto ? (
                 <motion.div
                   initial={{ opacity: 0, x: -100, rotate: -5 }}
                   animate={{ opacity: 1, x: 0, rotate: 0 }}
@@ -564,6 +565,24 @@ export default function FloralGarden({ wedding, onEnter }) {
                     </motion.div>
                   </div>
                 </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, x: -100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 1.5, delay: 2.2, type: "spring" }}
+                  className="hidden md:block"
+                >
+                  <div className="relative group">
+                    <div className="w-36 h-48 rounded-2xl border-4 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
+                         style={{ borderColor: primaryColor, backgroundColor: `${primaryColor}10` }}>
+                      <Flower2 className="w-8 h-8 mb-2" style={{ color: primaryColor }} opacity="0.6" />
+                      <p className="text-xs font-medium text-center px-2" style={{ color: primaryColor, fontFamily: customFont }}>
+                        Upload Bride Photo
+                      </p>
+                    </div>
+                    <p className="text-sm font-medium text-gray-600 text-center mt-4" style={{ fontFamily: customFont }}>Bride</p>
+                  </div>
+                </motion.div>
               )}
 
               {/* Names in Center */}
@@ -576,7 +595,7 @@ export default function FloralGarden({ wedding, onEnter }) {
                     transition={{ duration: 1, delay: 2.4 }}
                     className="text-5xl md:text-7xl font-light"
                     style={{
-                      fontFamily: `${customFont}, cursive`,
+                      fontFamily: customFont,
                       color: primaryColor,
                       textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
                     }}
@@ -618,7 +637,7 @@ export default function FloralGarden({ wedding, onEnter }) {
                     transition={{ duration: 1, delay: 2.6 }}
                     className="text-5xl md:text-7xl font-light"
                     style={{
-                      fontFamily: `${customFont}, cursive`,
+                      fontFamily: customFont,
                       color: primaryColor,
                       textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
                     }}
@@ -645,7 +664,7 @@ export default function FloralGarden({ wedding, onEnter }) {
               </div>
               
               {/* Groom Photo - Right Side */}
-              {coverPhotos[1] && (
+              {groomPhoto ? (
                 <motion.div
                   initial={{ opacity: 0, x: 100, rotate: 5 }}
                   animate={{ opacity: 1, x: 0, rotate: 0 }}
@@ -659,7 +678,7 @@ export default function FloralGarden({ wedding, onEnter }) {
                     {/* Photo Frame */}
                     <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: secondaryColor }}>
                       <img
-                        src={coverPhotos[1]}
+                        src={groomPhoto.url || groomPhoto}
                         alt="Groom"
                         className="w-36 h-48 object-cover"
                         style={{ filter: 'contrast(1.1) saturate(1.2)' }}
@@ -686,6 +705,24 @@ export default function FloralGarden({ wedding, onEnter }) {
                     >
                       <p className="text-sm font-medium text-gray-600" style={{ fontFamily: customFont }}>Groom</p>
                     </motion.div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 1.5, delay: 2.2, type: "spring" }}
+                  className="hidden md:block"
+                >
+                  <div className="relative group">
+                    <div className="w-36 h-48 rounded-2xl border-4 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
+                         style={{ borderColor: secondaryColor, backgroundColor: `${secondaryColor}10` }}>
+                      <Flower2 className="w-8 h-8 mb-2" style={{ color: secondaryColor }} opacity="0.6" />
+                      <p className="text-xs font-medium text-center px-2" style={{ color: secondaryColor, fontFamily: customFont }}>
+                        Upload Groom Photo
+                      </p>
+                    </div>
+                    <p className="text-sm font-medium text-gray-600 text-center mt-4" style={{ fontFamily: customFont }}>Groom</p>
                   </div>
                 </motion.div>
               )}
@@ -724,73 +761,193 @@ export default function FloralGarden({ wedding, onEnter }) {
           </div>
         </motion.div>
 
-        {/* Heart-Shaped Couple Photo Frame with Sparkle Effects */}
-        {coverPhotos.length > 0 && (
+        {/* Couple Photo Section */}
+        {couplePhoto ? (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 2.2 }}
-            className="flex justify-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 3.0 }}
+            className="mb-16 text-center"
           >
-            <div className="relative">
-              {/* Heart-shaped container using CSS clip-path */}
-              <div
-                className="relative w-96 h-96 overflow-hidden"
-                style={{
-                  clipPath: 'polygon(50% 0%, 61% 8%, 71% 8%, 81% 12%, 88% 20%, 92% 28%, 95% 38%, 96% 48%, 96% 58%, 94% 68%, 90% 77%, 84% 85%, 76% 91%, 66% 95%, 56% 97%, 50% 98%, 44% 97%, 34% 95%, 24% 91%, 16% 85%, 10% 77%, 6% 68%, 4% 58%, 4% 48%, 5% 38%, 8% 28%, 12% 20%, 19% 12%, 29% 8%, 39% 8%)',
-                  boxShadow: `0 30px 80px rgba(244, 63, 94, 0.4)`,
-                }}
-              >
+            <div className="relative inline-block">
+              {/* Romantic Glow Background */}
+              <div className="absolute -inset-8 bg-gradient-to-br from-pink-100 via-rose-100 to-purple-100 rounded-3xl opacity-60 blur-2xl" />
+              
+              {/* Couple Photo Frame - No Border Background */}
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img
-                  src={coverPhotos[0]}
+                  src={couplePhoto.url || couplePhoto}
                   alt="Couple"
-                  className="w-full h-full object-cover"
+                  className="w-80 h-56 object-cover"
+                  style={{ filter: 'contrast(1.1) saturate(1.2)' }}
                 />
+                
+                {/* Soft Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-pink-900/10 to-transparent" />
+                
+                {/* Corner Decorations */}
+                <div className="absolute top-3 left-3">
+                  <Heart className="w-8 h-8" style={{ color: 'white' }} fill="white" opacity="0.8" />
+                </div>
+                <div className="absolute top-3 right-3">
+                  <Heart className="w-8 h-8" style={{ color: 'white' }} fill="white" opacity="0.8" />
+                </div>
+                <div className="absolute bottom-3 left-3">
+                  <Flower2 className="w-6 h-6" style={{ color: 'white' }} opacity="0.7" />
+                </div>
+                <div className="absolute bottom-3 right-3">
+                  <Flower2 className="w-6 h-6" style={{ color: 'white' }} opacity="0.7" />
+                </div>
               </div>
               
-              {/* Sparkle/Glow effects around the heart */}
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={`sparkle-${i}`}
-                  className="absolute"
-                  style={{
-                    top: `${15 + Math.sin(i * 45 * Math.PI / 180) * 45}%`,
-                    left: `${50 + Math.cos(i * 45 * Math.PI / 180) * 50}%`,
-                  }}
-                  animate={{
-                    scale: [0, 1.5, 0],
-                    rotate: [0, 180, 360],
-                    opacity: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.25,
-                  }}
-                >
-                  <Sparkles className="w-6 h-6" style={{ color: i % 2 === 0 ? primaryColor : secondaryColor }} />
-                </motion.div>
-              ))}
-              
-              {/* Glowing ring effect */}
+              {/* Couple Photo Label */}
               <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  border: `4px solid ${primaryColor}`,
-                  opacity: 0.3,
-                }}
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                }}
-              />
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 3.4 }}
+                className="mt-6"
+              >
+                <h3 
+                  className="text-2xl font-medium"
+                  style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+                >
+                  Couple Photo
+                </h3>
+              </motion.div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 3.0 }}
+            className="mb-16 text-center"
+          >
+            <div className="relative inline-block">
+              <div className="w-80 h-56 rounded-3xl border-4 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
+                   style={{ borderColor: primaryColor, backgroundColor: `${primaryColor}10` }}>
+                <Heart className="w-12 h-12 mb-3" style={{ color: primaryColor }} opacity="0.6" />
+                <p className="text-sm font-medium text-center px-4" style={{ color: primaryColor, fontFamily: customFont }}>
+                  Upload Couple Photo
+                </p>
+              </div>
+              <h3 
+                className="text-2xl font-medium mt-6"
+                style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+              >
+                Couple Photo
+              </h3>
             </div>
           </motion.div>
         )}
+
+        {/* Precious Moments Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, delay: 3.6 }}
+          className="mb-16"
+        >
+          <div className="text-center mb-8">
+            <h3 
+              className="text-3xl font-medium mb-4"
+              style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+            >
+              Precious Moments
+            </h3>
+            <p className="text-gray-600 text-lg" style={{ fontFamily: customFont }}>
+              Capture and share your beautiful memories (up to 5 photos or videos)
+            </p>
+          </div>
+          
+          {preciousMoments.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-6xl mx-auto">
+              {preciousMoments.slice(0, 5).map((moment, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 3.8 + index * 0.1 }}
+                  className="relative group"
+                >
+                  <div className="relative rounded-2xl overflow-hidden border-3 shadow-lg" 
+                       style={{ borderColor: index % 2 === 0 ? primaryColor : secondaryColor }}>
+                    {(moment.type === 'video' || moment.url?.includes('.mp4') || moment.url?.includes('.mov')) ? (
+                      <div className="relative">
+                        <video
+                          src={moment.url || moment}
+                          className="w-full h-32 object-cover"
+                          muted
+                          loop
+                          playsInline
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Play className="w-8 h-8 text-white" fill="white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={moment.url || moment}
+                        alt={`Precious Moment ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                        style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                      />
+                    )}
+                    
+                    {/* Hover Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </motion.div>
+              ))}
+              
+              {/* Add More Button if less than 5 */}
+              {preciousMoments.length < 5 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 4.3 }}
+                  className="relative"
+                >
+                  <div className="w-full h-32 rounded-2xl border-3 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
+                       style={{ borderColor: secondaryColor, backgroundColor: `${secondaryColor}10` }}>
+                    <Gift className="w-8 h-8 mb-2" style={{ color: secondaryColor }} opacity="0.6" />
+                    <p className="text-xs font-medium text-center px-2" style={{ color: secondaryColor, fontFamily: customFont }}>
+                      Add Moment
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {[...Array(5)].map((_, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 3.8 + index * 0.1 }}
+                    className="relative"
+                  >
+                    <div className="w-full h-32 rounded-2xl border-3 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
+                         style={{ borderColor: index % 2 === 0 ? primaryColor : secondaryColor, backgroundColor: `${index % 2 === 0 ? primaryColor : secondaryColor}10` }}>
+                      {index === 0 ? (
+                        <>
+                          <Gift className="w-8 h-8 mb-2" style={{ color: index % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.6" />
+                          <p className="text-xs font-medium text-center px-2" style={{ color: index % 2 === 0 ? primaryColor : secondaryColor, fontFamily: customFont }}>
+                            Upload Photos
+                          </p>
+                        </>
+                      ) : (
+                        <Sparkles className="w-6 h-6" style={{ color: index % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.4" />
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
 
         {/* Wedding Details */}
         <motion.div
