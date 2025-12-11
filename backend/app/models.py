@@ -1,0 +1,508 @@
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
+from datetime import datetime
+from enum import Enum
+
+class UserRole(str, Enum):
+    USER = "user"
+    CREATOR = "creator"
+    ADMIN = "admin"
+
+class SubscriptionPlan(str, Enum):
+    FREE = "free"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
+class StreamStatus(str, Enum):
+    SCHEDULED = "scheduled"
+    LIVE = "live"
+    ENDED = "ended"
+    RECORDED = "recorded"
+
+class CameraStatus(str, Enum):
+    WAITING = "waiting"
+    CONNECTED = "connected"
+    DISCONNECTED = "disconnected"
+
+class RecordingStatus(str, Enum):
+    PROCESSING = "processing"
+    READY = "ready"
+    FAILED = "failed"
+
+# User Models
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    role: UserRole
+    subscription_plan: SubscriptionPlan
+    storage_used: int = 0  # in bytes
+    storage_limit: int = 10737418240  # 10GB in bytes for free plan
+    created_at: datetime
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+# Admin Models
+class AdminStats(BaseModel):
+    total_users: int
+    total_weddings: int
+    active_streams: int
+    total_subscriptions: int
+    monthly_revenue: float
+
+# Multi-Camera Models
+class MultiCamera(BaseModel):
+    camera_id: str
+    name: str
+    stream_key: str
+    status: CameraStatus = CameraStatus.WAITING
+    created_at: datetime
+
+class AddCameraRequest(BaseModel):
+    wedding_id: str
+    camera_name: str
+
+class AddCameraResponse(BaseModel):
+    camera_id: str
+    camera_name: str
+    stream_key: str
+    rtmp_url: str
+    status: str
+    message: str
+
+# Stream Quality Models
+class StreamQualityOption(BaseModel):
+    value: str
+    label: str
+    width: int
+    height: int
+    bitrate: int
+
+class UpdateStreamQuality(BaseModel):
+    wedding_id: str
+    live_quality: Optional[str] = None
+    recording_quality: Optional[str] = None
+
+class StreamQualityResponse(BaseModel):
+    wedding_id: str
+    live_quality: str
+    recording_quality: str
+    allowed_live_qualities: List[str]
+    allowed_recording_qualities: List[str]
+    is_premium: bool
+    message: Optional[str] = None
+
+# Wedding Settings Models
+class WeddingSettings(BaseModel):
+    auto_delete_media: bool = False
+    auto_delete_days: int = 30
+    enable_download: bool = True
+    enable_sharing: bool = True
+    enable_dvr: bool = False  # NEW: Enable DVR recording
+    auto_record: bool = True  # NEW: Auto-record stream
+    allow_comments: bool = True  # NEW: Allow viewer comments
+    allow_public_sharing: bool = True  # NEW: Allow public sharing
+    viewer_limit: Optional[int] = None
+    playback_quality: str = "auto"  # auto, 720p, 1080p, 4k
+    live_quality: str = "480p"  # Current live streaming quality
+    recording_quality: str = "480p"  # Current recording quality
+
+class UpdateWeddingSettings(BaseModel):
+    auto_delete_media: Optional[bool] = None
+    auto_delete_days: Optional[int] = None
+    enable_download: Optional[bool] = None
+    enable_sharing: Optional[bool] = None
+    enable_dvr: Optional[bool] = None  # NEW: Enable DVR recording
+    auto_record: Optional[bool] = None  # NEW: Auto-record stream
+    allow_comments: Optional[bool] = None  # NEW: Allow viewer comments
+    allow_public_sharing: Optional[bool] = None  # NEW: Allow public sharing
+    viewer_limit: Optional[int] = None
+    playback_quality: Optional[str] = None
+    live_quality: Optional[str] = None
+    recording_quality: Optional[str] = None
+
+# Theme Settings Models
+class StudioDetails(BaseModel):
+    studio_id: str = ""  # Reference to studio from profile
+    name: str = ""
+    logo_url: str = ""
+    website: str = ""
+    email: str = ""
+    phone: str = ""
+    address: str = ""
+    contact: str = ""  # Keep for backward compatibility
+
+class CustomMessages(BaseModel):
+    welcome_text: str = "Welcome to our big day"
+    description: str = ""
+
+class ThemeSettings(BaseModel):
+    theme_id: str = "floral_garden"  # e.g., 'floral_garden', 'royal_palace'
+    custom_font: str = "Great Vibes"  # Font for couple names
+    primary_color: str = "#f43f5e"  # Primary theme color
+    secondary_color: str = "#a855f7"  # Secondary theme color
+    pre_wedding_video: str = ""  # URL (Youtube or Uploaded)
+    cover_photos: List[str] = []  # Array of photo URLs for carousel/grid
+    studio_details: StudioDetails = StudioDetails()
+    custom_messages: CustomMessages = CustomMessages()
+
+class UpdateThemeSettings(BaseModel):
+    theme_id: Optional[str] = None
+    custom_font: Optional[str] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+    pre_wedding_video: Optional[str] = None
+    cover_photos: Optional[List[str]] = None
+    studio_details: Optional[StudioDetails] = None
+    custom_messages: Optional[CustomMessages] = None
+
+# Wedding Models
+class WeddingCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    bride_name: str
+    groom_name: str
+    scheduled_date: datetime
+    location: Optional[str] = None
+    cover_image: Optional[str] = None
+
+class WeddingUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    bride_name: Optional[str] = None
+    groom_name: Optional[str] = None
+    scheduled_date: Optional[datetime] = None
+    location: Optional[str] = None
+    cover_image: Optional[str] = None
+    status: Optional[StreamStatus] = None
+
+class StreamCredentials(BaseModel):
+    rtmp_url: str
+    stream_key: str
+    playback_url: str
+
+class WeddingResponse(BaseModel):
+    id: str
+    short_code: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    bride_name: str
+    groom_name: str
+    creator_id: str
+    creator_name: Optional[str] = None
+    creator_subscription_plan: Optional[str] = 'free'  # Added for theme preview logic
+    scheduled_date: datetime
+    location: Optional[str] = None
+    cover_image: Optional[str] = None
+    status: StreamStatus
+    stream_credentials: Optional[StreamCredentials] = None
+    playback_url: Optional[str] = None
+    recording_url: Optional[str] = None
+    viewers_count: int = 0
+    is_locked: bool = False
+    multi_cameras: Optional[List[MultiCamera]] = []
+    settings: Optional[WeddingSettings] = None
+    theme_settings: Optional[ThemeSettings] = None
+    created_at: datetime
+    updated_at: datetime
+
+# Subscription Models
+class SubscriptionCreate(BaseModel):
+    plan: SubscriptionPlan
+
+class SubscriptionResponse(BaseModel):
+    id: str
+    user_id: str
+    plan: SubscriptionPlan
+    razorpay_subscription_id: Optional[str] = None
+    status: str
+    current_period_end: Optional[datetime] = None
+    created_at: datetime
+
+# Stream Models
+class StreamCreate(BaseModel):
+    wedding_id: str
+    title: str
+
+class StreamResponse(BaseModel):
+    id: str
+    wedding_id: str
+    title: str
+    status: StreamStatus
+    rtmp_url: str
+    stream_key: str
+    playback_url: str
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+
+class StreamRequest(BaseModel):
+    wedding_id: str
+
+# Media Models
+class MediaType(str, Enum):
+    PHOTO = "photo"
+    VIDEO = "video"
+
+class MediaUploadResponse(BaseModel):
+    id: str
+    media_type: MediaType
+    cdn_url: str
+    file_id: str
+    wedding_id: str
+    folder_id: Optional[str] = None
+    caption: Optional[str] = None
+    uploaded_at: datetime
+
+class MediaResponse(BaseModel):
+    id: str
+    wedding_id: str
+    media_type: MediaType
+    cdn_url: str
+    thumbnail_url: Optional[str] = None
+    caption: Optional[str] = None
+    folder_id: Optional[str] = None
+    folder_name: Optional[str] = None
+    uploaded_by: str
+    uploaded_at: datetime
+
+# Folder Models
+class MediaFolderCreate(BaseModel):
+    name: str
+    wedding_id: str
+    parent_folder_id: Optional[str] = None
+    description: Optional[str] = None
+
+class MediaFolderResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    wedding_id: str
+    parent_folder_id: Optional[str] = None
+    media_count: int = 0
+    folder_size: int = 0
+    subfolder_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+class MediaFolderMove(BaseModel):
+    folder_id: str
+    new_parent_id: Optional[str] = None
+
+class MediaMoveRequest(BaseModel):
+    media_id: str
+    target_folder_id: Optional[str] = None
+
+
+class MediaFolderUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class MediaFolderListResponse(BaseModel):
+    folders: List[MediaFolderResponse]
+    total_count: int
+
+# Chat Models
+class ChatMessageCreate(BaseModel):
+    wedding_id: str
+    message: str
+    guest_name: Optional[str] = None
+
+class ChatMessageResponse(BaseModel):
+    id: str
+    wedding_id: str
+    user_id: Optional[str] = None
+    guest_name: Optional[str] = None
+    message: str
+    created_at: datetime
+
+class ReactionCreate(BaseModel):
+    wedding_id: str
+    reaction_type: str  # e.g., "heart", "clap", "fire"
+
+class ReactionResponse(BaseModel):
+    id: str
+    wedding_id: str
+    user_id: Optional[str] = None
+    guest_name: Optional[str] = None
+    reaction_type: str
+    created_at: datetime
+
+class GuestBookCreate(BaseModel):
+    wedding_id: str
+    guest_name: str
+    message: str
+    email: Optional[str] = None
+
+class GuestBookResponse(BaseModel):
+    id: str
+    wedding_id: str
+    guest_name: str
+    message: str
+    email: Optional[str] = None
+    created_at: datetime
+
+# Comment Models (YouTube-style with threading)
+class CommentCreate(BaseModel):
+    wedding_id: str
+    comment: str
+    parent_comment_id: Optional[str] = None  # For threaded replies
+
+class CommentResponse(BaseModel):
+    id: str
+    wedding_id: str
+    parent_comment_id: Optional[str] = None
+    user_id: str
+    user_name: str
+    user_avatar: Optional[str] = None
+    comment: str
+    likes_count: int = 0
+    replies_count: int = 0
+    is_liked_by_user: bool = False  # Populated based on current user
+    replies: List['CommentResponse'] = []  # Nested replies
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class CommentLikeRequest(BaseModel):
+    comment_id: str
+
+class CommentUpdateRequest(BaseModel):
+    comment: str
+
+# Enable forward references for nested model
+CommentResponse.model_rebuild()
+
+# Analytics Models
+class ViewerSessionCreate(BaseModel):
+    wedding_id: str
+    user_agent: Optional[str] = None
+    ip_address: Optional[str] = None
+
+class ViewerSessionResponse(BaseModel):
+    id: str
+    wedding_id: str
+    user_id: Optional[str] = None
+    join_time: datetime
+    leave_time: Optional[datetime] = None
+    duration_seconds: int = 0
+    chat_messages_count: int = 0
+    reactions_count: int = 0
+
+class StreamQualityMetric(BaseModel):
+    timestamp: datetime
+    quality: str
+    bitrate: int
+    fps: int
+    dropped_frames: int = 0
+
+class EngagementMetrics(BaseModel):
+    total_viewers: int
+    peak_concurrent_viewers: int
+    average_watch_time_seconds: float
+    total_chat_messages: int
+    total_reactions: int
+    unique_viewers: int
+
+class AnalyticsDashboard(BaseModel):
+    wedding_id: str
+    engagement: EngagementMetrics
+    quality_metrics: List[StreamQualityMetric]
+    viewer_sessions: List[ViewerSessionResponse]
+
+# Features Models  
+class EmailInvitationCreate(BaseModel):
+    wedding_id: str
+    email: EmailStr
+    guest_name: Optional[str] = None
+
+class EmailInvitationResponse(BaseModel):
+    id: str
+    wedding_id: str
+    email: str
+    guest_name: Optional[str] = None
+    sent_at: datetime
+    opened_at: Optional[datetime] = None
+
+class CameraStreamCreate(BaseModel):
+    wedding_id: str
+    camera_name: str
+    stream_key: Optional[str] = None
+
+class CameraStreamResponse(BaseModel):
+    id: str
+    wedding_id: str
+    camera_name: str
+    stream_key: str
+    rtmp_url: str
+    status: str
+    created_at: datetime
+
+class PhotoBoothCreate(BaseModel):
+    wedding_id: str
+    title: str
+    description: Optional[str] = None
+
+class PhotoBoothResponse(BaseModel):
+    id: str
+    wedding_id: str
+    title: str
+    description: Optional[str] = None
+    photo_count: int = 0
+    created_at: datetime
+
+# Quality Models (additional to StreamQuality models)
+class QualitySettings(BaseModel):
+    wedding_id: str
+    live_quality: str
+    recording_quality: str
+
+class QualityChangeRequest(BaseModel):
+    wedding_id: str
+    quality_type: str  # "live" or "recording"
+    quality_value: str  # e.g., "720p", "1080p"
+
+class QualityChangeResponse(BaseModel):
+    success: bool
+    message: str
+    new_quality: str
+
+class QualityOption(BaseModel):
+    value: str
+    label: str
+    available: bool
+    requires_premium: bool = False
+
+# Recording Models
+class RecordingCreate(BaseModel):
+    wedding_id: str
+    stream_id: str
+    quality: str = "480p"
+
+class RecordingResponse(BaseModel):
+    id: str
+    wedding_id: str
+    stream_id: str
+    recording_url: str
+    duration_seconds: int = 0
+    file_size_bytes: int = 0
+    quality: str
+    status: str  # "processing", "ready", "failed"
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+class RecordingListResponse(BaseModel):
+    recordings: List[RecordingResponse]
+    total_count: int

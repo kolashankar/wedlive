@@ -1,0 +1,1072 @@
+'use client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Heart, Play, Phone, Mail, MapPinned, Sparkles, Bell, Flower2, Gift } from 'lucide-react';
+import { format } from 'date-fns';
+import ReactPlayer from 'react-player';
+
+export default function FloralGarden({ wedding, onEnter }) {
+  const [bookOpened, setBookOpened] = useState(false);
+  
+  const theme = wedding.theme_settings || {};
+  const customFont = theme.custom_font || 'Great Vibes';
+  const primaryColor = theme.primary_color || '#f43f5e';
+  const secondaryColor = theme.secondary_color || '#fbcfe8';
+  const welcomeText = theme.custom_messages?.welcome_text || 'Welcome to our big day';
+  const description = theme.custom_messages?.description || '';
+  const coverPhotos = theme.cover_photos || [];
+  const preWeddingVideo = theme.pre_wedding_video || '';
+  const studioDetails = theme.studio_details || {};
+
+  // Auto-open book after 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBookOpened(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Falling petals animation - increased count for premium feel
+  const petals = Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: 8 + Math.random() * 12,
+  }));
+
+  // Floating fireflies/sparkles
+  const fireflies = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    x: 10 + Math.random() * 80,
+    y: 20 + Math.random() * 60,
+    delay: Math.random() * 3,
+  }));
+
+  return (
+    <div className="min-h-screen relative overflow-hidden" 
+         style={{
+           background: 'linear-gradient(135deg, #fce7f3 0%, #fff1f2 25%, #ffffff 50%, #fae8ff 75%, #fce7f3 100%)'
+         }}>
+      
+      {/* Book Opening Animation Cover */}
+      <AnimatePresence>
+        {!bookOpened && (
+          <>
+            {/* Left Page */}
+            <motion.div
+              initial={{ rotateY: 0 }}
+              animate={{ rotateY: -180 }}
+              exit={{ rotateY: -180 }}
+              transition={{ duration: 1.5, ease: 'easeInOut' }}
+              className="fixed inset-0 z-50 origin-right"
+              style={{
+                background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                transformStyle: 'preserve-3d',
+                backfaceVisibility: 'hidden',
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center text-white p-8">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Heart className="w-24 h-24 mx-auto mb-6" fill="white" />
+                    <h2 className="text-5xl mb-4" style={{ fontFamily: `${customFont}, cursive` }}>
+                      Wedding Invitation
+                    </h2>
+                    <p className="text-2xl font-light">You're Invited to Celebrate</p>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Right Page */}
+            <motion.div
+              initial={{ rotateY: 0 }}
+              animate={{ rotateY: 180 }}
+              exit={{ rotateY: 180 }}
+              transition={{ duration: 1.5, ease: 'easeInOut' }}
+              className="fixed inset-0 z-50 origin-left"
+              style={{
+                background: `linear-gradient(to left, ${primaryColor}, ${secondaryColor})`,
+                transformStyle: 'preserve-3d',
+                backfaceVisibility: 'hidden',
+              }}
+            />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Premium Floral Corner Decorations - High Quality Images */}
+      <div className="fixed top-0 left-0 w-96 h-96 opacity-40 pointer-events-none z-10">
+        <img 
+          src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=400&h=400&fit=crop" 
+          alt="Roses decoration"
+          className="w-full h-full object-cover"
+          style={{ 
+            maskImage: 'radial-gradient(circle at top left, black 20%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(circle at top left, black 20%, transparent 70%)'
+          }}
+        />
+      </div>
+      
+      <div className="fixed top-0 right-0 w-96 h-96 opacity-40 pointer-events-none z-10">
+        <img 
+          src="https://images.unsplash.com/photo-1693232387352-3712ed81d5d9?w=400&h=400&fit=crop" 
+          alt="Garden roses decoration"
+          className="w-full h-full object-cover transform scale-x-[-1]"
+          style={{ 
+            maskImage: 'radial-gradient(circle at top right, black 20%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(circle at top right, black 20%, transparent 70%)'
+          }}
+        />
+      </div>
+      
+      <div className="fixed bottom-0 left-0 w-96 h-96 opacity-40 pointer-events-none z-10">
+        <img 
+          src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=400&h=400&fit=crop" 
+          alt="Floral decoration"
+          className="w-full h-full object-cover transform rotate-180"
+          style={{ 
+            maskImage: 'radial-gradient(circle at bottom left, black 20%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(circle at bottom left, black 20%, transparent 70%)'
+          }}
+        />
+      </div>
+      
+      <div className="fixed bottom-0 right-0 w-96 h-96 opacity-40 pointer-events-none z-10">
+        <img 
+          src="https://images.unsplash.com/photo-1693232387352-3712ed81d5d9?w=400&h=400&fit=crop" 
+          alt="Garden decoration"
+          className="w-full h-full object-cover transform rotate-180 scale-x-[-1]"
+          style={{ 
+            maskImage: 'radial-gradient(circle at bottom right, black 20%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(circle at bottom right, black 20%, transparent 70%)'
+          }}
+        />
+      </div>
+
+      {/* Floating Fireflies/Lanterns */}
+      {fireflies.map((firefly) => (
+        <motion.div
+          key={`firefly-${firefly.id}`}
+          className="absolute w-2 h-2 rounded-full bg-yellow-300"
+          style={{
+            left: `${firefly.x}%`,
+            top: `${firefly.y}%`,
+            boxShadow: '0 0 20px 5px rgba(253, 224, 71, 0.6)',
+          }}
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.3, 0.8, 0.3],
+            y: [0, -20, 0],
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            delay: firefly.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
+      {/* Enhanced Falling Petals Animation */}
+      {petals.map((petal) => (
+        <motion.div
+          key={petal.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${petal.x}%`,
+            width: petal.id % 3 === 0 ? '8px' : '6px',
+            height: petal.id % 3 === 0 ? '8px' : '6px',
+            background: petal.id % 2 === 0 
+              ? `radial-gradient(circle, #fda4af, ${primaryColor})` 
+              : `radial-gradient(circle, #e9d5ff, ${secondaryColor})`,
+            opacity: 0.7,
+          }}
+          initial={{ y: -20, rotate: 0 }}
+          animate={{
+            y: '110vh',
+            rotate: 360,
+            x: [0, 40, -40, 0],
+          }}
+          transition={{
+            duration: petal.duration,
+            delay: petal.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
+      {/* Main Content */}
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50 relative overflow-hidden">
+      {/* Enhanced Floral Vine Corner Decorations */}
+      {/* Top Left Corner - Vine with Flowers */}
+      <div className="fixed top-0 left-0 w-80 h-80 opacity-40 pointer-events-none z-20">
+        <svg viewBox="0 0 300 300" className="w-full h-full">
+          {/* Curving vine */}
+          <path
+            d="M10,10 Q40,40 60,80 T80,140 T90,200"
+            stroke={primaryColor}
+            strokeWidth="3"
+            fill="none"
+            opacity="0.6"
+          />
+          <path
+            d="M10,10 Q35,50 50,90 T60,150"
+            stroke={secondaryColor}
+            strokeWidth="2"
+            fill="none"
+            opacity="0.5"
+          />
+          {/* Flowers along the vine */}
+          <g transform="translate(60, 80)">
+            <circle cx="0" cy="0" r="12" fill={primaryColor} opacity="0.7"/>
+            <circle cx="-8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
+            <circle cx="8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="16" r="10" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <g transform="translate(80, 140)">
+            <circle cx="0" cy="0" r="10" fill={secondaryColor} opacity="0.7"/>
+            <circle cx="-6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="12" r="8" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          {/* Small leaves */}
+          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
+          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
+          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
+        </svg>
+      </div>
+      
+      {/* Top Right Corner */}
+      <div className="fixed top-0 right-0 w-80 h-80 opacity-40 pointer-events-none z-20 transform scale-x-[-1]">
+        <svg viewBox="0 0 300 300" className="w-full h-full">
+          <path
+            d="M10,10 Q40,40 60,80 T80,140 T90,200"
+            stroke={primaryColor}
+            strokeWidth="3"
+            fill="none"
+            opacity="0.6"
+          />
+          <path
+            d="M10,10 Q35,50 50,90 T60,150"
+            stroke={secondaryColor}
+            strokeWidth="2"
+            fill="none"
+            opacity="0.5"
+          />
+          <g transform="translate(60, 80)">
+            <circle cx="0" cy="0" r="12" fill={primaryColor} opacity="0.7"/>
+            <circle cx="-8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
+            <circle cx="8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="16" r="10" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <g transform="translate(80, 140)">
+            <circle cx="0" cy="0" r="10" fill={secondaryColor} opacity="0.7"/>
+            <circle cx="-6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="12" r="8" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
+          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
+          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
+        </svg>
+      </div>
+      
+      {/* Bottom Left Corner */}
+      <div className="fixed bottom-0 left-0 w-80 h-80 opacity-40 pointer-events-none z-20 transform rotate-180">
+        <svg viewBox="0 0 300 300" className="w-full h-full">
+          <path
+            d="M10,10 Q40,40 60,80 T80,140 T90,200"
+            stroke={secondaryColor}
+            strokeWidth="3"
+            fill="none"
+            opacity="0.6"
+          />
+          <path
+            d="M10,10 Q35,50 50,90 T60,150"
+            stroke={primaryColor}
+            strokeWidth="2"
+            fill="none"
+            opacity="0.5"
+          />
+          <g transform="translate(60, 80)">
+            <circle cx="0" cy="0" r="12" fill={secondaryColor} opacity="0.7"/>
+            <circle cx="-8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="16" r="10" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <g transform="translate(80, 140)">
+            <circle cx="0" cy="0" r="10" fill={primaryColor} opacity="0.7"/>
+            <circle cx="-6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
+            <circle cx="6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="12" r="8" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
+          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
+          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
+        </svg>
+      </div>
+      
+      {/* Bottom Right Corner */}
+      <div className="fixed bottom-0 right-0 w-80 h-80 opacity-40 pointer-events-none z-20 transform rotate-180 scale-x-[-1]">
+        <svg viewBox="0 0 300 300" className="w-full h-full">
+          <path
+            d="M10,10 Q40,40 60,80 T80,140 T90,200"
+            stroke={secondaryColor}
+            strokeWidth="3"
+            fill="none"
+            opacity="0.6"
+          />
+          <path
+            d="M10,10 Q35,50 50,90 T60,150"
+            stroke={primaryColor}
+            strokeWidth="2"
+            fill="none"
+            opacity="0.5"
+          />
+          <g transform="translate(60, 80)">
+            <circle cx="0" cy="0" r="12" fill={secondaryColor} opacity="0.7"/>
+            <circle cx="-8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="16" r="10" fill={secondaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <g transform="translate(80, 140)">
+            <circle cx="0" cy="0" r="10" fill={primaryColor} opacity="0.7"/>
+            <circle cx="-6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
+            <circle cx="6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="12" r="8" fill={primaryColor} opacity="0.6"/>
+            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
+          </g>
+          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
+          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
+          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
+        </svg>
+      </div>
+
+      {/* Falling Petals Animation */}
+      {petals.map((petal) => (
+        <motion.div
+          key={petal.id}
+          className="absolute w-3 h-3 rounded-full"
+          style={{
+            left: `${petal.x}%`,
+            background: `radial-gradient(circle, ${secondaryColor}, ${primaryColor})`,
+            opacity: 0.6,
+          }}
+          initial={{ y: -20, rotate: 0 }}
+          animate={{
+            y: '100vh',
+            rotate: 360,
+            x: [0, 30, -30, 0],
+          }}
+          transition={{
+            duration: petal.duration,
+            delay: petal.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
+      {/* Main Content */}
+      <div className="relative z-20 max-w-6xl mx-auto px-4 py-16">
+        
+        {/* Animated Wedding Icons - Top Row */}
+        <div className="flex justify-center gap-8 mb-8">
+          <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+            <Bell className="w-8 h-8" style={{ color: primaryColor }} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}>
+            <Sparkles className="w-8 h-8" style={{ color: secondaryColor }} />
+          </motion.div>
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}>
+            <Heart className="w-8 h-8" style={{ color: primaryColor }} fill={primaryColor} />
+          </motion.div>
+          <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 0.9 }}>
+            <Flower2 className="w-8 h-8" style={{ color: secondaryColor }} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 1.2 }}>
+            <Gift className="w-8 h-8" style={{ color: primaryColor }} />
+          </motion.div>
+        </div>
+
+        {/* Welcome Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.5 }}
+          className="text-center mb-8"
+        >
+          <p className="text-gray-600 text-xl font-light tracking-wide" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            {welcomeText}
+          </p>
+        </motion.div>
+
+        {/* Animated Wedding Card - Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, rotateX: -15 }}
+          animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+          transition={{ duration: 1.2, delay: 1.8 }}
+          className="mb-16 mx-auto max-w-4xl"
+          style={{
+            perspective: '1000px',
+          }}
+        >
+          <div 
+            className="relative p-12 rounded-3xl shadow-2xl overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(252,231,243,0.95) 100%)`,
+              border: `3px solid ${secondaryColor}`,
+              boxShadow: `0 25px 80px rgba(244, 63, 94, 0.3), 0 0 0 1px ${primaryColor}20`,
+            }}
+          >
+            {/* Card Background Texture */}
+            <div 
+              className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: 'url(https://images.unsplash.com/photo-1566305977571-5666677c6e98?w=800&h=600&fit=crop)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+            
+            {/* Decorative Corners */}
+            <div className="absolute top-4 left-4">
+              <svg width="40" height="40" viewBox="0 0 40 40">
+                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute top-4 right-4 transform rotate-90">
+              <svg width="40" height="40" viewBox="0 0 40 40">
+                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute bottom-4 left-4 transform -rotate-90">
+              <svg width="40" height="40" viewBox="0 0 40 40">
+                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute bottom-4 right-4 transform rotate-180">
+              <svg width="40" height="40" viewBox="0 0 40 40">
+                <path d="M0,0 L40,0 L40,2 L2,2 L2,40 L0,40 Z" fill={primaryColor} opacity="0.3"/>
+              </svg>
+            </div>
+
+            {/* Card Content */}
+            <div className="relative z-10 text-center">
+              <h1
+                className="text-6xl md:text-8xl mb-6"
+                style={{
+                  fontFamily: `${customFont}, cursive`,
+                  color: primaryColor,
+                  textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
+                }}
+              >
+                {wedding.bride_name}
+              </h1>
+              
+              <motion.div
+                className="flex justify-center items-center my-8"
+                animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <div className="relative">
+                  <Heart className="w-12 h-12" style={{ color: primaryColor }} fill={primaryColor} />
+                  {/* Sparkle effects around heart */}
+                  <motion.div
+                    className="absolute -top-2 -right-2"
+                    animate={{ scale: [0, 1, 0], rotate: [0, 180, 360] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Sparkles className="w-4 h-4" style={{ color: secondaryColor }} />
+                  </motion.div>
+                  <motion.div
+                    className="absolute -bottom-2 -left-2"
+                    animate={{ scale: [0, 1, 0], rotate: [360, 180, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  >
+                    <Sparkles className="w-4 h-4" style={{ color: secondaryColor }} />
+                  </motion.div>
+                </div>
+              </motion.div>
+              
+              <h1
+                className="text-6xl md:text-8xl"
+                style={{
+                  fontFamily: `${customFont}, cursive`,
+                  color: primaryColor,
+                  textShadow: '3px 3px 6px rgba(0,0,0,0.1)',
+                }}
+              >
+                {wedding.groom_name}
+              </h1>
+
+              {/* Ribbon decoration */}
+              <div className="flex justify-center gap-4 mt-8">
+                <motion.div 
+                  className="w-16 h-1 rounded-full"
+                  style={{ backgroundColor: primaryColor }}
+                  animate={{ scaleX: [1, 1.5, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <motion.div 
+                  className="w-16 h-1 rounded-full"
+                  style={{ backgroundColor: secondaryColor }}
+                  animate={{ scaleX: [1, 1.5, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Heart-Shaped Couple Photo Frame with Sparkle Effects */}
+        {coverPhotos.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 2.2 }}
+            className="flex justify-center mb-16"
+          >
+            <div className="relative">
+              {/* Heart-shaped container using CSS clip-path */}
+              <div
+                className="relative w-96 h-96 overflow-hidden"
+                style={{
+                  clipPath: 'polygon(50% 0%, 61% 8%, 71% 8%, 81% 12%, 88% 20%, 92% 28%, 95% 38%, 96% 48%, 96% 58%, 94% 68%, 90% 77%, 84% 85%, 76% 91%, 66% 95%, 56% 97%, 50% 98%, 44% 97%, 34% 95%, 24% 91%, 16% 85%, 10% 77%, 6% 68%, 4% 58%, 4% 48%, 5% 38%, 8% 28%, 12% 20%, 19% 12%, 29% 8%, 39% 8%)',
+                  boxShadow: `0 30px 80px rgba(244, 63, 94, 0.4)`,
+                }}
+              >
+                <img
+                  src={coverPhotos[0]}
+                  alt="Couple"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Sparkle/Glow effects around the heart */}
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={`sparkle-${i}`}
+                  className="absolute"
+                  style={{
+                    top: `${15 + Math.sin(i * 45 * Math.PI / 180) * 45}%`,
+                    left: `${50 + Math.cos(i * 45 * Math.PI / 180) * 50}%`,
+                  }}
+                  animate={{
+                    scale: [0, 1.5, 0],
+                    rotate: [0, 180, 360],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.25,
+                  }}
+                >
+                  <Sparkles className="w-6 h-6" style={{ color: i % 2 === 0 ? primaryColor : secondaryColor }} />
+                </motion.div>
+              ))}
+              
+              {/* Glowing ring effect */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  border: `4px solid ${primaryColor}`,
+                  opacity: 0.3,
+                }}
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Wedding Details */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 2.5 }}
+          className="text-center mb-16 space-y-6"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          <div className="flex items-center justify-center gap-3 text-gray-700">
+            <Calendar className="w-6 h-6" style={{ color: primaryColor }} />
+            <p className="text-2xl font-medium">{format(new Date(wedding.scheduled_date), 'EEEE, MMMM d, yyyy')}</p>
+          </div>
+          <div className="flex items-center justify-center gap-3 text-gray-700">
+            <Calendar className="w-6 h-6" style={{ color: primaryColor }} />
+            <p className="text-xl">{format(new Date(wedding.scheduled_date), 'h:mm a')}</p>
+          </div>
+          {wedding.location && (
+            <div className="flex items-center justify-center gap-3 text-gray-700">
+              <MapPin className="w-6 h-6" style={{ color: primaryColor }} />
+              <p className="text-xl">{wedding.location}</p>
+            </div>
+          )}
+          {description && (
+            <p className="text-gray-600 text-lg max-w-3xl mx-auto mt-8 leading-relaxed">
+              {description}
+            </p>
+          )}
+        </motion.div>
+
+        {/* PREMIUM STUDIO SECTION - Wedding Invitation Card Style (Middle of Page) */}
+        {studioDetails.name && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 2.8 }}
+            className="mb-16 mx-auto max-w-4xl"
+          >
+            <div 
+              className="relative p-12 rounded-3xl shadow-2xl overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(253,242,248,0.98) 100%)`,
+                border: `4px solid`,
+                borderImage: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) 1`,
+                boxShadow: `0 30px 90px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255,255,255,0.8)`,
+              }}
+            >
+              {/* Elegant Background Texture */}
+              <div 
+                className="absolute inset-0 opacity-5"
+                style={{
+                  backgroundImage: 'url(https://images.unsplash.com/photo-1566305977571-5666677c6e98?w=800&h=600&fit=crop)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+
+              {/* Decorative Rose Corners */}
+              <div className="absolute top-0 left-0 w-24 h-24 opacity-30">
+                <img 
+                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
+                  alt="Rose decoration"
+                  className="w-full h-full object-cover rounded-br-full"
+                />
+              </div>
+              <div className="absolute top-0 right-0 w-24 h-24 opacity-30">
+                <img 
+                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
+                  alt="Rose decoration"
+                  className="w-full h-full object-cover rounded-bl-full transform scale-x-[-1]"
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 opacity-30">
+                <img 
+                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
+                  alt="Rose decoration"
+                  className="w-full h-full object-cover rounded-tr-full transform rotate-180"
+                />
+              </div>
+              <div className="absolute bottom-0 right-0 w-24 h-24 opacity-30">
+                <img 
+                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
+                  alt="Rose decoration"
+                  className="w-full h-full object-cover rounded-tl-full transform rotate-180 scale-x-[-1]"
+                />
+              </div>
+
+              {/* Studio Content */}
+              <div className="relative z-10">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <motion.div
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  >
+                    <Flower2 className="w-12 h-12 mx-auto mb-4" style={{ color: primaryColor }} />
+                  </motion.div>
+                  <h3 
+                    className="text-4xl md:text-5xl mb-2"
+                    style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+                  >
+                    Presented By
+                  </h3>
+                  <div className="w-32 h-1 mx-auto rounded-full" style={{ backgroundColor: secondaryColor }} />
+                </div>
+
+                {/* Studio Logo & Name */}
+                <div className="text-center mb-8">
+                  {studioDetails.logo_url && (
+                    <motion.img 
+                      src={studioDetails.logo_url} 
+                      alt="Studio Logo" 
+                      className="h-20 mx-auto mb-4 object-contain"
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    />
+                  )}
+                  <h2 
+                    className="text-3xl md:text-4xl font-bold mb-2"
+                    style={{ color: primaryColor }}
+                  >
+                    {studioDetails.name}
+                  </h2>
+                  {studioDetails.website && (
+                    <a 
+                      href={studioDetails.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm hover:underline"
+                      style={{ color: secondaryColor }}
+                    >
+                      {studioDetails.website}
+                    </a>
+                  )}
+                </div>
+
+                {/* Studio Contact Details - Beautiful Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                  {/* Email Card */}
+                  {studioDetails.email && (
+                    <motion.div
+                      whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(244, 63, 94, 0.3)' }}
+                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2"
+                      style={{ borderColor: `${primaryColor}30` }}
+                    >
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                             style={{ backgroundColor: `${primaryColor}20` }}>
+                          <Mail className="w-6 h-6" style={{ color: primaryColor }} />
+                        </div>
+                        <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Email</p>
+                        <p className="text-sm font-medium text-gray-700 break-all">{studioDetails.email}</p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Phone Card */}
+                  {studioDetails.phone && (
+                    <motion.div
+                      whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(168, 85, 247, 0.3)' }}
+                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2"
+                      style={{ borderColor: `${secondaryColor}30` }}
+                    >
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                             style={{ backgroundColor: `${secondaryColor}20` }}>
+                          <Phone className="w-6 h-6" style={{ color: secondaryColor }} />
+                        </div>
+                        <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Phone</p>
+                        <p className="text-sm font-medium text-gray-700">{studioDetails.phone}</p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Address Card */}
+                  {studioDetails.address && (
+                    <motion.div
+                      whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(244, 63, 94, 0.3)' }}
+                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2"
+                      style={{ borderColor: `${primaryColor}30` }}
+                    >
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                             style={{ backgroundColor: `${primaryColor}20` }}>
+                          <MapPinned className="w-6 h-6" style={{ color: primaryColor }} />
+                        </div>
+                        <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Address</p>
+                        <p className="text-sm font-medium text-gray-700">{studioDetails.address}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Decorative Elements */}
+                <div className="flex justify-center gap-6 mt-8">
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                    <Heart className="w-6 h-6" style={{ color: primaryColor }} fill={primaryColor} />
+                  </motion.div>
+                  <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity }}>
+                    <Sparkles className="w-6 h-6" style={{ color: secondaryColor }} />
+                  </motion.div>
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
+                    <Heart className="w-6 h-6" style={{ color: secondaryColor }} fill={secondaryColor} />
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Garden Theme Section - Romantic Ambiance */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 3.1 }}
+          className="mb-16 relative"
+        >
+          <div 
+            className="relative rounded-3xl overflow-hidden shadow-2xl"
+            style={{
+              minHeight: '400px',
+              backgroundImage: 'url(https://images.unsplash.com/photo-1758694485726-69771dda8a1e?w=1200&h=600&fit=crop)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+            
+            {/* Floating Lanterns */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={`lantern-${i}`}
+                className="absolute"
+                style={{
+                  left: `${15 + i * 15}%`,
+                  bottom: '20%',
+                }}
+                animate={{
+                  y: [0, -30, 0],
+                  opacity: [0.6, 1, 0.6],
+                }}
+                transition={{
+                  duration: 4 + i * 0.5,
+                  repeat: Infinity,
+                  delay: i * 0.8,
+                }}
+              >
+                <div 
+                  className="w-8 h-12 rounded-full"
+                  style={{
+                    background: 'linear-gradient(to bottom, rgba(255, 200, 100, 0.8), rgba(255, 150, 50, 0.6))',
+                    boxShadow: '0 0 30px 10px rgba(255, 200, 100, 0.5)',
+                  }}
+                />
+              </motion.div>
+            ))}
+
+            {/* Content Overlay */}
+            <div className="relative z-10 flex items-center justify-center h-full min-h-[400px] p-12">
+              <div className="text-center text-white">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <h3 
+                    className="text-5xl md:text-6xl mb-6"
+                    style={{ fontFamily: `${customFont}, cursive`, textShadow: '3px 3px 10px rgba(0,0,0,0.5)' }}
+                  >
+                    Join Us in Celebration
+                  </h3>
+                </motion.div>
+                <p className="text-xl md:text-2xl font-light" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
+                  A garden of love, where two hearts become one
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Pre-Wedding Video */}
+        {preWeddingVideo && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 3.4 }}
+            className="mb-16"
+          >
+            <h2
+              className="text-5xl text-center mb-8"
+              style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+            >
+              Our Love Story
+            </h2>
+            <div className="max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-2xl border-4" style={{ borderColor: secondaryColor }}>
+              <ReactPlayer
+                url={preWeddingVideo}
+                width="100%"
+                height="600px"
+                controls
+                light
+                playIcon={
+                  <button className="w-24 h-24 rounded-full flex items-center justify-center transform hover:scale-110 transition-transform" style={{ backgroundColor: primaryColor }}>
+                    <Play className="w-12 h-12 text-white ml-2" fill="white" />
+                  </button>
+                }
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Photo Gallery - Enhanced with Hearts */}
+        {coverPhotos.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 3.7 }}
+            className="mb-16"
+          >
+            {/* Gallery Header with Icons */}
+            <div className="text-center mb-12">
+              <div className="flex justify-center gap-4 mb-4">
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                  <Heart className="w-8 h-8" style={{ color: primaryColor }} fill={primaryColor} />
+                </motion.div>
+                <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+                  <Flower2 className="w-8 h-8" style={{ color: secondaryColor }} />
+                </motion.div>
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
+                  <Heart className="w-8 h-8" style={{ color: secondaryColor }} fill={secondaryColor} />
+                </motion.div>
+              </div>
+              <h2
+                className="text-5xl md:text-6xl"
+                style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+              >
+                Our Precious Moments
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              {coverPhotos.slice(1).map((photo, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 3.9 + idx * 0.1 }}
+                  whileHover={{ scale: 1.08, rotate: idx % 2 === 0 ? 3 : -3 }}
+                  className="relative group"
+                >
+                  <div 
+                    className="aspect-square rounded-2xl overflow-hidden shadow-xl border-4 relative"
+                    style={{ borderColor: idx % 2 === 0 ? primaryColor : secondaryColor }}
+                  >
+                    <img
+                      src={photo}
+                      alt={`Memory ${idx + 2}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                      <Heart className="w-8 h-8 text-white" fill="white" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Watch Live Button - Enhanced */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 4.2 }}
+          className="flex justify-center mb-16"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              onClick={onEnter}
+              size="lg"
+              className="px-16 py-8 text-2xl rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                color: 'white',
+                fontFamily: 'Montserrat, sans-serif',
+                border: '3px solid white',
+              }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-white/20"
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              />
+              <Play className="w-8 h-8 mr-3 relative z-10" fill="white" />
+              <span className="relative z-10">Watch Live Wedding</span>
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        {/* Bottom Decorative Icons */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 4.5 }}
+          className="flex justify-center gap-8 mb-12"
+        >
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+            <Sparkles className="w-10 h-10" style={{ color: primaryColor }} />
+          </motion.div>
+          <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 3, repeat: Infinity }}>
+            <Bell className="w-10 h-10" style={{ color: secondaryColor }} />
+          </motion.div>
+          <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            <Heart className="w-10 h-10" style={{ color: primaryColor }} fill={primaryColor} />
+          </motion.div>
+          <motion.div animate={{ rotate: [0, -15, 15, 0] }} transition={{ duration: 3, repeat: Infinity }}>
+            <Flower2 className="w-10 h-10" style={{ color: secondaryColor }} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
+            <Gift className="w-10 h-10" style={{ color: primaryColor }} />
+          </motion.div>
+        </motion.div>
+
+        {/* Final Message with Background */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 4.8 }}
+          className="text-center mb-16 p-12 rounded-3xl relative overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}15)`,
+            border: `2px dashed ${primaryColor}`,
+          }}
+        >
+          <div 
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage: 'url(https://images.unsplash.com/photo-1734705797879-0c23e9edca21?w=1000&h=400&fit=crop)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <div className="relative z-10">
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              className="inline-block mb-6"
+            >
+              <Heart className="w-16 h-16" style={{ color: primaryColor }} fill={primaryColor} />
+            </motion.div>
+            <h3 
+              className="text-4xl md:text-5xl mb-4"
+              style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
+            >
+              With Love & Gratitude
+            </h3>
+            <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
+              We look forward to celebrating this special day with you. Your presence makes our joy complete.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+    </div>
+  );
+}

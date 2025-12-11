@@ -1,0 +1,23 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/api-keys/page": "app/api-keys/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/join/page": "app/join/page.js",
+  "/login/page": "app/login/page.js",
+  "/payment/cancel/page": "app/payment/cancel/page.js",
+  "/page": "app/page.js",
+  "/payment/history/page": "app/payment/history/page.js",
+  "/payment/invoice/[id]/page": "app/payment/invoice/[id]/page.js",
+  "/payment/success/page": "app/payment/success/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/register/page": "app/register/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/view/[id]/page": "app/view/[id]/page.js",
+  "/webhooks/page": "app/webhooks/page.js",
+  "/weddings/[id]/page": "app/weddings/[id]/page.js",
+  "/weddings/manage/[id]/page": "app/weddings/manage/[id]/page.js",
+  "/weddings/page": "app/weddings/page.js",
+  "/api/[[...path]]/route": "app/api/[[...path]]/route.js"
+}
