@@ -14,7 +14,7 @@ export default function ModernMinimalist({ wedding, onEnter }) {
     'Great Vibes': "'Great Vibes', cursive",
     'Playfair Display': "'Playfair Display', serif",
     'Cinzel': "'Cinzel', serif",
-    'Montserrat': "'Montserrat', sans-serif',
+    'Montserrat': "'Montserrat', sans-serif",
     'Lato': "'Lato', sans-serif",
     'Caveat': "'Caveat', cursive",
     'Bebas Neue': "'Bebas Neue', cursive",
