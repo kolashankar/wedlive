@@ -791,182 +791,60 @@ export default function FloralGarden({ wedding, onEnter }) {
           )}
         </motion.div>
 
-        {/* PREMIUM STUDIO SECTION - Wedding Invitation Card Style (Middle of Page) */}
-        {studioDetails.name && (
+        {/* ENHANCED STUDIO LOGO SECTION - Below Text */}
+        {studioDetails.logo_url && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 2.8 }}
-            className="mb-16 mx-auto max-w-4xl"
+            className="mb-16 text-center"
           >
-            <div 
-              className="relative p-12 rounded-3xl shadow-2xl overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(253,242,248,0.98) 100%)`,
-                border: `4px solid`,
-                borderImage: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) 1`,
-                boxShadow: `0 30px 90px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255,255,255,0.8)`,
-              }}
-            >
-              {/* Elegant Background Texture */}
-              <div 
-                className="absolute inset-0 opacity-5"
-                style={{
-                  backgroundImage: 'url(https://images.unsplash.com/photo-1566305977571-5666677c6e98?w=800&h=600&fit=crop)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
-
-              {/* Decorative Rose Corners */}
-              <div className="absolute top-0 left-0 w-24 h-24 opacity-30">
+            <div className="relative inline-block">
+              {/* Soft Glow Background */}
+              <div className="absolute -inset-8 bg-gradient-to-br from-pink-100 to-rose-100 rounded-3xl opacity-60 blur-2xl" />
+              
+              {/* 16:9 Studio Logo Container */}
+              <motion.div 
+                className="relative rounded-2xl overflow-hidden shadow-2xl border-4"
+                style={{ borderColor: primaryColor }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
                 <img 
-                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
-                  alt="Rose decoration"
-                  className="w-full h-full object-cover rounded-br-full"
+                  src={studioDetails.logo_url} 
+                  alt="Studio Logo" 
+                  className="w-96 h-54 object-cover"
+                  style={{ aspectRatio: '16/9' }}
                 />
-              </div>
-              <div className="absolute top-0 right-0 w-24 h-24 opacity-30">
-                <img 
-                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
-                  alt="Rose decoration"
-                  className="w-full h-full object-cover rounded-bl-full transform scale-x-[-1]"
-                />
-              </div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 opacity-30">
-                <img 
-                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
-                  alt="Rose decoration"
-                  className="w-full h-full object-cover rounded-tr-full transform rotate-180"
-                />
-              </div>
-              <div className="absolute bottom-0 right-0 w-24 h-24 opacity-30">
-                <img 
-                  src="https://images.unsplash.com/photo-1693842895970-1ddaaa60f254?w=100&h=100&fit=crop" 
-                  alt="Rose decoration"
-                  className="w-full h-full object-cover rounded-tl-full transform rotate-180 scale-x-[-1]"
-                />
-              </div>
-
-              {/* Studio Content */}
-              <div className="relative z-10">
-                {/* Header */}
-                <div className="text-center mb-8">
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  >
-                    <Flower2 className="w-12 h-12 mx-auto mb-4" style={{ color: primaryColor }} />
-                  </motion.div>
+                
+                {/* Soft Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-pink-900/10 to-transparent" />
+                
+                {/* Corner Decorations */}
+                <div className="absolute top-3 left-3">
+                  <Flower2 className="w-8 h-8" style={{ color: primaryColor }} opacity="0.8" />
+                </div>
+                <div className="absolute bottom-3 right-3">
+                  <Heart className="w-6 h-6" style={{ color: primaryColor }} fill={primaryColor} opacity="0.8" />
+                </div>
+              </motion.div>
+              
+              {/* Studio Name Below Logo */}
+              {studioDetails.name && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 3.2 }}
+                  className="mt-6"
+                >
                   <h3 
-                    className="text-4xl md:text-5xl mb-2"
+                    className="text-2xl font-medium"
                     style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
                   >
-                    Presented By
-                  </h3>
-                  <div className="w-32 h-1 mx-auto rounded-full" style={{ backgroundColor: secondaryColor }} />
-                </div>
-
-                {/* Studio Logo & Name */}
-                <div className="text-center mb-8">
-                  {studioDetails.logo_url && (
-                    <motion.img 
-                      src={studioDetails.logo_url} 
-                      alt="Studio Logo" 
-                      className="h-20 mx-auto mb-4 object-contain"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                    />
-                  )}
-                  <h2 
-                    className="text-3xl md:text-4xl font-bold mb-2"
-                    style={{ color: primaryColor }}
-                  >
                     {studioDetails.name}
-                  </h2>
-                  {studioDetails.website && (
-                    <a 
-                      href={studioDetails.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm hover:underline"
-                      style={{ color: secondaryColor }}
-                    >
-                      {studioDetails.website}
-                    </a>
-                  )}
-                </div>
-
-                {/* Studio Contact Details - Beautiful Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                  {/* Email Card */}
-                  {studioDetails.email && (
-                    <motion.div
-                      whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(244, 63, 94, 0.3)' }}
-                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2"
-                      style={{ borderColor: `${primaryColor}30` }}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                             style={{ backgroundColor: `${primaryColor}20` }}>
-                          <Mail className="w-6 h-6" style={{ color: primaryColor }} />
-                        </div>
-                        <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Email</p>
-                        <p className="text-sm font-medium text-gray-700 break-all">{studioDetails.email}</p>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Phone Card */}
-                  {studioDetails.phone && (
-                    <motion.div
-                      whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(168, 85, 247, 0.3)' }}
-                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2"
-                      style={{ borderColor: `${secondaryColor}30` }}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                             style={{ backgroundColor: `${secondaryColor}20` }}>
-                          <Phone className="w-6 h-6" style={{ color: secondaryColor }} />
-                        </div>
-                        <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Phone</p>
-                        <p className="text-sm font-medium text-gray-700">{studioDetails.phone}</p>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Address Card */}
-                  {studioDetails.address && (
-                    <motion.div
-                      whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(244, 63, 94, 0.3)' }}
-                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border-2"
-                      style={{ borderColor: `${primaryColor}30` }}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                             style={{ backgroundColor: `${primaryColor}20` }}>
-                          <MapPinned className="w-6 h-6" style={{ color: primaryColor }} />
-                        </div>
-                        <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Address</p>
-                        <p className="text-sm font-medium text-gray-700">{studioDetails.address}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Decorative Elements */}
-                <div className="flex justify-center gap-6 mt-8">
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                    <Heart className="w-6 h-6" style={{ color: primaryColor }} fill={primaryColor} />
-                  </motion.div>
-                  <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity }}>
-                    <Sparkles className="w-6 h-6" style={{ color: secondaryColor }} />
-                  </motion.div>
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
-                    <Heart className="w-6 h-6" style={{ color: secondaryColor }} fill={secondaryColor} />
-                  </motion.div>
-                </div>
-              </div>
+                  </h3>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}

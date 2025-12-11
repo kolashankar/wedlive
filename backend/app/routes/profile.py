@@ -197,7 +197,7 @@ async def create_studio(
             "user_id": current_user["user_id"],
             "name": studio_data.name,
             "logo_url": studio_data.logo_url,
-            "website": str(studio_data.website) if studio_data.website else None,
+            "website": str(studio_data.website) if studio_data.website and studio_data.website != "" else None,
             "email": studio_data.email,
             "phone": studio_data.phone,
             "address": studio_data.address,
@@ -269,7 +269,7 @@ async def update_studio(
             raise HTTPException(status_code=404, detail="Studio not found")
         
         update_data = studio_data.dict(exclude_unset=True)
-        if "website" in update_data and update_data["website"]:
+        if "website" in update_data and update_data["website"] and update_data["website"] != "":
             update_data["website"] = str(update_data["website"])
         update_data["updated_at"] = datetime.utcnow()
         
