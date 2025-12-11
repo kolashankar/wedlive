@@ -402,6 +402,35 @@ export default function FloralGarden({ wedding, onEnter }) {
         />
       ))}
 
+      {/* Top Right Watch Wedding Button */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
+          className="fixed top-6 right-6 z-50"
+        >
+          <motion.button
+            onClick={onEnter}
+            className="px-6 py-3 text-sm font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+              color: 'white',
+              fontFamily: `${customFont}, cursive`,
+              border: '2px solid white',
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-white/20"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            />
+            <Play className="w-4 h-4 mr-2 inline relative z-10" fill="white" />
+            <span className="relative z-10">Watch Wedding</span>
+          </motion.button>
+        </motion.div>
+
       {/* Main Content */}
       <div className="relative z-20 max-w-6xl mx-auto px-4 py-16">
         
