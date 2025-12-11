@@ -32,6 +32,11 @@ export default function FloralGarden({ wedding, onEnter }) {
   const welcomeText = theme.custom_messages?.welcome_text || 'Welcome to our celebration';
   const description = theme.custom_messages?.description || '';
   const coverPhotos = theme.cover_photos || [];
+  // Enhanced Cover Photos with Categories
+  const groomPhoto = coverPhotos.find(photo => photo.category === 'groom') || coverPhotos[1];
+  const bridePhoto = coverPhotos.find(photo => photo.category === 'bride') || coverPhotos[0];
+  const couplePhoto = coverPhotos.find(photo => photo.category === 'couple') || coverPhotos[2];
+  const preciousMoments = coverPhotos.filter(photo => photo.category === 'moment') || coverPhotos.slice(3, 8);
   const preWeddingVideo = theme.pre_wedding_video || '';
   const studioDetails = theme.studio_details || {};
 
@@ -487,7 +492,7 @@ export default function FloralGarden({ wedding, onEnter }) {
             <div className="flex items-center justify-center gap-8 md:gap-16 relative z-10">
               
               {/* Bride Photo - Left Side */}
-              {coverPhotos[0] && (
+              {bridePhoto && (
                 <motion.div
                   initial={{ opacity: 0, x: -100, rotate: -5 }}
                   animate={{ opacity: 1, x: 0, rotate: 0 }}
@@ -501,7 +506,7 @@ export default function FloralGarden({ wedding, onEnter }) {
                     {/* Photo Frame */}
                     <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: primaryColor }}>
                       <img
-                        src={coverPhotos[0]}
+                        src={bridePhoto.url || bridePhoto}
                         alt="Bride"
                         className="w-36 h-48 object-cover"
                         style={{ filter: 'contrast(1.1) saturate(1.2)' }}
