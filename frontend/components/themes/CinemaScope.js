@@ -35,7 +35,7 @@ export default function CinemaScope({ wedding, onEnter }) {
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 pt-32 pb-16">
-        {/* Movie Title Card */}
+        {/* Movie Title Card with Photos */}
         <motion.div
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -55,60 +55,218 @@ export default function CinemaScope({ wedding, onEnter }) {
           >
             {welcomeText}
           </p>
-          <div className="space-y-4">
-            <h1
-              className="text-7xl md:text-9xl uppercase tracking-wider"
-              style={{
-                fontFamily: `${customFont}, sans-serif`,
-                color: 'white',
-                textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`,
-              }}
-            >
-              {wedding.bride_name}
-            </h1>
-            <div className="flex items-center justify-center gap-6 my-8">
-              <div className="h-1 w-32 bg-gradient-to-r from-transparent to-red-600" />
-              <Video className="w-8 h-8" style={{ color: primaryColor }} />
-              <div className="h-1 w-32 bg-gradient-to-l from-transparent to-red-600" />
+          
+          {/* Names with Side Photos */}
+          <div className="flex items-center justify-center gap-8 md:gap-16 mb-12">
+            {/* Bride Photo */}
+            {coverPhotos[0] && (
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="hidden md:block"
+              >
+                <div className="relative">
+                  <img
+                    src={coverPhotos[0]}
+                    alt="Bride"
+                    className="w-32 h-48 object-cover rounded-lg"
+                    style={{ filter: 'contrast(1.2) saturate(1.1)' }}
+                  />
+                  {/* Film strip effect */}
+                  <div className="absolute top-0 left-0 right-0 h-2 bg-black opacity-50" />
+                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-black opacity-50" />
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Names in Center */}
+            <div className="flex-1 text-center">
+              <div className="space-y-4">
+                <h1
+                  className="text-6xl md:text-8xl uppercase tracking-wider"
+                  style={{
+                    fontFamily: `${customFont}, sans-serif`,
+                    color: 'white',
+                    textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`,
+                  }}
+                >
+                  {wedding.bride_name}
+                </h1>
+                <div className="flex items-center justify-center gap-6 my-6">
+                  <div className="h-1 w-24 bg-gradient-to-r from-transparent to-red-600" />
+                  <Video className="w-6 h-6" style={{ color: primaryColor }} />
+                  <div className="h-1 w-24 bg-gradient-to-l from-transparent to-red-600" />
+                </div>
+                <h1
+                  className="text-6xl md:text-8xl uppercase tracking-wider"
+                  style={{
+                    fontFamily: `${customFont}, sans-serif`,
+                    color: 'white',
+                    textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`,
+                  }}
+                >
+                  {wedding.groom_name}
+                </h1>
+              </div>
             </div>
-            <h1
-              className="text-7xl md:text-9xl uppercase tracking-wider"
-              style={{
-                fontFamily: `${customFont}, sans-serif`,
-                color: 'white',
-                textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`,
-              }}
-            >
-              {wedding.groom_name}
-            </h1>
+            
+            {/* Groom Photo */}
+            {coverPhotos[1] && (
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="hidden md:block"
+              >
+                <div className="relative">
+                  <img
+                    src={coverPhotos[1]}
+                    alt="Groom"
+                    className="w-32 h-48 object-cover rounded-lg"
+                    style={{ filter: 'contrast(1.2) saturate(1.1)' }}
+                  />
+                  {/* Film strip effect */}
+                  <div className="absolute top-0 left-0 right-0 h-2 bg-black opacity-50" />
+                  <div className="absolute bottom-0 left-0 right-0 h-2 bg-black opacity-50" />
+                </div>
+              </motion.div>
+            )}
+          </div>
+          
+          {/* Mobile: Show photos below names if no side photos */}
+          <div className="md:hidden flex justify-center gap-4 mt-8">
+            {coverPhotos.slice(0, 2).map((photo, index) => (
+              <img
+                key={index}
+                src={photo}
+                alt={index === 0 ? "Bride" : "Groom"}
+                className="w-24 h-36 object-cover rounded-lg"
+                style={{ filter: 'contrast(1.2) saturate(1.1)' }}
+              />
+            ))}
           </div>
         </motion.div>
 
-        {/* Cinematic Photo */}
-        {coverPhotos.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="mb-20"
-          >
-            <div className="relative">
+        {/* Enhanced Studio Presentation - Replaces Cinematic Photo */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, delay: 0.5 }}
+          className="mb-20"
+        >
+          <div className="relative max-w-6xl mx-auto">
+            {/* Cinematic Frame */}
+            <div className="relative bg-slate-900 rounded-lg overflow-hidden border-2" style={{ borderColor: primaryColor }}>
               {/* Letterbox bars */}
-              <div className="absolute top-0 left-0 right-0 h-12 bg-black z-10" />
-              <div className="absolute bottom-0 left-0 right-0 h-12 bg-black z-10" />
+              <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black to-transparent z-10" />
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent z-10" />
               
-              <img
-                src={coverPhotos[0]}
-                alt="Couple"
-                className="w-full h-[70vh] object-cover"
-                style={{ filter: 'contrast(1.2) saturate(1.1)' }}
-              />
-              
-              {/* Film grain overlay */}
-              <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: 'url(data:image/png;base64,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)' }} />
+              {/* Studio Content */}
+              <div className="relative py-20 px-8 text-center">
+                {/* Animated Film Strip Background */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="h-full w-full bg-repeat-y" style={{
+                    backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, ${primaryColor} 20px, ${primaryColor} 22px, transparent 22px, transparent 40px)`
+                  }} />
+                </div>
+                
+                {/* Studio Logo with Animation */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  transition={{ duration: 1.5, delay: 1, type: "spring" }}
+                  className="relative z-10 mb-8"
+                >
+                  {studioDetails.logo_url ? (
+                    <div className="relative inline-block">
+                      <img 
+                        src={studioDetails.logo_url} 
+                        alt={`${studioDetails.name} Logo`} 
+                        className="h-24 object-contain"
+                        style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' }}
+                      />
+                      {/* Animated Glow Ring */}
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 border-2 rounded-full"
+                        style={{ 
+                          borderColor: primaryColor,
+                          filter: 'blur(2px)',
+                          transform: 'scale(1.5)'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 mx-auto bg-slate-800 rounded-full flex items-center justify-center border-2" style={{ borderColor: primaryColor }}>
+                      <Film className="w-16 h-16" style={{ color: primaryColor }} />
+                    </div>
+                  )}
+                </motion.div>
+                
+                {/* Studio Name with Typewriter Effect */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "auto" }}
+                  transition={{ duration: 2, delay: 1.5, ease: "easeOut" }}
+                  className="relative z-10 overflow-hidden"
+                >
+                  <h2
+                    className="text-5xl md:text-7xl uppercase tracking-widest font-bold whitespace-nowrap"
+                    style={{ 
+                      color: 'white',
+                      fontFamily: `${customFont}, sans-serif`,
+                      textShadow: `0 0 30px ${primaryColor}, 0 0 60px ${primaryColor}, 0 0 90px ${primaryColor}`
+                    }}
+                  >
+                    {studioDetails.name || 'STUDIO PRODUCTIONS'}
+                  </h2>
+                </motion.div>
+                
+                {/* Studio Tagline */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 2.5 }}
+                  className="text-xl text-gray-300 mt-4 relative z-10"
+                >
+                  {studioDetails.contact || 'Professional Wedding Cinematography'}
+                </motion.p>
+                
+                {/* Additional Studio Details */}
+                {(studioDetails.email || studioDetails.phone || studioDetails.website) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 3 }}
+                    className="mt-8 space-y-2 text-gray-400 relative z-10"
+                  >
+                    {studioDetails.email && <p className="text-sm">{studioDetails.email}</p>}
+                    {studioDetails.phone && <p className="text-sm">{studioDetails.phone}</p>}
+                    {studioDetails.website && <p className="text-sm">{studioDetails.website}</p>}
+                  </motion.div>
+                )}
+                
+                {/* Film Reel Animation */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  className="absolute -right-8 -top-8 w-16 h-16 opacity-20"
+                >
+                  <Film className="w-full h-full" style={{ color: primaryColor }} />
+                </motion.div>
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="absolute -left-8 -bottom-8 w-12 h-12 opacity-20"
+                >
+                  <Film className="w-full h-full" style={{ color: primaryColor }} />
+                </motion.div>
+              </div>
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
 
         {/* Film Credits Style Details */}
         <motion.div
@@ -128,7 +286,9 @@ export default function CinemaScope({ wedding, onEnter }) {
             <div>
               <Calendar className="w-6 h-6 mx-auto mb-2" style={{ color: primaryColor }} />
               <p className="text-sm uppercase tracking-widest text-gray-500">Release Date</p>
-              <p className="text-lg">{format(new Date(wedding.scheduled_date), 'MMM d, yyyy')}</p>
+              <p className="text-lg">
+                {wedding.scheduled_date ? format(new Date(wedding.scheduled_date), 'MMM d, yyyy') : 'TBD'}
+              </p>
             </div>
             {wedding.location && (
               <div>
@@ -243,32 +403,94 @@ export default function CinemaScope({ wedding, onEnter }) {
           </Button>
         </motion.div>
 
-        {/* Production Company */}
-        {studioDetails.name && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 2 }}
-            className="text-center py-12 border-t-2"
-            style={{ borderColor: primaryColor }}
-          >
-            <p className="text-xs uppercase tracking-[0.5em] text-gray-500 mb-4">A Production By</p>
-            <div className="flex items-center justify-center gap-4">
+        {/* Production Company - Enhanced */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 2 }}
+          className="text-center py-16 border-t-2"
+          style={{ borderColor: primaryColor }}
+        >
+          <p className="text-sm uppercase tracking-[0.5em] text-gray-400 mb-8">Presented By</p>
+          
+          {studioDetails.name ? (
+            <div className="space-y-6">
+              {/* Studio Logo */}
               {studioDetails.logo_url && (
-                <img src={studioDetails.logo_url} alt="Studio Logo" className="h-12" />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 2.3 }}
+                  className="flex justify-center"
+                >
+                  <div className="relative">
+                    <img 
+                      src={studioDetails.logo_url} 
+                      alt={`${studioDetails.name} Logo`} 
+                      className="h-20 object-contain"
+                      style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
+                    />
+                    {/* Glow effect */}
+                    <div 
+                      className="absolute inset-0 opacity-30 blur-xl"
+                      style={{ backgroundColor: primaryColor }}
+                    />
+                  </div>
+                </motion.div>
               )}
-              <p
-                className="text-3xl uppercase tracking-widest"
-                style={{ color: primaryColor, fontFamily: `${customFont}, sans-serif` }}
+              
+              {/* Studio Name */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 2.5 }}
               >
-                {studioDetails.name}
-              </p>
+                <p
+                  className="text-4xl md:text-5xl uppercase tracking-widest font-bold"
+                  style={{ 
+                    color: 'white',
+                    fontFamily: `${customFont}, sans-serif`,
+                    textShadow: `0 0 20px ${primaryColor}, 0 0 40px ${primaryColor}`
+                  }}
+                >
+                  {studioDetails.name}
+                </p>
+              </motion.div>
+              
+              {/* Studio Contact Info */}
+              {(studioDetails.contact || studioDetails.email || studioDetails.phone) && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 2.7 }}
+                  className="space-y-2"
+                >
+                  {studioDetails.contact && (
+                    <p className="text-gray-300 text-lg">{studioDetails.contact}</p>
+                  )}
+                  {studioDetails.email && (
+                    <p className="text-gray-400">{studioDetails.email}</p>
+                  )}
+                  {studioDetails.phone && (
+                    <p className="text-gray-400">{studioDetails.phone}</p>
+                  )}
+                  {studioDetails.website && (
+                    <p className="text-gray-400">{studioDetails.website}</p>
+                  )}
+                </motion.div>
+              )}
             </div>
-            {studioDetails.contact && (
-              <p className="text-sm text-gray-400 mt-3">{studioDetails.contact}</p>
-            )}
-          </motion.div>
-        )}
+          ) : (
+            // Default placeholder when no studio is set
+            <div className="space-y-4">
+              <div className="w-32 h-32 mx-auto bg-slate-800 rounded-lg flex items-center justify-center">
+                <Film className="w-16 h-16 text-gray-500" />
+              </div>
+              <p className="text-gray-500 text-lg">Studio Productions</p>
+              <p className="text-gray-600 text-sm">Professional Wedding Cinematography</p>
+            </div>
+          )}
+        </motion.div>
       </div>
 
       {/* Film strip bottom */}

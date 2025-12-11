@@ -11,6 +11,11 @@ export default function ThemePreviewModal({ isOpen, onClose, wedding, themeId, o
   // CRITICAL FIX: Create a mock wedding object with complete theme_settings
   const mockWedding = {
     ...wedding,
+    // Ensure required fields exist for preview
+    bride_name: wedding?.bride_name || 'Bride',
+    groom_name: wedding?.groom_name || 'Groom',
+    scheduled_date: wedding?.scheduled_date || new Date().toISOString(),
+    location: wedding?.location || '',
     theme_settings: {
       // Use existing theme_settings or create complete defaults
       theme_id: themeId,
@@ -32,9 +37,7 @@ export default function ThemePreviewModal({ isOpen, onClose, wedding, themeId, o
       custom_messages: wedding?.theme_settings?.custom_messages || {
         welcome_text: 'Welcome to our big day',
         description: ''
-      },
-      // Override theme_id with the selected one
-      theme_id: themeId
+      }
     }
   };
 
@@ -53,6 +56,11 @@ export default function ThemePreviewModal({ isOpen, onClose, wedding, themeId, o
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl h-[90vh] p-0 overflow-hidden">
+        {/* CRITICAL FIX: Add DialogTitle for accessibility */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>Theme Preview</DialogTitle>
+        </DialogHeader>
+        
         {/* Header with actions */}
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           <Button

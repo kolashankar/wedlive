@@ -611,11 +611,15 @@ export default function FloralGarden({ wedding, onEnter }) {
         >
           <div className="flex items-center justify-center gap-3 text-gray-700">
             <Calendar className="w-6 h-6" style={{ color: primaryColor }} />
-            <p className="text-2xl font-medium">{format(new Date(wedding.scheduled_date), 'EEEE, MMMM d, yyyy')}</p>
+            <p className="text-2xl font-medium">
+              {wedding.scheduled_date ? format(new Date(wedding.scheduled_date), 'EEEE, MMMM d, yyyy') : 'Date TBD'}
+            </p>
           </div>
           <div className="flex items-center justify-center gap-3 text-gray-700">
             <Calendar className="w-6 h-6" style={{ color: primaryColor }} />
-            <p className="text-xl">{format(new Date(wedding.scheduled_date), 'h:mm a')}</p>
+            <p className="text-xl">
+              {wedding.scheduled_date ? format(new Date(wedding.scheduled_date), 'h:mm a') : 'Time TBD'}
+            </p>
           </div>
           {wedding.location && (
             <div className="flex items-center justify-center gap-3 text-gray-700">
