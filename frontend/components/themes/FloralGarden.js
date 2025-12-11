@@ -10,10 +10,26 @@ export default function FloralGarden({ wedding, onEnter }) {
   const [bookOpened, setBookOpened] = useState(false);
   
   const theme = wedding.theme_settings || {};
-  const customFont = theme.custom_font || 'Great Vibes';
+  
+  // CRITICAL FIX: Map font name to actual CSS font family
+  const FONT_FAMILY_MAP = {
+    'Inter': 'Inter, sans-serif',
+    'Great Vibes': "'Great Vibes', cursive",
+    'Playfair Display': "'Playfair Display', serif",
+    'Cinzel': "'Cinzel', serif",
+    'Montserrat': "'Montserrat', sans-serif",
+    'Lato': "'Lato', sans-serif",
+    'Caveat': "'Caveat', cursive",
+    'Bebas Neue': "'Bebas Neue', cursive",
+    'Rozha One': "'Rozha One', serif",
+    'Pinyon Script': "'Pinyon Script', cursive"
+  };
+  
+  const customFontName = theme.custom_font || 'Great Vibes';
+  const customFont = FONT_FAMILY_MAP[customFontName] || "'Great Vibes', cursive";
   const primaryColor = theme.primary_color || '#f43f5e';
-  const secondaryColor = theme.secondary_color || '#fbcfe8';
-  const welcomeText = theme.custom_messages?.welcome_text || 'Welcome to our big day';
+  const secondaryColor = theme.secondary_color || '#a855f7';
+  const welcomeText = theme.custom_messages?.welcome_text || 'Welcome to our celebration';
   const description = theme.custom_messages?.description || '';
   const coverPhotos = theme.cover_photos || [];
   const preWeddingVideo = theme.pre_wedding_video || '';

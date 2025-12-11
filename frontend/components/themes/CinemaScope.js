@@ -7,7 +7,25 @@ import ReactPlayer from 'react-player';
 
 export default function CinemaScope({ wedding, onEnter }) {
   const theme = wedding.theme_settings || {};
-  const customFont = theme.custom_font || 'Bebas Neue';
+  
+  // CRITICAL FIX: Map font name to actual CSS font family
+  const FONT_FAMILY_MAP = {
+    'Inter': 'Inter, sans-serif',
+    'Great Vibes': "'Great Vibes', cursive",
+    'Playfair Display': "'Playfair Display', serif",
+    'Cinzel': "'Cinzel', serif",
+    'Montserrat': "'Montserrat', sans-serif",
+    'Lato': "'Lato', sans-serif",
+    'Caveat': "'Caveat', cursive",
+    'Bebas Neue': "'Bebas Neue', cursive",
+    'Rozha One': "'Rozha One', serif",
+    'Pinyon Script': "'Pinyon Script', cursive",
+    'Merriweather': "'Merriweather', serif",
+    'Merriweather Sans': "'Merriweather Sans', sans-serif"
+  };
+  
+  const customFontName = theme.custom_font || 'Bebas Neue';
+  const customFont = FONT_FAMILY_MAP[customFontName] || "'Bebas Neue', cursive";
   const primaryColor = theme.primary_color || '#ef4444';
   const secondaryColor = theme.secondary_color || '#1f2937';
   const welcomeText = theme.custom_messages?.welcome_text || 'Now Showing';

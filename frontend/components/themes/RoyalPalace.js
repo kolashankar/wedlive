@@ -7,7 +7,23 @@ import ReactPlayer from 'react-player';
 
 export default function RoyalPalace({ wedding, onEnter }) {
   const theme = wedding.theme_settings || {};
-  const customFont = theme.custom_font || 'Cinzel';
+  
+  // CRITICAL FIX: Map font name to actual CSS font family
+  const FONT_FAMILY_MAP = {
+    'Inter': 'Inter, sans-serif',
+    'Great Vibes': "'Great Vibes', cursive",
+    'Playfair Display': "'Playfair Display', serif",
+    'Cinzel': "'Cinzel', serif",
+    'Montserrat': "'Montserrat', sans-serif',
+    'Lato': "'Lato', sans-serif',
+    'Caveat': "'Caveat', cursive",
+    'Bebas Neue': "'Bebas Neue', cursive",
+    'Rozha One': "'Rozha One', serif",
+    'Pinyon Script': "'Pinyon Script', cursive"
+  };
+  
+  const customFontName = theme.custom_font || 'Cinzel';
+  const customFont = FONT_FAMILY_MAP[customFontName] || "'Cinzel', serif";
   const primaryColor = theme.primary_color || '#dc2626';
   const secondaryColor = theme.secondary_color || '#fde68a';
   const welcomeText = theme.custom_messages?.welcome_text || 'Welcome to our Royal Wedding';
