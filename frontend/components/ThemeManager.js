@@ -211,6 +211,68 @@ export default function ThemeManager({ weddingId, wedding }) {
     await handleUpdateTheme({ cover_photos: updatedPhotos });
   };
 
+  const handleCategorizedPhotoUpload = async (e, category) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    try {
+      setUploadingPhoto(true);
+      
+      // Process each file
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('wedding_id', weddingId);
+
+        const response = await api.post('/api/media/upload/photo', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        return {
+          url: response.data.cdn_url || response.data.url,
+          category: category,
+          type: file.type.startsWith('video/') ? 'video' : 'photo'
+        };
+      });
+
+      const uploadedFiles = await Promise.all(uploadPromises);
+      
+      // Get existing photos
+      const existingPhotos = theme?.cover_photos || [];
+      
+      // Filter out existing photos of the same category (for single photo categories)
+      let updatedPhotos;
+      if (category === 'moment') {
+        // For precious moments, allow multiple (up to 5)
+        const existingMoments = existingPhotos.filter(photo => photo.category !== 'moment');
+        const allMoments = [...existingPhotos.filter(photo => photo.category === 'moment'), ...uploadedFiles];
+        updatedPhotos = [...existingMoments, ...allMoments.slice(-5)]; // Keep only last 5 moments
+      } else {
+        // For groom, bride, couple - replace existing photo of same category
+        updatedPhotos = [
+          ...existingPhotos.filter(photo => photo.category !== category),
+          ...uploadedFiles
+        ];
+      }
+      
+      await handleUpdateTheme({ cover_photos: updatedPhotos });
+      
+      // Clear the input
+      e.target.value = '';
+    } catch (error) {
+      console.error('Error uploading categorized photo:', error);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const removeCategorizedPhoto = async (photoToRemove, category) => {
+    const updatedPhotos = (theme?.cover_photos || []).filter(photo => 
+      !(photo.url === photoToRemove.url || photo === photoToRemove)
+    );
+    await handleUpdateTheme({ cover_photos: updatedPhotos });
+  };
+
   const handleMediaSelection = async (selectedMedia) => {
     try {
       // Extract the correct URL field from selected media items
@@ -430,44 +492,184 @@ export default function ThemeManager({ weddingId, wedding }) {
             </Button>
           </div>
           
-          <div className="grid grid-cols-3 gap-3">
-            {safeTheme.cover_photos?.map((photoUrl, idx) => (
-              <div key={idx} className="relative group aspect-square">
-                <img
-                  src={photoUrl}
-                  alt={`Cover ${idx + 1}`}
-                  className="w-full h-full object-cover rounded-lg border"
+          {/* Categorized Upload Options */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Groom Photo Upload */}
+            <div className="relative group">
+              <label className="aspect-square border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-blue-50">
+                <Upload className="w-6 h-6 text-blue-400 mb-1" />
+                <span className="text-xs text-blue-600 font-medium">Groom Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleCategorizedPhotoUpload(e, 'groom')}
+                  className="hidden"
+                  disabled={uploadingPhoto}
                 />
-                <button
-                  onClick={() => removePhoto(photoUrl)}
-                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+              </label>
+            </div>
             
-            <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-rose-500 transition-colors">
-              {uploadingPhoto ? (
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              ) : (
-                <>
-                  <Upload className="w-6 h-6 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-500">Upload New</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-                disabled={uploadingPhoto}
-              />
-            </label>
+            {/* Bride Photo Upload */}
+            <div className="relative group">
+              <label className="aspect-square border-2 border-dashed border-pink-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 transition-colors bg-pink-50">
+                <Upload className="w-6 h-6 text-pink-400 mb-1" />
+                <span className="text-xs text-pink-600 font-medium">Bride Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleCategorizedPhotoUpload(e, 'bride')}
+                  className="hidden"
+                  disabled={uploadingPhoto}
+                />
+              </label>
+            </div>
+            
+            {/* Couple Photo Upload */}
+            <div className="relative group">
+              <label className="aspect-square border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50">
+                <Upload className="w-6 h-6 text-purple-400 mb-1" />
+                <span className="text-xs text-purple-600 font-medium">Couple Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleCategorizedPhotoUpload(e, 'couple')}
+                  className="hidden"
+                  disabled={uploadingPhoto}
+                />
+              </label>
+            </div>
+            
+            {/* Precious Moments Upload */}
+            <div className="relative group">
+              <label className="aspect-square border-2 border-dashed border-green-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors bg-green-50">
+                <Upload className="w-6 h-6 text-green-400 mb-1" />
+                <span className="text-xs text-green-600 font-medium">Precious Moments</span>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={(e) => handleCategorizedPhotoUpload(e, 'moment')}
+                  className="hidden"
+                  disabled={uploadingPhoto}
+                />
+              </label>
+            </div>
+          </div>
+          
+          {/* Display Uploaded Photos by Category */}
+          <div className="space-y-4">
+            {/* Groom Photos */}
+            {safeTheme.cover_photos?.filter(photo => photo.category === 'groom').length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-blue-600 mb-2">Groom Photos</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {safeTheme.cover_photos.filter(photo => photo.category === 'groom').map((photo, idx) => (
+                    <div key={`groom-${idx}`} className="relative group aspect-square">
+                      <img
+                        src={photo.url || photo}
+                        alt="Groom"
+                        className="w-full h-full object-cover rounded-lg border border-blue-200"
+                      />
+                      <button
+                        onClick={() => removeCategorizedPhoto(photo, 'groom')}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Bride Photos */}
+            {safeTheme.cover_photos?.filter(photo => photo.category === 'bride').length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-pink-600 mb-2">Bride Photos</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {safeTheme.cover_photos.filter(photo => photo.category === 'bride').map((photo, idx) => (
+                    <div key={`bride-${idx}`} className="relative group aspect-square">
+                      <img
+                        src={photo.url || photo}
+                        alt="Bride"
+                        className="w-full h-full object-cover rounded-lg border border-pink-200"
+                      />
+                      <button
+                        onClick={() => removeCategorizedPhoto(photo, 'bride')}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Couple Photos */}
+            {safeTheme.cover_photos?.filter(photo => photo.category === 'couple').length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-purple-600 mb-2">Couple Photos</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {safeTheme.cover_photos.filter(photo => photo.category === 'couple').map((photo, idx) => (
+                    <div key={`couple-${idx}`} className="relative group aspect-square">
+                      <img
+                        src={photo.url || photo}
+                        alt="Couple"
+                        className="w-full h-full object-cover rounded-lg border border-purple-200"
+                      />
+                      <button
+                        onClick={() => removeCategorizedPhoto(photo, 'couple')}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Precious Moments */}
+            {safeTheme.cover_photos?.filter(photo => photo.category === 'moment').length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-green-600 mb-2">Precious Moments</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {safeTheme.cover_photos.filter(photo => photo.category === 'moment').map((photo, idx) => (
+                    <div key={`moment-${idx}`} className="relative group aspect-square">
+                      {photo.type === 'video' || photo.url?.includes('.mp4') || photo.url?.includes('.mov') ? (
+                        <div className="relative w-full h-full">
+                          <video
+                            src={photo.url || photo}
+                            className="w-full h-full object-cover rounded-lg border border-green-200"
+                            muted
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                            <Play className="w-6 h-6 text-white" fill="white" />
+                          </div>
+                        </div>
+                      ) : (
+                        <img
+                          src={photo.url || photo}
+                          alt="Precious Moment"
+                          className="w-full h-full object-cover rounded-lg border border-green-200"
+                        />
+                      )}
+                      <button
+                        onClick={() => removeCategorizedPhoto(photo, 'moment')}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           
           <p className="text-xs text-gray-500">
-            You can upload new photos or select from your wedding media gallery
+            Upload photos by category: Groom, Bride, Couple, or Precious Moments (up to 5)
           </p>
         </div>
 

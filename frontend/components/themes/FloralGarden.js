@@ -580,7 +580,6 @@ export default function FloralGarden({ wedding, onEnter }) {
                         Upload Bride Photo
                       </p>
                     </div>
-                    <p className="text-sm font-medium text-gray-600 text-center mt-4" style={{ fontFamily: customFont }}>Bride</p>
                   </div>
                 </motion.div>
               )}
@@ -722,7 +721,6 @@ export default function FloralGarden({ wedding, onEnter }) {
                         Upload Groom Photo
                       </p>
                     </div>
-                    <p className="text-sm font-medium text-gray-600 text-center mt-4" style={{ fontFamily: customFont }}>Groom</p>
                   </div>
                 </motion.div>
               )}
@@ -841,114 +839,7 @@ export default function FloralGarden({ wedding, onEnter }) {
           </motion.div>
         )}
 
-        {/* Precious Moments Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 3.6 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-8">
-            <h3 
-              className="text-3xl font-medium mb-4"
-              style={{ fontFamily: `${customFont}, cursive`, color: primaryColor }}
-            >
-              Precious Moments
-            </h3>
-            <p className="text-gray-600 text-lg" style={{ fontFamily: customFont }}>
-              Capture and share your beautiful memories (up to 5 photos or videos)
-            </p>
-          </div>
-          
-          {preciousMoments.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-6xl mx-auto">
-              {preciousMoments.slice(0, 5).map((moment, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 3.8 + index * 0.1 }}
-                  className="relative group"
-                >
-                  <div className="relative rounded-2xl overflow-hidden border-3 shadow-lg" 
-                       style={{ borderColor: index % 2 === 0 ? primaryColor : secondaryColor }}>
-                    {(moment.type === 'video' || moment.url?.includes('.mp4') || moment.url?.includes('.mov')) ? (
-                      <div className="relative">
-                        <video
-                          src={moment.url || moment}
-                          className="w-full h-32 object-cover"
-                          muted
-                          loop
-                          playsInline
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <Play className="w-8 h-8 text-white" fill="white" />
-                        </div>
-                      </div>
-                    ) : (
-                      <img
-                        src={moment.url || moment}
-                        alt={`Precious Moment ${index + 1}`}
-                        className="w-full h-32 object-cover"
-                        style={{ filter: 'contrast(1.1) saturate(1.2)' }}
-                      />
-                    )}
-                    
-                    {/* Hover Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </motion.div>
-              ))}
-              
-              {/* Add More Button if less than 5 */}
-              {preciousMoments.length < 5 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 4.3 }}
-                  className="relative"
-                >
-                  <div className="w-full h-32 rounded-2xl border-3 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
-                       style={{ borderColor: secondaryColor, backgroundColor: `${secondaryColor}10` }}>
-                    <Gift className="w-8 h-8 mb-2" style={{ color: secondaryColor }} opacity="0.6" />
-                    <p className="text-xs font-medium text-center px-2" style={{ color: secondaryColor, fontFamily: customFont }}>
-                      Add Moment
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {[...Array(5)].map((_, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 3.8 + index * 0.1 }}
-                    className="relative"
-                  >
-                    <div className="w-full h-32 rounded-2xl border-3 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
-                         style={{ borderColor: index % 2 === 0 ? primaryColor : secondaryColor, backgroundColor: `${index % 2 === 0 ? primaryColor : secondaryColor}10` }}>
-                      {index === 0 ? (
-                        <>
-                          <Gift className="w-8 h-8 mb-2" style={{ color: index % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.6" />
-                          <p className="text-xs font-medium text-center px-2" style={{ color: index % 2 === 0 ? primaryColor : secondaryColor, fontFamily: customFont }}>
-                            Upload Photos
-                          </p>
-                        </>
-                      ) : (
-                        <Sparkles className="w-6 h-6" style={{ color: index % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.4" />
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
-
+        
         {/* Wedding Details */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1171,31 +1062,86 @@ export default function FloralGarden({ wedding, onEnter }) {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {coverPhotos.slice(1).map((photo, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 3.9 + idx * 0.1 }}
-                  whileHover={{ scale: 1.08, rotate: idx % 2 === 0 ? 3 : -3 }}
-                  className="relative group"
-                >
-                  <div 
-                    className="aspect-square rounded-2xl overflow-hidden shadow-xl border-4 relative"
-                    style={{ borderColor: idx % 2 === 0 ? primaryColor : secondaryColor }}
+              {preciousMoments.length > 0 ? (
+                preciousMoments.slice(0, 6).map((moment, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 3.9 + idx * 0.1 }}
+                    whileHover={{ scale: 1.08, rotate: idx % 2 === 0 ? 3 : -3 }}
+                    className="relative group"
                   >
-                    <img
-                      src={photo}
-                      alt={`Memory ${idx + 2}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                      <Heart className="w-8 h-8 text-white" fill="white" />
+                    <div 
+                      className="aspect-square rounded-2xl overflow-hidden shadow-xl border-4 relative"
+                      style={{ borderColor: idx % 2 === 0 ? primaryColor : secondaryColor }}
+                    >
+                      {(moment.type === 'video' || moment.url?.includes('.mp4') || moment.url?.includes('.mov')) ? (
+                        <div className="relative">
+                          <video
+                            src={moment.url || moment}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                            playsInline
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Play className="w-12 h-12 text-white" fill="white" />
+                          </div>
+                        </div>
+                      ) : (
+                        <img
+                          src={moment.url || moment}
+                          alt={`Precious Moment ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                        />
+                      )}
+                      
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      {/* Decorative corner elements */}
+                      <div className="absolute top-2 left-2">
+                        <Heart className="w-6 h-6 text-white opacity-60" fill="white" />
+                      </div>
+                      <div className="absolute bottom-2 right-2">
+                        <Sparkles className="w-6 h-6 text-white opacity-60" />
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))
+              ) : (
+                // Show placeholders when no precious moments are uploaded
+                [...Array(6)].map((_, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 3.9 + idx * 0.1 }}
+                    className="relative group"
+                  >
+                    <div 
+                      className="aspect-square rounded-2xl border-4 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-solid transition-all"
+                      style={{ 
+                        borderColor: idx % 2 === 0 ? primaryColor : secondaryColor,
+                        backgroundColor: `${idx % 2 === 0 ? primaryColor : secondaryColor}10`
+                      }}
+                    >
+                      {idx === 0 ? (
+                        <>
+                          <Gift className="w-12 h-12 mb-3" style={{ color: idx % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.6" />
+                          <p className="text-sm font-medium text-center px-3" style={{ color: idx % 2 === 0 ? primaryColor : secondaryColor, fontFamily: customFont }}>
+                            Upload Moments
+                          </p>
+                        </>
+                      ) : (
+                        <Sparkles className="w-8 h-8" style={{ color: idx % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.4" />
+                      )}
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
         )}
