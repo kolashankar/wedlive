@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from typing import List, Optional, Union
 from enum import Enum
+from datetime import datetime
 
 class UserRole(str, Enum):
     USER = "user"
