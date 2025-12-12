@@ -18,7 +18,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # Import WedLive routes
 from app.database import init_db, close_db, get_db
-from app.routes import auth, weddings, streams, subscriptions, admin, media, chat, analytics, features, premium, phase10, plan_management, storage_management, viewer_access, plan_info, recording, folders, quality, profile, security, settings, comments, theme_assets
+from app.routes import auth, weddings, streams, subscriptions, admin, media, chat, analytics, features, premium, phase10, plan_management, storage_management, viewer_access, plan_info, recording, folders, quality, profile, security, settings, comments, theme_assets, templates, rtmp_webhooks
 from app.services.socket_service import sio
 from fastapi import HTTPException, status, Request
 from fastapi.responses import JSONResponse
@@ -116,6 +116,7 @@ fastapi_app.include_router(profile.router, tags=["Profile"])
 fastapi_app.include_router(security.router, tags=["Security"])
 fastapi_app.include_router(settings.router, tags=["Settings"])
 fastapi_app.include_router(theme_assets.router, prefix="/api", tags=["Theme Assets"])
+fastapi_app.include_router(templates.router, prefix="/api", tags=["Templates"])
 
 # Add route aliases for backward compatibility and cleaner API paths
 # These allow frontend to call /api/branding instead of /api/phase10/branding

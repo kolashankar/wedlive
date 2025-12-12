@@ -11,13 +11,16 @@ export default function FloralGarden({ wedding, onEnter }) {
   const [bookOpened, setBookOpened] = useState(false);
   
   const theme = wedding.theme_settings || {};
-  const themeAssets = wedding.theme_assets || {};
+  const themeAssets = theme.theme_assets || {};
   
   // Get dynamic theme assets
-  const brideBorderUrl = themeAssets.bride_border_url;
-  const groomBorderUrl = themeAssets.groom_border_url;
-  const coupleStyleUrl = themeAssets.couple_style_url;
-  const backgroundUrl = themeAssets.background_url;
+  const brideBorderUrl = themeAssets.bride_border_url || '';
+  const groomBorderUrl = themeAssets.groom_border_url || '';
+  const coupleStyleUrl = themeAssets.couple_style_url || '';
+  const backgroundUrl = themeAssets.background_url || '';
+  
+  // Debug: Log the theme assets structure
+  console.log('FloralGarden - themeAssets:', themeAssets);
   
   // CRITICAL FIX: Map font name to actual CSS font family
   const FONT_FAMILY_MAP = {

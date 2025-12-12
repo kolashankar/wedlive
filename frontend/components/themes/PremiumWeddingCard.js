@@ -10,13 +10,16 @@ import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 export default function PremiumWeddingCard({ wedding, onEnter }) {
   const [cardOpened, setCardOpened] = useState(false);
   const theme = wedding.theme_settings || {};
-  const themeAssets = wedding.theme_assets || {};
+  const themeAssets = theme.theme_assets || {};
   
   // Get dynamic theme assets
-  const brideBorderUrl = themeAssets.bride_border_url;
-  const groomBorderUrl = themeAssets.groom_border_url;
-  const coupleStyleUrl = themeAssets.couple_style_url;
-  const backgroundUrl = themeAssets.background_url;
+  const brideBorderUrl = themeAssets.bride_border_url || '';
+  const groomBorderUrl = themeAssets.groom_border_url || '';
+  const coupleStyleUrl = themeAssets.couple_style_url || '';
+  const backgroundUrl = themeAssets.background_url || '';
+  
+  // Debug: Log the theme assets structure
+  console.log('PremiumWeddingCard - themeAssets:', themeAssets);
   
   const FONT_FAMILY_MAP = {
     'Inter': 'Inter, sans-serif',

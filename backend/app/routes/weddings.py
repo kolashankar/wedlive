@@ -17,6 +17,45 @@ import uuid
 router = APIRouter()
 stream_service = StreamService()
 
+async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
+    """Resolve theme asset IDs to actual URLs"""
+    if not theme_assets:
+        return {}
+    
+    resolved_assets = theme_assets.copy()
+    
+    # Helper function to get URL from asset ID
+    async def get_asset_url(asset_id: str, collection: str) -> str:
+        if not asset_id:
+            return ""
+        try:
+            asset = await db[collection].find_one({"id": asset_id})
+            return asset.get("cdn_url", "") if asset else ""
+        except Exception as e:
+            print(f"Error resolving asset URL for {asset_id}: {e}")
+            return ""
+    
+    # Resolve border URLs
+    borders = theme_assets.get("borders", {})
+    if borders.get("bride_border_id"):
+        resolved_assets["bride_border_url"] = await get_asset_url(borders["bride_border_id"], "photo_borders")
+    if borders.get("groom_border_id"):
+        resolved_assets["groom_border_url"] = await get_asset_url(borders["groom_border_id"], "photo_borders")
+    if borders.get("couple_border_id"):
+        resolved_assets["couple_border_url"] = await get_asset_url(borders["couple_border_id"], "photo_borders")
+    if borders.get("cover_border_id"):
+        resolved_assets["cover_border_url"] = await get_asset_url(borders["cover_border_id"], "photo_borders")
+    
+    # Resolve precious moment style URL
+    if theme_assets.get("precious_moment_style_id"):
+        resolved_assets["couple_style_url"] = await get_asset_url(theme_assets["precious_moment_style_id"], "precious_moment_styles")
+    
+    # Resolve background image URL
+    if theme_assets.get("background_image_id"):
+        resolved_assets["background_url"] = await get_asset_url(theme_assets["background_image_id"], "background_images")
+    
+    return resolved_assets
+
 @router.post("/", response_model=WeddingResponse, status_code=status.HTTP_201_CREATED)
 async def create_wedding(
     wedding_data: WeddingCreate,
@@ -309,7 +348,6 @@ async def get_wedding(
     # If locked and not creator, credentials remain None
     
     # Get theme_settings with fallback to default
-    # CRITICAL FIX: Always provide complete theme_settings with all nested objects
     theme_settings_data = wedding.get("theme_settings")
     if theme_settings_data and isinstance(theme_settings_data, dict):
         try:
@@ -318,6 +356,13 @@ async def get_wedding(
                 theme_settings_data["studio_details"] = {}
             if "custom_messages" not in theme_settings_data or not theme_settings_data["custom_messages"]:
                 theme_settings_data["custom_messages"] = {}
+            
+            # Resolve theme asset IDs to URLs
+            theme_assets = theme_settings_data.get("theme_assets", {})
+            if theme_assets:
+                resolved_assets = await resolve_theme_asset_urls(db, theme_assets)
+                theme_settings_data["theme_assets"] = resolved_assets
+            
             theme_settings = ThemeSettings(**theme_settings_data)
         except Exception as e:
             print(f"⚠️ Error parsing theme_settings: {e}")

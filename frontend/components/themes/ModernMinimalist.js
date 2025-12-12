@@ -2,20 +2,25 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Heart, Play, Phone, Mail, MapPinned, Sparkles, Music } from 'lucide-react';
+import { Calendar, MapPin, Heart, Play, Phone, Mail, MapPinned, Sparkles, Music, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactPlayer from 'react-player';
 import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 
 export default function ModernMinimalist({ wedding, onEnter }) {
   const theme = wedding.theme_settings || {};
-  const themeAssets = wedding.theme_assets || {};
+  const themeAssets = theme.theme_assets || {};
   
-  // Get dynamic theme assets
-  const brideBorderUrl = themeAssets.bride_border_url;
-  const groomBorderUrl = themeAssets.groom_border_url;
-  const coupleStyleUrl = themeAssets.couple_style_url;
-  const backgroundUrl = themeAssets.background_url;
+  // Get dynamic theme assets - these should be populated with actual URLs from the selected assets
+  const brideBorderUrl = themeAssets.bride_border_url || '';
+  const groomBorderUrl = themeAssets.groom_border_url || '';
+  const coupleStyleUrl = themeAssets.couple_style_url || '';
+  const backgroundUrl = themeAssets.background_url || '';
+  
+  // Debug: Log the theme assets structure
+  console.log('ModernMinimalist - wedding:', wedding);
+  console.log('ModernMinimalist - theme:', theme);
+  console.log('ModernMinimalist - themeAssets:', themeAssets);
   
   const FONT_FAMILY_MAP = {
     'Inter': 'Inter, sans-serif',

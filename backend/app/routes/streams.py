@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from app.models import (
     StreamResponse, StreamStatus, AddCameraRequest, AddCameraResponse, 
     MultiCamera, CameraStatus, UpdateStreamQuality, StreamQualityResponse,
@@ -13,6 +13,7 @@ from datetime import datetime
 import uuid
 import secrets
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 

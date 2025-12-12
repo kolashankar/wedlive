@@ -126,6 +126,19 @@ async def upload_photo_borders(
             
             # Create border document
             border_id = str(uuid.uuid4())
+            
+            # Debug: Check current_user structure
+            logger.info(f"[BORDER_UPLOAD] Current user keys: {list(current_user.keys())}")
+            logger.info(f"[BORDER_UPLOAD] Current user: {current_user}")
+            
+            # Validate upload_result has required keys
+            if "cdn_url" not in upload_result or "file_id" not in upload_result:
+                logger.error(f"[BORDER_UPLOAD] Invalid upload_result for {file.filename}: {upload_result}")
+                continue
+            
+            # Get user ID safely
+            user_id = current_user.get("id") or current_user.get("user_id") or "unknown"
+            
             border_doc = {
                 "id": border_id,
                 "name": border_name,
@@ -138,7 +151,7 @@ async def upload_photo_borders(
                 "file_size": upload_result.get("file_size", len(await file.read())),
                 "tags": tag_list,
                 "created_at": datetime.utcnow(),
-                "uploaded_by": current_user["id"]
+                "uploaded_by": user_id
             }
             
             # Save to database
@@ -342,6 +355,12 @@ async def upload_background_images(
             
             # Create background document
             bg_id = str(uuid.uuid4())
+            
+            # Validate upload_result has required keys
+            if "cdn_url" not in upload_result or "file_id" not in upload_result:
+                logger.error(f"[BG_UPLOAD] Invalid upload_result for {file.filename}: {upload_result}")
+                continue
+            
             bg_doc = {
                 "id": bg_id,
                 "name": bg_name,

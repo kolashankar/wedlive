@@ -49,7 +49,7 @@ async def create_comment(
     current_user: dict = Depends(get_current_user)
 ):
     """Create a new comment or reply (Authentication required)"""
-    db = await get_db()
+    db = get_db()
     
     # Verify wedding exists
     wedding = await db.weddings.find_one({"id": comment.wedding_id})
@@ -117,7 +117,7 @@ async def get_comments(
     current_user: dict = Depends(get_current_user_optional)
 ):
     """Get all comments for a wedding with threading"""
-    db = await get_db()
+    db = get_db()
     
     # Verify wedding exists
     wedding = await db.weddings.find_one({"id": weddingId})
@@ -130,7 +130,7 @@ async def get_comments(
     ).sort("created_at", -1).to_list(length=None)
     
     # Build comment tree
-    current_user_id = current_user["id"] if current_user else None
+    current_user_id = current_user.get("id") if current_user else None
     root_comments = await build_comment_tree(all_comments, current_user_id)
     
     # Apply pagination to root comments only
@@ -145,7 +145,7 @@ async def like_comment(
     current_user: dict = Depends(get_current_user)
 ):
     """Like or unlike a comment (Authentication required)"""
-    db = await get_db()
+    db = get_db()
     
     # Find the comment
     comment = await db.comments.find_one({"id": comment_id})
@@ -199,7 +199,7 @@ async def update_comment(
     current_user: dict = Depends(get_current_user)
 ):
     """Update a comment (owner only)"""
-    db = await get_db()
+    db = get_db()
     
     # Find the comment
     comment = await db.comments.find_one({"id": comment_id})
@@ -240,7 +240,7 @@ async def delete_comment(
     current_user: dict = Depends(get_current_user)
 ):
     """Delete a comment and all its replies (creator or comment owner only)"""
-    db = await get_db()
+    db = get_db()
     
     # Find the comment
     comment = await db.comments.find_one({"id": comment_id})

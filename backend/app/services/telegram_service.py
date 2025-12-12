@@ -46,7 +46,19 @@ class TelegramCDNService:
                 
                 if result.get("ok"):
                     message = result["result"]
+                    
+                    # Check if photo exists and has expected structure
+                    if "photo" not in message or not message["photo"]:
+                        logger.error(f"No photo in Telegram response: {message}")
+                        return {"success": False, "error": "No photo in response"}
+                    
                     photo = message["photo"][-1]  # Get largest photo
+                    
+                    # Check if file_id exists
+                    if "file_id" not in photo:
+                        logger.error(f"No file_id in photo response: {photo}")
+                        return {"success": False, "error": "No file_id in photo response"}
+                    
                     file_id = photo["file_id"]
                     
                     # Get CDN URL for the uploaded file
@@ -56,8 +68,8 @@ class TelegramCDNService:
                         "success": True,
                         "file_id": file_id,
                         "cdn_url": cdn_url,
-                        "file_unique_id": photo["file_unique_id"],
-                        "message_id": message["message_id"],
+                        "file_unique_id": photo.get("file_unique_id", ""),
+                        "message_id": message.get("message_id", 0),
                         "file_size": photo.get("file_size", 0),
                         "width": photo.get("width", 0),
                         "height": photo.get("height", 0),

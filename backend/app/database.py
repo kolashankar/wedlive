@@ -31,7 +31,7 @@ def get_db():
 
 async def get_db_dependency():
     """Database dependency for FastAPI routes"""
-    if not db_instance.db:
+    if db_instance.db is None:
         await init_db()
     return db_instance.db
 

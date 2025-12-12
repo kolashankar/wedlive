@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional, Dict
 from bson import ObjectId
 from app.models import RecordingStatus
+from app.services.encoding_service import EncodingService
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class RecordingService:
     def __init__(self, db):
         self.db = db
         self.recordings_collection = db.recordings
+        self.encoding_service = EncodingService()
         self.weddings_collection = db.weddings
         
         # NGINX-RTMP recording paths (from nginx.conf)
@@ -118,6 +120,7 @@ class RecordingService:
         NGINX-RTMP automatically stops recording when stream ends.
         This method updates metadata and generates playback URL.
         """
+        recording = None
         try:
             # Find active recording
             recording = await self.recordings_collection.find_one({
@@ -152,6 +155,20 @@ class RecordingService:
             stream_key = f"live_{wedding_id}"
             recording_filename = f"{stream_key}.flv"
             recording_url = f"{self.hls_server_url}/recordings/{recording_filename}"
+            
+            # Encode to MP4 format
+            try:
+                encoded_result = await self.encoding_service.encode_to_mp4(recording_filename, wedding_id)
+                
+                if encoded_result.get("success"):
+                    recording_url = encoded_result.get("output_file")
+                    logger.info(f"🎬 Recording encoded to MP4: {recording_url}")
+                else:
+                    recording_url = encoded_result.get("output_file", recording_url)
+                    logger.error(f"❌ MP4 encoding failed: {encoded_result.get('error')}")
+            except Exception as encoding_error:
+                logger.error(f"⚠️ MP4 encoding error: {str(encoding_error)}")
+                # Continue with original recording_url if encoding fails
             
             # Update recording record
             await self.recordings_collection.update_one(

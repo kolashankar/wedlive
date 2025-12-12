@@ -2,17 +2,21 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Play, Film, Video, Star, Sparkles, Camera, Heart, Flower2 } from 'lucide-react';
+import { format } from 'date-fns';
 import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 
 export default function CinemaScope({ wedding, onEnter }) {
   const theme = wedding.theme_settings || {};
-  const themeAssets = wedding.theme_assets || {};
+  const themeAssets = theme.theme_assets || {};
   
   // Get dynamic theme assets
-  const brideBorderUrl = themeAssets.bride_border_url;
-  const groomBorderUrl = themeAssets.groom_border_url;
-  const coupleStyleUrl = themeAssets.couple_style_url;
-  const backgroundUrl = themeAssets.background_url;
+  const brideBorderUrl = themeAssets.bride_border_url || '';
+  const groomBorderUrl = themeAssets.groom_border_url || '';
+  const coupleStyleUrl = themeAssets.couple_style_url || '';
+  const backgroundUrl = themeAssets.background_url || '';
+  
+  // Debug: Log the theme assets structure
+  console.log('CinemaScope - themeAssets:', themeAssets);
   
   const FONT_FAMILY_MAP = {
     'Inter': 'Inter, sans-serif',

@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export function SocketProvider({ children, weddingId }) {
   const socketRef = useRef(null);

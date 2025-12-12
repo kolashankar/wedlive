@@ -45,7 +45,7 @@ export default function BorderEditor({
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showGrid, setShowGrid] = useState(true);
-  const [templateOpacity, setTemplateOpacity] = useState(0.7);
+  const [templateOpacity, setTemplateOpacity] = useState([0.7]);
   
   // History for undo/redo (same as TemplateEditor)
   const [history, setHistory] = useState([]);
@@ -64,13 +64,20 @@ export default function BorderEditor({
   // Load image when URL changes
   useEffect(() => {
     if (imageUrl) {
+      console.log('Loading image from URL:', imageUrl);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
+        console.log('Image loaded successfully, dimensions:', img.width, 'x', img.height);
         setImage(img);
         detectBorder(img);
       };
+      img.onerror = (error) => {
+        console.error('Failed to load image:', error);
+      };
       img.src = imageUrl;
+    } else {
+      console.log('No imageUrl provided');
     }
   }, [imageUrl]);
 
@@ -103,8 +110,15 @@ export default function BorderEditor({
     
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoom - pan.x;
-    const y = (e.clientY - rect.top) / zoom - pan.y;
+    
+    // Calculate coordinates with proper scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX / zoom - pan.x;
+    const y = (e.clientY - rect.top) * scaleY / zoom - pan.y;
+    
+    console.log('Start drawing at:', { x, y, scaleX, scaleY, zoom });
     
     setIsDrawing(true);
     setCurrentPath([{ x, y }]);
@@ -115,8 +129,13 @@ export default function BorderEditor({
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoom - pan.x;
-    const y = (e.clientY - rect.top) / zoom - pan.y;
+    
+    // Calculate coordinates with proper scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX / zoom - pan.x;
+    const y = (e.clientY - rect.top) * scaleY / zoom - pan.y;
     
     setCurrentPath(prev => [...prev, { x, y }]);
   };
@@ -244,11 +263,25 @@ export default function BorderEditor({
     const ctx = canvas.getContext('2d');
     const overlayCtx = overlayCanvas.getContext('2d');
     
-    // Setup canvases
-    canvas.width = image.width;
-    canvas.height = image.height;
-    overlayCanvas.width = image.width;
-    overlayCanvas.height = image.height;
+    // Setup canvases with proper dimensions
+    const containerWidth = containerRef.current ? containerRef.current.clientWidth : 800;
+    const containerHeight = containerRef.current ? containerRef.current.clientHeight : 600;
+    
+    // Calculate scaled dimensions to fit container
+    const scale = Math.min(containerWidth / image.width, containerHeight / image.height, 1);
+    const scaledWidth = image.width * scale;
+    const scaledHeight = image.height * scale;
+    
+    canvas.width = scaledWidth;
+    canvas.height = scaledHeight;
+    overlayCanvas.width = scaledWidth;
+    overlayCanvas.height = scaledHeight;
+    
+    // Set canvas display size
+    canvas.style.width = scaledWidth + 'px';
+    canvas.style.height = scaledHeight + 'px';
+    overlayCanvas.style.width = scaledWidth + 'px';
+    overlayCanvas.style.height = scaledHeight + 'px';
     
     // Clear canvases
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -263,8 +296,8 @@ export default function BorderEditor({
     overlayCtx.translate(pan.x, pan.y);
     
     // Draw background image
-    ctx.globalAlpha = templateOpacity;
-    ctx.drawImage(image, 0, 0);
+    ctx.globalAlpha = templateOpacity[0];
+    ctx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
     ctx.globalAlpha = 1;
     
     // Draw grid (same as TemplateEditor)
@@ -344,8 +377,28 @@ export default function BorderEditor({
   }, [image, detectedBorder, currentPath, zoom, pan, showGrid, templateOpacity, mode, shadowBlur, shadowOffset]);
 
   const handleSave = () => {
+    console.log('Save button clicked');
+    console.log('Current mode:', mode);
+    console.log('Current path length:', currentPath.length);
+    console.log('Detected border length:', detectedBorder.length);
+    console.log('onBorderSave exists:', !!onBorderSave);
+    
     const finalBorder = mode === 'draw' && currentPath.length > 3 ? currentPath : detectedBorder;
+    
+    console.log('Final border length:', finalBorder.length);
+    
     if (finalBorder.length > 0 && onBorderSave) {
+      console.log('Calling onBorderSave with data:', {
+        points: finalBorder,
+        feather: featherRadius[0],
+        shadowBlur: shadowBlur[0],
+        shadowOffset: shadowOffset[0],
+        assetType,
+        mode,
+        shapes,
+        timestamp: Date.now()
+      });
+      
       onBorderSave({
         points: finalBorder,
         feather: featherRadius[0],
@@ -355,6 +408,12 @@ export default function BorderEditor({
         mode,
         shapes,
         timestamp: Date.now()
+      });
+    } else {
+      console.log('Save conditions not met:', {
+        hasBorder: finalBorder.length > 0,
+        hasCallback: !!onBorderSave,
+        borderLength: finalBorder.length
       });
     }
   };
@@ -482,7 +541,8 @@ export default function BorderEditor({
           
           <Button
             onClick={handleSave}
-            disabled={(mode === 'detect' && detectedBorder.length === 0) || 
+            disabled={(!onBorderSave) || 
+                     (mode === 'detect' && detectedBorder.length === 0) || 
                      (mode === 'draw' && currentPath.length < 3)}
             size="sm"
           >
@@ -627,20 +687,42 @@ export default function BorderEditor({
           )}
         </div>
 
-        {/* Canvas Container (same as TemplateEditor) */}
+        {/* Canvas Container */}
         <div 
           ref={containerRef}
           className="border rounded-lg overflow-auto bg-gray-50 max-h-96 relative"
+          style={{ minHeight: '400px', minWidth: '600px' }}
         >
+          {!image && (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+              <div className="text-center">
+                <div className="text-lg mb-2">No image loaded</div>
+                <div className="text-sm">Please upload an image to edit borders</div>
+              </div>
+            </div>
+          )}
           <canvas
             ref={canvasRef}
-            className="absolute top-0 left-0"
-            style={{ maxWidth: '100%', height: 'auto' }}
+            className="relative"
+            style={{ 
+              maxWidth: '100%', 
+              height: 'auto',
+              display: image ? 'block' : 'none',
+              cursor: mode === 'draw' && currentTool === 'pen' ? 'crosshair' : 'default'
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           />
           <canvas
             ref={overlayCanvasRef}
             className="absolute top-0 left-0 pointer-events-none"
-            style={{ maxWidth: '100%', height: 'auto' }}
+            style={{ 
+              maxWidth: '100%', 
+              height: 'auto',
+              display: image ? 'block' : 'none'
+            }}
           />
         </div>
       </CardContent>
