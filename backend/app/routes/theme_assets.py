@@ -443,9 +443,8 @@ async def get_available_backgrounds(
     return [BackgroundImageResponse(**bg) for bg in backgrounds]
 
 @router.get("/theme-assets/random-defaults")
-async def get_random_defaults():
+async def get_random_defaults(db = Depends(get_db_dependency)):
     """Get random default selections for borders, style, and background"""
-    db = get_db()
     
     # Get random border
     borders_cursor = db.photo_borders.aggregate([{"$sample": {"size": 1}}])
@@ -469,10 +468,10 @@ async def get_random_defaults():
 async def update_wedding_theme_assets(
     wedding_id: str,
     theme_assets: UpdateWeddingThemeAssets,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
 ):
     """Update theme assets selection for a wedding"""
-    db = get_db()
     
     # Verify wedding exists and user is creator
     wedding = await db.weddings.find_one({"id": wedding_id})

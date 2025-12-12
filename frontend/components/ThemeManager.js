@@ -848,7 +848,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                   <div className="space-y-1">
                     <Label className="text-xs text-blue-600">Groom Border</Label>
                     <Select
-                      value={theme?.theme_assets?.borders?.groom_border_id || ''}
+                      value={theme?.theme_assets?.borders?.groom_border_id || 'none'}
                       onValueChange={(value) => handleUpdateTheme({
                         theme_assets: {
                           ...theme?.theme_assets,
@@ -863,7 +863,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                         <SelectValue placeholder="Select border" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {availableBorders.map(border => (
                           <SelectItem key={border.id} value={border.id}>
                             <div className="flex items-center gap-2">
@@ -880,7 +880,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                   <div className="space-y-1">
                     <Label className="text-xs text-pink-600">Bride Border</Label>
                     <Select
-                      value={theme?.theme_assets?.borders?.bride_border_id || ''}
+                      value={theme?.theme_assets?.borders?.bride_border_id || 'none'}
                       onValueChange={(value) => handleUpdateTheme({
                         theme_assets: {
                           ...theme?.theme_assets,
@@ -895,7 +895,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                         <SelectValue placeholder="Select border" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {availableBorders.map(border => (
                           <SelectItem key={border.id} value={border.id}>
                             <div className="flex items-center gap-2">
@@ -912,7 +912,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                   <div className="space-y-1">
                     <Label className="text-xs text-purple-600">Couple Border</Label>
                     <Select
-                      value={theme?.theme_assets?.borders?.couple_border_id || ''}
+                      value={theme?.theme_assets?.borders?.couple_border_id || 'none'}
                       onValueChange={(value) => handleUpdateTheme({
                         theme_assets: {
                           ...theme?.theme_assets,
@@ -927,7 +927,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                         <SelectValue placeholder="Select border" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {availableBorders.map(border => (
                           <SelectItem key={border.id} value={border.id}>
                             <div className="flex items-center gap-2">
@@ -944,7 +944,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                   <div className="space-y-1">
                     <Label className="text-xs text-green-600">Cover Border</Label>
                     <Select
-                      value={theme?.theme_assets?.borders?.cover_border_id || ''}
+                      value={theme?.theme_assets?.borders?.cover_border_id || 'none'}
                       onValueChange={(value) => handleUpdateTheme({
                         theme_assets: {
                           ...theme?.theme_assets,
@@ -959,7 +959,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                         <SelectValue placeholder="Select border" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {availableBorders.map(border => (
                           <SelectItem key={border.id} value={border.id}>
                             <div className="flex items-center gap-2">
@@ -978,7 +978,7 @@ export default function ThemeManager({ weddingId, wedding }) {
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Precious Moments Style</Label>
                 <Select
-                  value={theme?.theme_assets?.precious_moment_style_id || ''}
+                  value={theme?.theme_assets?.precious_moment_style_id || 'default'}
                   onValueChange={(value) => handleUpdateTheme({
                     theme_assets: {
                       ...theme?.theme_assets,
@@ -990,7 +990,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                     <SelectValue placeholder="Select style for precious moments layout" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Default Layout</SelectItem>
+                    <SelectItem value="default">Default Layout</SelectItem>
                     {availableStyles.map(style => (
                       <SelectItem key={style.id} value={style.id}>
                         <div className="flex items-center gap-2">
@@ -1012,7 +1012,7 @@ export default function ThemeManager({ weddingId, wedding }) {
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Background Image</Label>
                 <Select
-                  value={theme?.theme_assets?.background_image_id || ''}
+                  value={theme?.theme_assets?.background_image_id || 'none'}
                   onValueChange={(value) => handleUpdateTheme({
                     theme_assets: {
                       ...theme?.theme_assets,
@@ -1024,7 +1024,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                     <SelectValue placeholder="Select background image (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Background</SelectItem>
+                    <SelectItem value="none">No Background</SelectItem>
                     {availableBackgrounds.map(bg => (
                       <SelectItem key={bg.id} value={bg.id}>
                         <div className="flex items-center gap-2">
