@@ -86,23 +86,70 @@ export default function ThemeAssetsManagement() {
     }
   };
 
+  const fetchBorders = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/admin/theme-assets/borders`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setBorders(response.data);
+    } catch (error) {
+      console.error('Error fetching borders:', error);
+      setError('Failed to load borders');
+    }
+  };
+
+  const fetchStyles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/admin/theme-assets/precious-styles`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setStyles(response.data);
+    } catch (error) {
+      console.error('Error fetching styles:', error);
+      setError('Failed to load styles');
+    }
+  };
+
+  const fetchBackgrounds = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/admin/theme-assets/backgrounds`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setBackgrounds(response.data);
+    } catch (error) {
+      console.error('Error fetching backgrounds:', error);
+      setError('Failed to load backgrounds');
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/admin/templates`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setTemplates(response.data);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      setError('Failed to load templates');
+    }
+  };
+
   const loadAllAssets = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
     try {
       setLoading(true);
-      const [bordersRes, stylesRes, backgroundsRes, templatesRes] = await Promise.all([
-        axios.get(`${API_URL}/api/theme-assets/borders`),
-        axios.get(`${API_URL}/api/theme-assets/precious-styles`),
-        axios.get(`${API_URL}/api/theme-assets/backgrounds`),
-        axios.get(`${API_URL}/api/templates`)
+      await Promise.all([
+        fetchBorders(),
+        fetchStyles(),
+        fetchBackgrounds(),
+        fetchTemplates()
       ]);
-      
-      setBorders(bordersRes.data);
-      setStyles(stylesRes.data);
-      setBackgrounds(backgroundsRes.data);
-      setTemplates(templatesRes.data);
     } catch (err) {
       console.error('Error loading assets:', err);
       setError('Failed to load theme assets');
@@ -193,8 +240,12 @@ export default function ThemeAssetsManagement() {
         endpoint = `${API_URL}/api/admin/theme-assets/backgrounds/upload`;
       }
       
+      const token = localStorage.getItem('token');
       const response = await axios.post(endpoint, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       setSuccess(`${editingAsset} with custom border uploaded successfully!`);

@@ -3,9 +3,10 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
 import { 
   Upload, Wand2, Save, X, ZoomIn, ZoomOut, RotateCw, 
-  MousePointer, Circle, Square, Triangle
+  MousePointer, Circle, Square, Triangle, PenTool, Edit3
 } from 'lucide-react';
 
 export default function BorderEditor({ 
@@ -25,6 +26,10 @@ export default function BorderEditor({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [sensitivity, setSensitivity] = useState([50]);
   const [featherRadius, setFeatherRadius] = useState([5]);
+  const [mode, setMode] = useState('detect'); // 'detect', 'draw', 'edit'
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawnPoints, setDrawnPoints] = useState([]);
+  const [shapes, setShapes] = useState([]);
 
   // Load image when URL changes
   useEffect(() => {
@@ -100,37 +105,88 @@ export default function BorderEditor({
     }
   };
 
-  // Canvas mouse handlers
-  const handleMouseDown = (e) => {
+  // Drawing functions
+  const startDrawing = (e) => {
+    if (mode !== 'draw') return;
+    
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) / zoom - pan.x;
     const y = (e.clientY - rect.top) / zoom - pan.y;
+    
+    setIsDrawing(true);
+    setDrawnPoints([{ x, y }]);
+  };
 
-    // Check if clicking near a border point
-    const pointIndex = findNearestPoint(x, y);
-    if (pointIndex !== -1) {
-      setIsDragging(true);
-      setDragIndex(pointIndex);
+  const draw = (e) => {
+    if (!isDrawing || mode !== 'draw') return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / zoom - pan.x;
+    const y = (e.clientY - rect.top) / zoom - pan.y;
+    
+    setDrawnPoints(prev => [...prev, { x, y }]);
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing && drawnPoints.length > 3) {
+      // Convert drawn points to a shape
+      const newShape = {
+        id: Date.now(),
+        type: 'freehand',
+        points: drawnPoints,
+        feather: featherRadius[0]
+      };
+      setShapes(prev => [...prev, newShape]);
+      setDetectedBorder(drawnPoints);
+    }
+    
+    setIsDrawing(false);
+    setDrawnPoints([]);
+  };
+
+  // Canvas mouse handlers
+  const handleMouseDown = (e) => {
+    if (mode === 'draw') {
+      startDrawing(e);
+    } else if (mode === 'edit') {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / zoom - pan.x;
+      const y = (e.clientY - rect.top) / zoom - pan.y;
+
+      // Check if clicking near a border point
+      const pointIndex = findNearestPoint(x, y);
+      if (pointIndex !== -1) {
+        setIsDragging(true);
+        setDragIndex(pointIndex);
+      }
     }
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging || dragIndex === null) return;
+    if (mode === 'draw') {
+      draw(e);
+    } else if (isDragging && dragIndex !== null && mode === 'edit') {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / zoom - pan.x;
+      const y = (e.clientY - rect.top) / zoom - pan.y;
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoom - pan.x;
-    const y = (e.clientY - rect.top) / zoom - pan.y;
-
-    const newBorder = [...detectedBorder];
-    newBorder[dragIndex] = { x, y };
-    setDetectedBorder(newBorder);
+      const newBorder = [...detectedBorder];
+      newBorder[dragIndex] = { x, y };
+      setDetectedBorder(newBorder);
+    }
   };
 
   const handleMouseUp = () => {
-    setIsDragging(false);
-    setDragIndex(null);
+    if (mode === 'draw') {
+      stopDrawing();
+    } else {
+      setIsDragging(false);
+      setDragIndex(null);
+    }
   };
 
   const findNearestPoint = (x, y) => {
@@ -162,41 +218,50 @@ export default function BorderEditor({
     // Draw image
     ctx.drawImage(image, 0, 0);
     
-    // Draw detected border
-    if (detectedBorder.length > 0) {
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([5, 5]);
+    // Draw detected border/shapes
+    const borderToDraw = mode === 'draw' && drawnPoints.length > 0 ? drawnPoints : detectedBorder;
+    
+    if (borderToDraw.length > 0) {
+      ctx.strokeStyle = mode === 'draw' ? '#10b981' : '#ef4444';
+      ctx.lineWidth = mode === 'draw' ? 2 : 3;
+      ctx.setLineDash(mode === 'draw' ? [] : [5, 5]);
       
       ctx.beginPath();
-      detectedBorder.forEach((point, i) => {
+      borderToDraw.forEach((point, i) => {
         if (i === 0) {
           ctx.moveTo(point.x, point.y);
         } else {
           ctx.lineTo(point.x, point.y);
         }
       });
-      ctx.closePath();
+      if (mode !== 'draw' || drawnPoints.length > 2) {
+        ctx.closePath();
+      }
       ctx.stroke();
       
-      // Draw control points
-      ctx.fillStyle = '#ef4444';
-      detectedBorder.forEach(point => {
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      // Draw control points for edit mode
+      if (mode === 'edit') {
+        ctx.fillStyle = '#ef4444';
+        detectedBorder.forEach(point => {
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
     }
     
     ctx.restore();
-  }, [image, detectedBorder, zoom, pan]);
+  }, [image, detectedBorder, drawnPoints, zoom, pan, mode]);
 
   const handleSave = () => {
-    if (detectedBorder.length > 0 && onBorderSave) {
+    const finalBorder = mode === 'draw' && drawnPoints.length > 3 ? drawnPoints : detectedBorder;
+    if (finalBorder.length > 0 && onBorderSave) {
       onBorderSave({
-        points: detectedBorder,
+        points: finalBorder,
         feather: featherRadius[0],
         assetType,
+        mode,
+        shapes,
         timestamp: Date.now()
       });
     }
@@ -205,7 +270,15 @@ export default function BorderEditor({
   const handleRedetect = () => {
     if (image) {
       detectBorder(image);
+      setShapes([]);
+      setDrawnPoints([]);
     }
+  };
+
+  const clearDrawing = () => {
+    setDrawnPoints([]);
+    setShapes([]);
+    setDetectedBorder([]);
   };
 
   return (
@@ -213,28 +286,70 @@ export default function BorderEditor({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Wand2 className="w-5 h-5" />
-          Auto Border Detection - {assetType.charAt(0).toUpperCase() + assetType.slice(1)}
+          Border Editor - {assetType.charAt(0).toUpperCase() + assetType.slice(1)}
         </CardTitle>
         <Button onClick={onClose} variant="ghost" size="sm">
           <X className="w-4 h-4" />
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Controls */}
-        <div className="flex flex-wrap gap-2">
+        {/* Mode Selection */}
+        <div className="flex gap-2">
           <Button
-            onClick={handleRedetect}
-            disabled={loading || !image}
-            variant="outline"
+            onClick={() => setMode('detect')}
+            variant={mode === 'detect' ? 'default' : 'outline'}
             size="sm"
           >
             <Wand2 className="w-4 h-4 mr-2" />
-            {loading ? 'Detecting...' : 'Redetect Border'}
+            Auto Detect
           </Button>
+          <Button
+            onClick={() => setMode('draw')}
+            variant={mode === 'draw' ? 'default' : 'outline'}
+            size="sm"
+          >
+            <PenTool className="w-4 h-4 mr-2" />
+            Draw
+          </Button>
+          <Button
+            onClick={() => setMode('edit')}
+            variant={mode === 'edit' ? 'default' : 'outline'}
+            size="sm"
+          >
+            <Edit3 className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
+        </div>
+
+        {/* Controls */}
+        <div className="flex flex-wrap gap-2">
+          {mode === 'detect' && (
+            <Button
+              onClick={handleRedetect}
+              disabled={loading || !image}
+              variant="outline"
+              size="sm"
+            >
+              <Wand2 className="w-4 h-4 mr-2" />
+              {loading ? 'Detecting...' : 'Redetect'}
+            </Button>
+          )}
+          
+          {mode === 'draw' && (
+            <Button
+              onClick={clearDrawing}
+              variant="outline"
+              size="sm"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear
+            </Button>
+          )}
           
           <Button
             onClick={handleSave}
-            disabled={detectedBorder.length === 0}
+            disabled={(mode === 'detect' && detectedBorder.length === 0) || 
+                     (mode === 'draw' && drawnPoints.length < 3)}
             size="sm"
           >
             <Save className="w-4 h-4 mr-2" />
@@ -301,9 +416,34 @@ export default function BorderEditor({
 
         {/* Instructions */}
         <div className="text-sm text-gray-600 space-y-1">
-          <p>• <strong>Click & Drag</strong> border points to adjust</p>
-          <p>• <strong>Redetect</strong> to find borders automatically</p>
-          <p>• Border will be applied to {assetType} assets</p>
+          {mode === 'detect' && (
+            <>
+              <p>• <strong>Redetect</strong> to find borders automatically</p>
+              <p>• Switch to <strong>Draw</strong> mode to create custom borders</p>
+            </>
+          )}
+          {mode === 'draw' && (
+            <>
+              <p>• <strong>Click & Drag</strong> to draw custom border shape</p>
+              <p>• <strong>Clear</strong> to start over</p>
+            </>
+          )}
+          {mode === 'edit' && (
+            <>
+              <p>• <strong>Click & Drag</strong> border points to adjust</p>
+              <p>• Switch to <strong>Draw</strong> mode to create new shapes</p>
+            </>
+          )}
+        </div>
+
+        {/* Mode Badge */}
+        <div className="flex items-center gap-2">
+          <Badge variant={mode === 'detect' ? 'default' : 'secondary'}>
+            {mode === 'detect' ? 'Auto-Detect' : mode === 'draw' ? 'Drawing' : 'Editing'}
+          </Badge>
+          {mode === 'draw' && drawnPoints.length > 0 && (
+            <Badge variant="outline">{drawnPoints.length} points</Badge>
+          )}
         </div>
 
         {/* Canvas */}
@@ -312,7 +452,7 @@ export default function BorderEditor({
             ref={canvasRef}
             width={image ? image.width : 800}
             height={image ? image.height : 600}
-            className="cursor-crosshair"
+            className={`cursor-${mode === 'draw' ? 'crosshair' : 'pointer'}`}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
