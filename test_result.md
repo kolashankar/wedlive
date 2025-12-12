@@ -103,11 +103,31 @@
 #====================================================================================================
 
 user_problem_statement: |
-  1. Update Photo Selection Logic for Cover Photos: Instead of uploading photos in the "Cover Photos" section, update the functionality to allow users to select photos from the already uploaded media.
+  Dynamic Theme Assets System for WedLive - January 2025
   
-  2. Fix Studio Photo/Avatar Upload Issue: Studio photo and avatar are being uploaded to the wedding media section instead of being applied globally across all weddings.
+  Implement a fully dynamic system where creators can customize photo borders, precious-moments styles, 
+  and background images. All assets come from admin uploads via Telegram CDN.
   
-  3. Fix 422 (theme update) and 500 (photo uploads) status code errors.
+  Key Features:
+  1. Dynamic Photo Borders - Admin uploads borders, creators select for groom/bride/couple/cover photos
+     - Exact-fit rendering with auto-crop/scale, maintaining aspect ratio
+     - No stretching or distortion
+  
+  2. Precious Moments Styles - Dynamic layout configurations
+     - Admin defines styles with photo count, layout type, frame shapes
+     - Limit photo uploads based on selected style
+  
+  3. Dynamic Background Images - For hero/cover sections
+     - Admin uploads, creators optionally select
+  
+  4. Random Defaults - Auto-select random border and style on wedding creation
+  
+  5. Telegram CDN Integration - All assets stored via existing bot configuration
+  
+  Previous tasks:
+  1. Wedding Themes Development with 7 themes
+  2. Cover Photos Selection Logic
+  3. Studio Photo/Avatar Upload fixes
 
 
   - task: "Razorpay Payment Integration - Complete System"
@@ -129,6 +149,54 @@ user_problem_statement: |
         comment: "RAZORPAY INTEGRATION FULLY TESTED ✅ - December 2024: All requested endpoints working perfectly. 1) Subscription Checkout: Monthly (₹1799) and yearly (₹17270) plans create valid Razorpay subscriptions with proper TEST mode detection, 2) One-Time Payment Order: Successfully creates orders for ₹500 with correct order_id format, 3) Payment History: Returns proper list structure with TEST mode indicator, 4) Current Subscription: Correctly returns free plan for new users, 5) Free Plan Rejection: Properly blocks free plan checkout with appropriate error message. All responses include required Razorpay fields (subscription_id, order_id, razorpay_key, mode). No setuptools/pkg_resources errors detected. TEST credentials (rzp_test_RohtuBUDnY3DP9) working correctly."
 
 backend:
+  - task: "Dynamic Theme Assets - Photo Borders API"
+    implemented: true
+    working: "NA"
+    file: "backend/app/routes/theme_assets.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "DYNAMIC BORDERS SYSTEM - January 2025: 1) Created PhotoBorder model with metadata (orientation, aspect_ratio, width, height), 2) Implemented multi-file upload endpoint POST /api/admin/theme-assets/borders/upload (max 10MB per file), 3) Automatic image dimension detection using Pillow, 4) Telegram CDN upload and storage, 5) GET /api/admin/theme-assets/borders for listing, 6) DELETE /api/admin/theme-assets/borders/{id} for deletion, 7) Public endpoint GET /api/theme-assets/borders for creator access. All borders stored in MongoDB with CDN URLs."
+
+  - task: "Dynamic Theme Assets - Precious Moment Styles API"
+    implemented: true
+    working: "NA"
+    file: "backend/app/routes/theme_assets.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "PRECIOUS MOMENTS STYLES - January 2025: 1) Created PreciousMomentStyle model with layout_type, photo_count, frame_shapes, 2) POST /api/admin/theme-assets/precious-styles/upload endpoint with optional preview image, 3) Supports grid, collage, carousel, animated-frames layouts, 4) Configurable photo count (1-20), 5) Frame shapes configuration, 6) GET /api/admin/theme-assets/precious-styles for listing, 7) DELETE endpoint for deletion, 8) Public endpoint GET /api/theme-assets/precious-styles for creator access."
+
+  - task: "Dynamic Theme Assets - Background Images API"
+    implemented: true
+    working: "NA"
+    file: "backend/app/routes/theme_assets.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "BACKGROUND IMAGES SYSTEM - January 2025: 1) Created BackgroundImage model with category (hero, full-page, pattern, gradient), 2) Multi-file upload POST /api/admin/theme-assets/backgrounds/upload, 3) Image dimension detection, 4) Telegram CDN integration, 5) GET /api/admin/theme-assets/backgrounds listing, 6) DELETE endpoint, 7) Public GET /api/theme-assets/backgrounds for creator selection."
+
+  - task: "Wedding Theme Assets Selection API"
+    implemented: true
+    working: "NA"
+    file: "backend/app/routes/theme_assets.py, backend/app/models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "WEDDING ASSET SELECTION - January 2025: 1) Extended ThemeSettings model with theme_assets field, 2) SelectedBorders model for groom_border_id, bride_border_id, couple_border_id, cover_border_id, 3) WeddingThemeAssets model includes borders, precious_moment_style_id, background_image_id, precious_moment_photos array, 4) PUT /api/weddings/{id}/theme-assets endpoint for saving creator selections, 5) GET /api/theme-assets/random-defaults for auto-assigning random border and style on wedding creation."
+
   - task: "Cover Photos Media Selection Implementation"
     implemented: true
     working: "NA"
@@ -361,6 +429,30 @@ backend:
         comment: "TESTED: Stream start/stop endpoints working correctly. Live streams listing functional. Stream status updates properly managed"
 
 frontend:
+  - task: "Admin Theme Assets Management Page"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/admin/theme-assets/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "ADMIN THEME ASSETS UI - January 2025: 1) Created dedicated admin page at /admin/theme-assets with three tabs (Borders, Styles, Backgrounds), 2) Photo Borders tab: Multi-file upload with preview, name/tag inputs, grid display with hover delete, shows orientation/aspect ratio/tags, 3) Precious Moments Styles tab: Form for creating styles with name, description, layout type selector (grid/collage/carousel/animated-frames), photo count input (1-20), frame shapes, optional preview image, list display with all metadata, 4) Backgrounds tab: Multi-file upload, category selector (general/hero/full-page/pattern/gradient), tag input, grid display with dimensions, 5) All tabs show upload progress with loading states, 6) Success/error alerts for user feedback, 7) Connected to backend APIs with proper authentication, 8) Added navigation button from main admin dashboard."
+
+  - task: "7 Wedding Themes - Complete Implementation"
+    implemented: true
+    working: "NA"
+    file: "frontend/components/themes/*.js, frontend/components/ThemeRenderer.js, frontend/components/ThemeManager.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "WEDDING THEMES COMPLETE - January 2025: ✅ Implemented all 7 wedding themes based on reference websites. 1) CinemaScope - Film frame effects, spotlight glow, 80+ particles, floral corners, cinematic typography, 2) ModernMinimalist - Elegant pastels, 30 floating petals, thin gold lines, clean typography, minimalist frames, 3) RoyalPalace - Velvet texture, gold ornamental borders, 25 sparkles, palace frames, crown animations, 4) FloralGarden - Book opening animation, premium florals, heart-shaped frame, garden lanterns, 40 petals, 15 fireflies, 5) PremiumWeddingCard - Card opening animation, 40 glitter effects, invitation styling, gold frames, 6) RomanticPastel - 20 floating hearts, 25 butterflies, heart photo frame, sparkle animations, pastel cards, 7) TraditionalSouthIndian - 8 temple bells, Om symbol, 30 marigolds, rangoli pattern, kalash separator, bilingual Tamil/English text. ✅ All themes 100% mobile responsive with viewport optimization, touch-friendly buttons, auto-resizing images. ✅ All mandatory sections included: header, couple intro, countdown, gallery 'Our Precious Moments', studio details card, watch live button, animations. ✅ All data from API endpoints (no hardcoding). ✅ Updated ThemeRenderer.js to register all 7 themes. ✅ Updated ThemeManager.js with theme selection dropdown. ✅ Free assets from Unsplash integrated. ✅ Performance optimized with code splitting, GPU-accelerated animations, lazy loading. ✅ Documentation created: WEDDING_THEMES_IMPLEMENTATION.md with complete details."
+  
   - task: "Cover Photos Selection from Gallery"
     implemented: true
     working: "NA"
@@ -543,18 +635,17 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "2.0"
+  test_sequence: 2
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Premium Floral Garden Theme Redesign"
-    - "Book-style Opening Animation"
-    - "Heart-shaped Photo Frames"
-    - "Studio Section Wedding Card Style"
-    - "Garden Theme with Floating Elements"
-    - "Wedding Icons Animations"
+    - "Dynamic Theme Assets - Photo Borders API"
+    - "Dynamic Theme Assets - Precious Moment Styles API"
+    - "Dynamic Theme Assets - Background Images API"
+    - "Wedding Theme Assets Selection API"
+    - "Admin Theme Assets Management Page"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -2341,3 +2432,58 @@ agent_communication:
       
       STATUS: ✅ All fixes complete and tested in local environment
       NEXT: User should deploy to Vercel to fix production errors
+
+agent_communication:
+  - agent: "main"
+    message: |
+      DYNAMIC THEME ASSETS SYSTEM - PHASE 1 COMPLETE ✅
+      
+      Successfully implemented backend APIs and admin UI for dynamic theme assets management:
+      
+      BACKEND IMPLEMENTATION:
+      ✅ Created comprehensive models for PhotoBorder, PreciousMomentStyle, BackgroundImage
+      ✅ Extended ThemeSettings with theme_assets field for wedding selections
+      ✅ Implemented admin upload endpoints:
+         - POST /api/admin/theme-assets/borders/upload (multi-file, max 10MB each)
+         - POST /api/admin/theme-assets/precious-styles/upload (with preview image)
+         - POST /api/admin/theme-assets/backgrounds/upload (multi-file)
+      ✅ Implemented admin management endpoints (GET, DELETE)
+      ✅ Implemented public/creator endpoints:
+         - GET /api/theme-assets/borders
+         - GET /api/theme-assets/precious-styles
+         - GET /api/theme-assets/backgrounds
+         - GET /api/theme-assets/random-defaults (for auto-selection)
+      ✅ Implemented PUT /api/weddings/{id}/theme-assets for saving selections
+      ✅ Integrated with existing Telegram CDN service
+      ✅ Added Pillow (12.0.0) for image dimension detection
+      ✅ Auto-calculates aspect ratio and orientation
+      
+      FRONTEND ADMIN UI:
+      ✅ Created dedicated admin page at /admin/theme-assets
+      ✅ Three-tab interface (Borders, Styles, Backgrounds)
+      ✅ Multi-file upload with preview
+      ✅ Form inputs for metadata (names, tags, categories)
+      ✅ Grid display with hover delete actions
+      ✅ Success/error feedback alerts
+      ✅ Loading states during uploads
+      ✅ Navigation button from main admin dashboard
+      
+      READY FOR TESTING:
+      - Admin can now upload and manage theme assets via /admin/theme-assets
+      - All assets stored in Telegram CDN
+      - MongoDB collections: photo_borders, precious_moment_styles, background_images
+      
+      NEXT PHASE:
+      1. Create creator UI for selecting borders/styles/backgrounds in wedding settings
+      2. Implement ExactFitPhotoFrame component for precise border rendering
+      3. Update theme components to use dynamic assets
+      4. Implement precious moments section with dynamic layouts
+      5. Add random default selection on wedding creation
+      
+      TESTING NEEDED:
+      - Test admin multi-file uploads (up to 10MB each)
+      - Verify Telegram CDN storage
+      - Test border/style/background listing
+      - Test delete functionality
+      - Verify image dimension detection
+      - Test aspect ratio calculations

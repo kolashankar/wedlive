@@ -164,6 +164,7 @@ class ThemeSettings(BaseModel):
     cover_photos: List[Union[str, CoverPhoto]] = []  # Array of photo URLs or objects
     studio_details: StudioDetails = StudioDetails()
     custom_messages: CustomMessages = CustomMessages()
+    theme_assets: Optional['WeddingThemeAssets'] = None  # Dynamic borders, styles, backgrounds
 
 class UpdateThemeSettings(BaseModel):
     theme_id: Optional[str] = None
@@ -174,6 +175,101 @@ class UpdateThemeSettings(BaseModel):
     cover_photos: Optional[List[Union[str, CoverPhoto]]] = None
     studio_details: Optional[StudioDetails] = None
     custom_messages: Optional[CustomMessages] = None
+    theme_assets: Optional['UpdateWeddingThemeAssets'] = None
+
+# Theme Assets Models (Dynamic Borders, Styles, Backgrounds)
+class PhotoBorder(BaseModel):
+    id: str
+    name: str
+    cdn_url: str
+    telegram_file_id: str
+    orientation: str = "square"  # portrait, landscape, square
+    aspect_ratio: str = "1:1"  # e.g., "1:1", "4:3", "16:9", "3:4"
+    width: int = 0
+    height: int = 0
+    file_size: int = 0
+    tags: List[str] = []
+    created_at: datetime
+    uploaded_by: str  # admin user_id
+
+class PhotoBorderResponse(BaseModel):
+    id: str
+    name: str
+    cdn_url: str
+    orientation: str
+    aspect_ratio: str
+    width: int
+    height: int
+    file_size: int
+    tags: List[str]
+    created_at: datetime
+
+class PreciousMomentStyle(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    cdn_url: Optional[str] = ""  # Optional preview image
+    telegram_file_id: Optional[str] = ""
+    layout_type: str = "grid"  # grid, collage, carousel, animated-frames
+    photo_count: int = 6  # Number of photos required
+    frame_shapes: List[str] = []  # rectangle, circle, heart, custom
+    tags: List[str] = []
+    created_at: datetime
+    uploaded_by: str
+
+class PreciousMomentStyleResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    cdn_url: Optional[str]
+    layout_type: str
+    photo_count: int
+    frame_shapes: List[str]
+    tags: List[str]
+    created_at: datetime
+
+class BackgroundImage(BaseModel):
+    id: str
+    name: str
+    cdn_url: str
+    telegram_file_id: str
+    category: str = "general"  # hero, full-page, pattern, gradient
+    width: int = 0
+    height: int = 0
+    file_size: int = 0
+    tags: List[str] = []
+    created_at: datetime
+    uploaded_by: str
+
+class BackgroundImageResponse(BaseModel):
+    id: str
+    name: str
+    cdn_url: str
+    category: str
+    width: int
+    height: int
+    file_size: int
+    tags: List[str]
+    created_at: datetime
+
+# Wedding Theme Asset Selection
+class SelectedBorders(BaseModel):
+    groom_border_id: Optional[str] = None
+    bride_border_id: Optional[str] = None
+    couple_border_id: Optional[str] = None
+    cover_border_id: Optional[str] = None
+
+class WeddingThemeAssets(BaseModel):
+    borders: SelectedBorders = SelectedBorders()
+    precious_moment_style_id: Optional[str] = None
+    background_image_id: Optional[str] = None
+    precious_moment_photos: List[str] = []  # Array of photo URLs
+
+class UpdateWeddingThemeAssets(BaseModel):
+    borders: Optional[SelectedBorders] = None
+    precious_moment_style_id: Optional[str] = None
+    background_image_id: Optional[str] = None
+    precious_moment_photos: Optional[List[str]] = None
 
 # Wedding Models
 class WeddingCreate(BaseModel):

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Palette, Image as ImageIcon, Type, Upload, X, Building2, Loader2, Eye } from 'lucide-react';
+import { Palette, Image as ImageIcon, Type, Upload, X, Building2, Loader2, Eye, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import ThemePreviewModal from '@/components/ThemePreviewModal';
@@ -16,7 +16,63 @@ const THEME_OPTIONS = [
   { id: 'royal_palace', name: 'Royal Palace', description: 'Traditional Luxury', colors: ['#fde68a', '#dc2626'] },
   { id: 'modern_minimalist', name: 'Modern Minimalist', description: 'Clean & Simple', colors: ['#ffffff', '#000000'] },
   { id: 'cinema_scope', name: 'Cinema Scope', description: 'Video First', colors: ['#1f2937', '#ef4444'] },
+  { id: 'premium_wedding_card', name: 'Premium Wedding Card', description: 'Elegant Invitation', colors: ['#d4af37', '#ffffff'] },
+  { id: 'romantic_pastel', name: 'Romantic Pastel', description: 'Sweet & Lovely', colors: ['#fda4af', '#e9d5ff'] },
+  { id: 'traditional_south_indian', name: 'Traditional South Indian', description: 'Cultural Heritage', colors: ['#f59e0b', '#dc2626'] },
 ];
+
+// Theme-specific photo requirements configuration
+const THEME_PHOTO_REQUIREMENTS = {
+  cinema_scope: {
+    requiresGroom: true,
+    requiresBride: true,
+    requiresCouple: true,
+    preciousMomentsCount: 5,
+    description: 'Cinematic themes showcase all subjects individually and together'
+  },
+  modern_minimalist: {
+    requiresGroom: false,
+    requiresBride: false,
+    requiresCouple: true,
+    preciousMomentsCount: 2,
+    description: 'Minimalist design focuses on the couple with select moments'
+  },
+  royal_palace: {
+    requiresGroom: true,
+    requiresBride: true,
+    requiresCouple: true,
+    preciousMomentsCount: 5,
+    description: 'Traditional themes celebrate both individuals and the union'
+  },
+  floral_garden: {
+    requiresGroom: false,
+    requiresBride: false,
+    requiresCouple: true,
+    preciousMomentsCount: 4,
+    description: 'Romantic garden theme highlights the couple with beautiful moments'
+  },
+  premium_wedding_card: {
+    requiresGroom: false,
+    requiresBride: false,
+    requiresCouple: true,
+    preciousMomentsCount: 3,
+    description: 'Elegant invitation style features the couple with curated moments'
+  },
+  romantic_pastel: {
+    requiresGroom: true,
+    requiresBride: true,
+    requiresCouple: true,
+    preciousMomentsCount: 4,
+    description: 'Sweet design showcases both partners and their love story'
+  },
+  traditional_south_indian: {
+    requiresGroom: true,
+    requiresBride: true,
+    requiresCouple: true,
+    preciousMomentsCount: 5,
+    description: 'Cultural heritage theme honors both families and the couple'
+  }
+};
 
 const FONT_OPTIONS = [
   { name: 'Inter', fontFamily: 'Inter, sans-serif', googleFont: 'Inter:wght@400;600;700' },
@@ -41,10 +97,17 @@ export default function ThemeManager({ weddingId, wedding }) {
   const [showPreview, setShowPreview] = useState(false);
   const [showMediaSelector, setShowMediaSelector] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  
+  // Theme assets state
+  const [availableBorders, setAvailableBorders] = useState([]);
+  const [availableStyles, setAvailableStyles] = useState([]);
+  const [availableBackgrounds, setAvailableBackgrounds] = useState([]);
+  const [loadingAssets, setLoadingAssets] = useState(true);
 
   useEffect(() => {
     loadThemeSettings();
     loadUserStudios();
+    loadThemeAssets();
     
     // Load Google Fonts dynamically
     loadGoogleFonts();
@@ -109,6 +172,25 @@ export default function ThemeManager({ weddingId, wedding }) {
       console.error('Error loading studios:', error);
     } finally {
       setLoadingStudios(false);
+    }
+  };
+
+  const loadThemeAssets = async () => {
+    try {
+      setLoadingAssets(true);
+      const [bordersRes, stylesRes, backgroundsRes] = await Promise.all([
+        api.get('/api/theme-assets/borders'),
+        api.get('/api/theme-assets/precious-styles'),
+        api.get('/api/theme-assets/backgrounds')
+      ]);
+      
+      setAvailableBorders(bordersRes.data);
+      setAvailableStyles(stylesRes.data);
+      setAvailableBackgrounds(backgroundsRes.data);
+    } catch (error) {
+      console.error('Error loading theme assets:', error);
+    } finally {
+      setLoadingAssets(false);
     }
   };
 
@@ -254,13 +336,16 @@ export default function ThemeManager({ weddingId, wedding }) {
       // Get existing photos
       const existingPhotos = theme?.cover_photos || [];
       
+      // Get theme-specific precious moments limit
+      const preciousMomentsLimit = THEME_PHOTO_REQUIREMENTS[theme?.theme_id]?.preciousMomentsCount || 5;
+      
       // Filter out existing photos of the same category (for single photo categories)
       let updatedPhotos;
       if (category === 'moment') {
-        // For precious moments, allow multiple (up to 5)
+        // For precious moments, allow multiple based on theme requirements
         const existingMoments = existingPhotos.filter(photo => photo.category !== 'moment');
         const allMoments = [...existingPhotos.filter(photo => photo.category === 'moment'), ...uploadedFiles];
-        updatedPhotos = [...existingMoments, ...allMoments.slice(-5)]; // Keep only last 5 moments
+        updatedPhotos = [...existingMoments, ...allMoments.slice(-preciousMomentsLimit)]; // Keep only allowed moments per theme
       } else {
         // For groom, bride, couple - replace existing photo of same category
         updatedPhotos = [
@@ -320,13 +405,16 @@ export default function ThemeManager({ weddingId, wedding }) {
       // Get existing photos
       const existingPhotos = theme?.cover_photos || [];
       
+      // Get theme-specific precious moments limit
+      const preciousMomentsLimit = THEME_PHOTO_REQUIREMENTS[theme?.theme_id]?.preciousMomentsCount || 5;
+      
       // Filter out existing photos of the same category (for single photo categories)
       let updatedPhotos;
       if (category === 'moment') {
-        // For precious moments, allow multiple (up to 5)
+        // For precious moments, allow multiple based on theme requirements
         const existingMoments = existingPhotos.filter(photo => photo.category !== 'moment');
         const allMoments = [...existingPhotos.filter(photo => photo.category === 'moment'), ...processedMedia];
-        updatedPhotos = [...existingMoments, ...allMoments.slice(-5)]; // Keep only last 5 moments
+        updatedPhotos = [...existingMoments, ...allMoments.slice(-preciousMomentsLimit)]; // Keep only allowed moments per theme
       } else {
         // For groom, bride, couple - replace existing photo of same category
         updatedPhotos = [
@@ -530,73 +618,79 @@ export default function ThemeManager({ weddingId, wedding }) {
           <p className="text-xs text-gray-500">YouTube or direct video URL</p>
         </div>
 
-        {/* Cover Photos */}
+        {/* Cover Photos - Dynamic based on Theme */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium flex items-center gap-2">
               <ImageIcon className="w-4 h-4" />
               Cover Photos
             </label>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setShowMediaSelector(true)}
-              className="text-rose-600 border-rose-300 hover:bg-rose-50"
-            >
-              <ImageIcon className="w-4 h-4 mr-2" />
-              Select from Gallery
-            </Button>
           </div>
           
-          {/* Categorized Selection from Gallery */}
+          {/* Theme Requirements Info */}
+          {THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id] && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800">
+                <span className="font-semibold">Theme Requirements:</span>{' '}
+                {THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id].description}
+              </p>
+            </div>
+          )}
+          
+          {/* Categorized Selection from Gallery - Dynamic based on theme */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Groom Photo Selection */}
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory('groom');
-                  setShowMediaSelector(true);
-                }}
-                className="aspect-square border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-blue-50 w-full"
-              >
-                <ImageIcon className="w-6 h-6 text-blue-400 mb-1" />
-                <span className="text-xs text-blue-600 font-medium">Groom Photo</span>
-              </button>
-            </div>
+            {/* Groom Photo Selection - Conditional */}
+            {THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id]?.requiresGroom && (
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('groom');
+                    setShowMediaSelector(true);
+                  }}
+                  className="aspect-square border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-blue-50 w-full"
+                >
+                  <ImageIcon className="w-6 h-6 text-blue-400 mb-1" />
+                  <span className="text-xs text-blue-600 font-medium">Groom Photo</span>
+                </button>
+              </div>
+            )}
             
-            {/* Bride Photo Selection */}
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory('bride');
-                  setShowMediaSelector(true);
-                }}
-                className="aspect-square border-2 border-dashed border-pink-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 transition-colors bg-pink-50 w-full"
-              >
-                <ImageIcon className="w-6 h-6 text-pink-400 mb-1" />
-                <span className="text-xs text-pink-600 font-medium">Bride Photo</span>
-              </button>
-            </div>
+            {/* Bride Photo Selection - Conditional */}
+            {THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id]?.requiresBride && (
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('bride');
+                    setShowMediaSelector(true);
+                  }}
+                  className="aspect-square border-2 border-dashed border-pink-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 transition-colors bg-pink-50 w-full"
+                >
+                  <ImageIcon className="w-6 h-6 text-pink-400 mb-1" />
+                  <span className="text-xs text-pink-600 font-medium">Bride Photo</span>
+                </button>
+              </div>
+            )}
             
-            {/* Couple Photo Selection */}
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory('couple');
-                  setShowMediaSelector(true);
-                }}
-                className="aspect-square border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50 w-full"
-              >
-                <ImageIcon className="w-6 h-6 text-purple-400 mb-1" />
-                <span className="text-xs text-purple-600 font-medium">Couple Photo</span>
-              </button>
-            </div>
+            {/* Couple Photo Selection - Conditional */}
+            {THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id]?.requiresCouple && (
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('couple');
+                    setShowMediaSelector(true);
+                  }}
+                  className="aspect-square border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50 w-full"
+                >
+                  <ImageIcon className="w-6 h-6 text-purple-400 mb-1" />
+                  <span className="text-xs text-purple-600 font-medium">Couple Photo</span>
+                </button>
+              </div>
+            )}
             
-            {/* Precious Moments Selection */}
+            {/* Precious Moments Selection - Always shown with dynamic limit */}
             <div className="relative group">
               <button
                 type="button"
@@ -607,7 +701,10 @@ export default function ThemeManager({ weddingId, wedding }) {
                 className="aspect-square border-2 border-dashed border-green-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors bg-green-50 w-full"
               >
                 <ImageIcon className="w-6 h-6 text-green-400 mb-1" />
-                <span className="text-xs text-green-600 font-medium">Precious Moments</span>
+                <span className="text-xs text-green-600 font-medium text-center px-1">Precious Moments</span>
+                <span className="text-[10px] text-green-500 mt-0.5">
+                  (Up to {THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id]?.preciousMomentsCount || 5})
+                </span>
               </button>
             </div>
           </div>
@@ -727,6 +824,269 @@ export default function ThemeManager({ weddingId, wedding }) {
           <p className="text-xs text-gray-500">
             Select photos from your uploaded media gallery for each category
           </p>
+        </div>
+
+        {/* Dynamic Theme Assets Section */}
+        <div className="space-y-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Dynamic Theme Assets
+          </h3>
+          
+          {loadingAssets ? (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading theme assets...
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Photo Borders Selection */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Photo Borders</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {/* Groom Border */}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-blue-600">Groom Border</Label>
+                    <Select
+                      value={theme?.theme_assets?.borders?.groom_border_id || ''}
+                      onValueChange={(value) => handleUpdateTheme({
+                        theme_assets: {
+                          ...theme?.theme_assets,
+                          borders: {
+                            ...theme?.theme_assets?.borders,
+                            groom_border_id: value || null
+                          }
+                        }
+                      })}
+                    >
+                      <SelectTrigger className="text-xs">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            <div className="flex items-center gap-2">
+                              <img src={border.cdn_url} alt={border.name} className="w-4 h-4 rounded object-cover" />
+                              <span className="text-xs">{border.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Bride Border */}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-pink-600">Bride Border</Label>
+                    <Select
+                      value={theme?.theme_assets?.borders?.bride_border_id || ''}
+                      onValueChange={(value) => handleUpdateTheme({
+                        theme_assets: {
+                          ...theme?.theme_assets,
+                          borders: {
+                            ...theme?.theme_assets?.borders,
+                            bride_border_id: value || null
+                          }
+                        }
+                      })}
+                    >
+                      <SelectTrigger className="text-xs">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            <div className="flex items-center gap-2">
+                              <img src={border.cdn_url} alt={border.name} className="w-4 h-4 rounded object-cover" />
+                              <span className="text-xs">{border.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Couple Border */}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-purple-600">Couple Border</Label>
+                    <Select
+                      value={theme?.theme_assets?.borders?.couple_border_id || ''}
+                      onValueChange={(value) => handleUpdateTheme({
+                        theme_assets: {
+                          ...theme?.theme_assets,
+                          borders: {
+                            ...theme?.theme_assets?.borders,
+                            couple_border_id: value || null
+                          }
+                        }
+                      })}
+                    >
+                      <SelectTrigger className="text-xs">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            <div className="flex items-center gap-2">
+                              <img src={border.cdn_url} alt={border.name} className="w-4 h-4 rounded object-cover" />
+                              <span className="text-xs">{border.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Cover Border */}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-green-600">Cover Border</Label>
+                    <Select
+                      value={theme?.theme_assets?.borders?.cover_border_id || ''}
+                      onValueChange={(value) => handleUpdateTheme({
+                        theme_assets: {
+                          ...theme?.theme_assets,
+                          borders: {
+                            ...theme?.theme_assets?.borders,
+                            cover_border_id: value || null
+                          }
+                        }
+                      })}
+                    >
+                      <SelectTrigger className="text-xs">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            <div className="flex items-center gap-2">
+                              <img src={border.cdn_url} alt={border.name} className="w-4 h-4 rounded object-cover" />
+                              <span className="text-xs">{border.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Precious Moment Style Selection */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Precious Moments Style</Label>
+                <Select
+                  value={theme?.theme_assets?.precious_moment_style_id || ''}
+                  onValueChange={(value) => handleUpdateTheme({
+                    theme_assets: {
+                      ...theme?.theme_assets,
+                      precious_moment_style_id: value || null
+                    }
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select style for precious moments layout" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Default Layout</SelectItem>
+                    {availableStyles.map(style => (
+                      <SelectItem key={style.id} value={style.id}>
+                        <div className="flex items-center gap-2">
+                          {style.cdn_url && (
+                            <img src={style.cdn_url} alt={style.name} className="w-4 h-4 rounded object-cover" />
+                          )}
+                          <div>
+                            <div className="text-xs font-medium">{style.name}</div>
+                            <div className="text-xs text-gray-500">{style.layout_type} • {style.photo_count} photos</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Background Image Selection */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Background Image</Label>
+                <Select
+                  value={theme?.theme_assets?.background_image_id || ''}
+                  onValueChange={(value) => handleUpdateTheme({
+                    theme_assets: {
+                      ...theme?.theme_assets,
+                      background_image_id: value || null
+                    }
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select background image (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No Background</SelectItem>
+                    {availableBackgrounds.map(bg => (
+                      <SelectItem key={bg.id} value={bg.id}>
+                        <div className="flex items-center gap-2">
+                          <img src={bg.cdn_url} alt={bg.name} className="w-6 h-4 rounded object-cover" />
+                          <div>
+                            <div className="text-xs font-medium">{bg.name}</div>
+                            <div className="text-xs text-gray-500">{bg.category} • {bg.width}x{bg.height}</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Random Assignment Button */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const response = await api.get('/api/theme-assets/random-defaults');
+                      const defaults = response.data;
+                      
+                      await handleUpdateTheme({
+                        theme_assets: {
+                          borders: {
+                            groom_border_id: defaults.border?.id || null,
+                            bride_border_id: defaults.border?.id || null,
+                            couple_border_id: defaults.border?.id || null,
+                            cover_border_id: defaults.border?.id || null
+                          },
+                          precious_moment_style_id: defaults.precious_moment_style?.id || null,
+                          background_image_id: defaults.background?.id || null
+                        }
+                      });
+                      
+                      toast.success('Random theme assets assigned!');
+                    } catch (error) {
+                      console.error('Error assigning random assets:', error);
+                      toast.error('Failed to assign random assets');
+                    }
+                  }}
+                  className="text-xs"
+                >
+                  <ImageIcon className="w-3 h-3 mr-1" />
+                  Assign Random Assets
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/admin/theme-assets', '_blank')}
+                  className="text-xs"
+                >
+                  <Upload className="w-3 h-3 mr-1" />
+                  Manage Assets
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Custom Messages */}
@@ -870,7 +1230,7 @@ export default function ThemeManager({ weddingId, wedding }) {
           setSelectedCategory(null);
         }}
         weddingId={weddingId}
-        maxSelection={selectedCategory === 'moment' ? 5 : 1}
+        maxSelection={selectedCategory === 'moment' ? (THEME_PHOTO_REQUIREMENTS[safeTheme.theme_id]?.preciousMomentsCount || 5) : 1}
         allowedTypes={selectedCategory === 'moment' ? ['photo', 'video'] : ['photo']}
         selectedMedia={[]}
         title={selectedCategory ? `Select ${selectedCategory === 'groom' ? 'Groom' : selectedCategory === 'bride' ? 'Bride' : selectedCategory === 'couple' ? 'Couple' : 'Precious Moments'} Media` : 'Select Media'}

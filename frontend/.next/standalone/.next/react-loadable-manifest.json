@@ -10,16 +10,15 @@
     "files": [
       "static/chunks/8492.a033046b48eeaec3.js",
       "static/chunks/3763.7b22ee53194b5681.js",
-      "static/chunks/7705.c6c9e80b94d3a981.js"
+      "static/chunks/7705.21dae1a1cc04e971.js"
     ]
   },
   "components/ThemeRenderer.js -> @/components/themes/FloralGarden": {
-    "id": 8659,
+    "id": 1011,
     "files": [
       "static/chunks/8492.a033046b48eeaec3.js",
       "static/chunks/3763.7b22ee53194b5681.js",
-      "static/chunks/6745.ea8b42cf61476dc3.js",
-      "static/chunks/8659.eea0da7b12733cfd.js"
+      "static/chunks/1011.eee54a44f8d15113.js"
     ]
   },
   "components/ThemeRenderer.js -> @/components/themes/ModernMinimalist": {
@@ -27,7 +26,23 @@
     "files": [
       "static/chunks/8492.a033046b48eeaec3.js",
       "static/chunks/3763.7b22ee53194b5681.js",
-      "static/chunks/2048.902040da4104c39b.js"
+      "static/chunks/2048.790d49b68796217d.js"
+    ]
+  },
+  "components/ThemeRenderer.js -> @/components/themes/PremiumWeddingCard": {
+    "id": 5536,
+    "files": [
+      "static/chunks/8492.a033046b48eeaec3.js",
+      "static/chunks/3763.7b22ee53194b5681.js",
+      "static/chunks/5536.e3212ef4dafb8cc2.js"
+    ]
+  },
+  "components/ThemeRenderer.js -> @/components/themes/RomanticPastel": {
+    "id": 9188,
+    "files": [
+      "static/chunks/8492.a033046b48eeaec3.js",
+      "static/chunks/3763.7b22ee53194b5681.js",
+      "static/chunks/9188.8bb4d5e680259992.js"
     ]
   },
   "components/ThemeRenderer.js -> @/components/themes/RoyalPalace": {
@@ -35,7 +50,15 @@
     "files": [
       "static/chunks/8492.a033046b48eeaec3.js",
       "static/chunks/3763.7b22ee53194b5681.js",
-      "static/chunks/9177.a8083fbb4d1b495d.js"
+      "static/chunks/9177.d5255f223084d577.js"
+    ]
+  },
+  "components/ThemeRenderer.js -> @/components/themes/TraditionalSouthIndian": {
+    "id": 1616,
+    "files": [
+      "static/chunks/8492.a033046b48eeaec3.js",
+      "static/chunks/3763.7b22ee53194b5681.js",
+      "static/chunks/1616.45e6adc2cc903f1b.js"
     ]
   },
   "node_modules/react-player/lib/ReactPlayer.js -> ./Preview": {

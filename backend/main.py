@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.database import init_db, close_db
-from app.routes import auth, weddings, streams, subscriptions, admin, chat, analytics, features, media, premium, phase10
+from app.routes import auth, weddings, streams, subscriptions, admin, chat, analytics, features, media, premium, phase10, theme_assets, templates, comments
 from app.services.socket_service import sio
 
 @asynccontextmanager
@@ -50,6 +50,9 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"]
 app.include_router(features.router, prefix="/api/features", tags=["Advanced Features"])
 app.include_router(premium.router, prefix="/api/premium", tags=["Premium Features"])
 app.include_router(phase10.router, prefix="/api/phase10", tags=["Phase 10 - Premium Features"])
+app.include_router(theme_assets.router, prefix="/api", tags=["Theme Assets"])
+app.include_router(templates.router, prefix="/api", tags=["Templates"])
+app.include_router(comments.router, prefix="/api/comments", tags=["Comments"])
 
 @app.get("/")
 async def root():

@@ -65,6 +65,38 @@ export default function FloralGarden({ wedding, onEnter }) {
     delay: Math.random() * 3,
   }));
 
+  // Floral Border SVG Component
+  const FloralBorder = ({ className = "", style = {} }) => (
+    <svg className={`absolute ${className}`} style={style} viewBox="0 0 200 200" preserveAspectRatio="none">
+      {/* Vine curves */}
+      <path
+        d="M5,5 Q30,20 50,40 T80,80 T110,120 T140,160 T170,190"
+        stroke={primaryColor}
+        strokeWidth="2"
+        fill="none"
+        opacity="0.6"
+      />
+      {/* Flowers along the vine */}
+      <g transform="translate(50, 40)">
+        <circle cx="0" cy="0" r="8" fill={primaryColor} opacity="0.7"/>
+        <circle cx="-5" cy="5" r="6" fill={primaryColor} opacity="0.6"/>
+        <circle cx="5" cy="5" r="6" fill={primaryColor} opacity="0.6"/>
+        <circle cx="0" cy="10" r="6" fill={primaryColor} opacity="0.6"/>
+        <circle cx="0" cy="0" r="3" fill="#fbbf24" opacity="0.9"/>
+      </g>
+      <g transform="translate(110, 120)">
+        <circle cx="0" cy="0" r="7" fill={secondaryColor} opacity="0.7"/>
+        <circle cx="-4" cy="4" r="5" fill={secondaryColor} opacity="0.6"/>
+        <circle cx="4" cy="4" r="5" fill={secondaryColor} opacity="0.6"/>
+        <circle cx="0" cy="8" r="5" fill={secondaryColor} opacity="0.6"/>
+        <circle cx="0" cy="0" r="2.5" fill="#fbbf24" opacity="0.9"/>
+      </g>
+      {/* Leaves */}
+      <ellipse cx="70" cy="70" rx="6" ry="12" fill="#86efac" opacity="0.5" transform="rotate(-30 70 70)"/>
+      <ellipse cx="130" cy="140" rx="6" ry="12" fill="#86efac" opacity="0.5" transform="rotate(20 130 140)"/>
+    </svg>
+  );
+
   return (
     <div className="min-h-screen relative overflow-hidden" 
          style={{
@@ -224,191 +256,15 @@ export default function FloralGarden({ wedding, onEnter }) {
         />
       ))}
 
-      {/* Main Content */}
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50 relative overflow-hidden">
-      {/* Enhanced Floral Vine Corner Decorations */}
-      {/* Top Left Corner - Vine with Flowers */}
-      <div className="fixed top-0 left-0 w-80 h-80 opacity-40 pointer-events-none z-20">
-        <svg viewBox="0 0 300 300" className="w-full h-full">
-          {/* Curving vine */}
-          <path
-            d="M10,10 Q40,40 60,80 T80,140 T90,200"
-            stroke={primaryColor}
-            strokeWidth="3"
-            fill="none"
-            opacity="0.6"
-          />
-          <path
-            d="M10,10 Q35,50 50,90 T60,150"
-            stroke={secondaryColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.5"
-          />
-          {/* Flowers along the vine */}
-          <g transform="translate(60, 80)">
-            <circle cx="0" cy="0" r="12" fill={primaryColor} opacity="0.7"/>
-            <circle cx="-8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
-            <circle cx="8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="16" r="10" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <g transform="translate(80, 140)">
-            <circle cx="0" cy="0" r="10" fill={secondaryColor} opacity="0.7"/>
-            <circle cx="-6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="12" r="8" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          {/* Small leaves */}
-          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
-          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
-          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
-        </svg>
-      </div>
-      
-      {/* Top Right Corner */}
-      <div className="fixed top-0 right-0 w-80 h-80 opacity-40 pointer-events-none z-20 transform scale-x-[-1]">
-        <svg viewBox="0 0 300 300" className="w-full h-full">
-          <path
-            d="M10,10 Q40,40 60,80 T80,140 T90,200"
-            stroke={primaryColor}
-            strokeWidth="3"
-            fill="none"
-            opacity="0.6"
-          />
-          <path
-            d="M10,10 Q35,50 50,90 T60,150"
-            stroke={secondaryColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.5"
-          />
-          <g transform="translate(60, 80)">
-            <circle cx="0" cy="0" r="12" fill={primaryColor} opacity="0.7"/>
-            <circle cx="-8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
-            <circle cx="8" cy="8" r="10" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="16" r="10" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <g transform="translate(80, 140)">
-            <circle cx="0" cy="0" r="10" fill={secondaryColor} opacity="0.7"/>
-            <circle cx="-6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="6" cy="6" r="8" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="12" r="8" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
-          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
-          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
-        </svg>
-      </div>
-      
-      {/* Bottom Left Corner */}
-      <div className="fixed bottom-0 left-0 w-80 h-80 opacity-40 pointer-events-none z-20 transform rotate-180">
-        <svg viewBox="0 0 300 300" className="w-full h-full">
-          <path
-            d="M10,10 Q40,40 60,80 T80,140 T90,200"
-            stroke={secondaryColor}
-            strokeWidth="3"
-            fill="none"
-            opacity="0.6"
-          />
-          <path
-            d="M10,10 Q35,50 50,90 T60,150"
-            stroke={primaryColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.5"
-          />
-          <g transform="translate(60, 80)">
-            <circle cx="0" cy="0" r="12" fill={secondaryColor} opacity="0.7"/>
-            <circle cx="-8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="16" r="10" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <g transform="translate(80, 140)">
-            <circle cx="0" cy="0" r="10" fill={primaryColor} opacity="0.7"/>
-            <circle cx="-6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
-            <circle cx="6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="12" r="8" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
-          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
-          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
-        </svg>
-      </div>
-      
-      {/* Bottom Right Corner */}
-      <div className="fixed bottom-0 right-0 w-80 h-80 opacity-40 pointer-events-none z-20 transform rotate-180 scale-x-[-1]">
-        <svg viewBox="0 0 300 300" className="w-full h-full">
-          <path
-            d="M10,10 Q40,40 60,80 T80,140 T90,200"
-            stroke={secondaryColor}
-            strokeWidth="3"
-            fill="none"
-            opacity="0.6"
-          />
-          <path
-            d="M10,10 Q35,50 50,90 T60,150"
-            stroke={primaryColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.5"
-          />
-          <g transform="translate(60, 80)">
-            <circle cx="0" cy="0" r="12" fill={secondaryColor} opacity="0.7"/>
-            <circle cx="-8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="8" cy="8" r="10" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="16" r="10" fill={secondaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <g transform="translate(80, 140)">
-            <circle cx="0" cy="0" r="10" fill={primaryColor} opacity="0.7"/>
-            <circle cx="-6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
-            <circle cx="6" cy="6" r="8" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="12" r="8" fill={primaryColor} opacity="0.6"/>
-            <circle cx="0" cy="0" r="4" fill="#fbbf24" opacity="0.8"/>
-          </g>
-          <ellipse cx="45" cy="60" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-30 45 60)"/>
-          <ellipse cx="70" cy="110" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(20 70 110)"/>
-          <ellipse cx="85" cy="170" rx="8" ry="15" fill="#86efac" opacity="0.5" transform="rotate(-15 85 170)"/>
-        </svg>
-      </div>
-
-      {/* Falling Petals Animation */}
-      {petals.map((petal) => (
-        <motion.div
-          key={petal.id}
-          className="absolute w-3 h-3 rounded-full"
-          style={{
-            left: `${petal.x}%`,
-            background: `radial-gradient(circle, ${secondaryColor}, ${primaryColor})`,
-            opacity: 0.6,
-          }}
-          initial={{ y: -20, rotate: 0 }}
-          animate={{
-            y: '100vh',
-            rotate: 360,
-            x: [0, 30, -30, 0],
-          }}
-          transition={{
-            duration: petal.duration,
-            delay: petal.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
-
-      {/* Top Right Watch Wedding Button */}
+      {/* Main Content - Scrollable */}
+      <div className="relative z-20 max-w-6xl mx-auto px-4 py-16">
+        
+        {/* Watch Wedding Button - SCROLLS WITH CONTENT (Not Fixed) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="fixed top-6 right-6 z-50"
+          className="absolute top-6 right-6 z-30"
         >
           <motion.button
             onClick={onEnter}
@@ -421,6 +277,7 @@ export default function FloralGarden({ wedding, onEnter }) {
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            data-testid="watch-wedding-button"
           >
             <motion.div
               className="absolute inset-0 bg-white/20"
@@ -432,9 +289,6 @@ export default function FloralGarden({ wedding, onEnter }) {
           </motion.button>
         </motion.div>
 
-      {/* Main Content */}
-      <div className="relative z-20 max-w-6xl mx-auto px-4 py-16">
-        
         {/* Animated Wedding Icons - Top Row */}
         <div className="flex justify-center gap-8 mb-8">
           <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
@@ -466,7 +320,7 @@ export default function FloralGarden({ wedding, onEnter }) {
           </p>
         </motion.div>
 
-        {/* Enhanced Romantic Wedding Card with Photos */}
+        {/* Enhanced Romantic Wedding Card with FLORAL BORDERS */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, rotateX: -15 }}
           animate={{ opacity: 1, scale: 1, rotateX: 0 }}
@@ -477,13 +331,18 @@ export default function FloralGarden({ wedding, onEnter }) {
           }}
         >
           <div 
-            className="relative p-12 rounded-3xl shadow-2xl overflow-hidden"
+            className="relative p-12 rounded-3xl overflow-hidden"
             style={{
               background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(252,231,243,0.98) 100%)`,
-              border: `3px solid ${secondaryColor}`,
-              boxShadow: `0 25px 80px rgba(244, 63, 94, 0.3), 0 0 0 1px ${primaryColor}20`,
+              boxShadow: `0 25px 80px rgba(244, 63, 94, 0.3)`,
             }}
           >
+            {/* FLORAL BORDER - All 4 Corners */}
+            <FloralBorder className="top-0 left-0 w-48 h-48" style={{ opacity: 0.8 }} />
+            <FloralBorder className="top-0 right-0 w-48 h-48 transform scale-x-[-1]" style={{ opacity: 0.8 }} />
+            <FloralBorder className="bottom-0 left-0 w-48 h-48 transform scale-y-[-1]" style={{ opacity: 0.8 }} />
+            <FloralBorder className="bottom-0 right-0 w-48 h-48 transform scale-[-1]" style={{ opacity: 0.8 }} />
+
             {/* Soft Background Pattern */}
             <div 
               className="absolute inset-0 opacity-5"
@@ -521,20 +380,24 @@ export default function FloralGarden({ wedding, onEnter }) {
             {/* Romantic Layout: Photos on sides, Names in center */}
             <div className="flex items-center justify-center gap-8 md:gap-16 relative z-10">
               
-              {/* Bride Photo - Left Side */}
+              {/* Bride Photo - Left Side with FLORAL FRAME */}
               {bridePhoto ? (
                 <motion.div
                   initial={{ opacity: 0, x: -100, rotate: -5 }}
                   animate={{ opacity: 1, x: 0, rotate: 0 }}
                   transition={{ duration: 1.5, delay: 2.2, type: "spring" }}
                   className="hidden md:block"
+                  data-testid="bride-photo"
                 >
                   <div className="relative group">
                     {/* Soft Glow Effect */}
                     <div className="absolute -inset-3 bg-gradient-to-br from-pink-200 to-rose-200 rounded-2xl opacity-40 blur-xl group-hover:opacity-60 transition-opacity" />
                     
-                    {/* Photo Frame */}
-                    <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: primaryColor }}>
+                    {/* Photo Frame with Floral Borders */}
+                    <div className="relative rounded-2xl overflow-hidden" style={{ 
+                      border: `4px solid ${primaryColor}`,
+                      boxShadow: `0 0 0 8px rgba(244, 63, 94, 0.1), inset 0 0 20px rgba(244, 63, 94, 0.1)`
+                    }}>
                       <img
                         src={bridePhoto.url || bridePhoto}
                         alt="Bride"
@@ -545,12 +408,18 @@ export default function FloralGarden({ wedding, onEnter }) {
                       {/* Soft Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-pink-100/20 to-transparent" />
                       
-                      {/* Floral Corner Decorations */}
-                      <div className="absolute top-2 left-2">
-                        <Flower2 className="w-6 h-6" style={{ color: primaryColor }} opacity="0.7" />
+                      {/* Floral Corner Decorations - Enhanced */}
+                      <div className="absolute top-1 left-1 w-10 h-10">
+                        <svg viewBox="0 0 40 40" className="w-full h-full">
+                          <circle cx="20" cy="20" r="8" fill={primaryColor} opacity="0.7"/>
+                          <circle cx="15" cy="25" r="6" fill={primaryColor} opacity="0.6"/>
+                          <circle cx="25" cy="25" r="6" fill={primaryColor} opacity="0.6"/>
+                          <circle cx="20" cy="30" r="6" fill={primaryColor} opacity="0.6"/>
+                          <circle cx="20" cy="20" r="3" fill="#fbbf24" opacity="0.9"/>
+                        </svg>
                       </div>
-                      <div className="absolute bottom-2 right-2">
-                        <Heart className="w-5 h-5" style={{ color: primaryColor }} fill={primaryColor} opacity="0.7" />
+                      <div className="absolute bottom-1 right-1">
+                        <Heart className="w-6 h-6" style={{ color: primaryColor }} fill={primaryColor} opacity="0.8" />
                       </div>
                     </div>
                     
@@ -662,20 +531,24 @@ export default function FloralGarden({ wedding, onEnter }) {
                 </div>
               </div>
               
-              {/* Groom Photo - Right Side */}
+              {/* Groom Photo - Right Side with FLORAL FRAME */}
               {groomPhoto ? (
                 <motion.div
                   initial={{ opacity: 0, x: 100, rotate: 5 }}
                   animate={{ opacity: 1, x: 0, rotate: 0 }}
                   transition={{ duration: 1.5, delay: 2.2, type: "spring" }}
                   className="hidden md:block"
+                  data-testid="groom-photo"
                 >
                   <div className="relative group">
                     {/* Soft Glow Effect */}
                     <div className="absolute -inset-3 bg-gradient-to-br from-rose-200 to-pink-200 rounded-2xl opacity-40 blur-xl group-hover:opacity-60 transition-opacity" />
                     
-                    {/* Photo Frame */}
-                    <div className="relative rounded-2xl overflow-hidden border-4" style={{ borderColor: secondaryColor }}>
+                    {/* Photo Frame with Floral Borders */}
+                    <div className="relative rounded-2xl overflow-hidden" style={{ 
+                      border: `4px solid ${secondaryColor}`,
+                      boxShadow: `0 0 0 8px rgba(168, 85, 247, 0.1), inset 0 0 20px rgba(168, 85, 247, 0.1)`
+                    }}>
                       <img
                         src={groomPhoto.url || groomPhoto}
                         alt="Groom"
@@ -686,12 +559,18 @@ export default function FloralGarden({ wedding, onEnter }) {
                       {/* Soft Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-rose-100/20 to-transparent" />
                       
-                      {/* Floral Corner Decorations */}
-                      <div className="absolute top-2 right-2">
-                        <Flower2 className="w-6 h-6" style={{ color: secondaryColor }} opacity="0.7" />
+                      {/* Floral Corner Decorations - Enhanced */}
+                      <div className="absolute top-1 right-1 w-10 h-10">
+                        <svg viewBox="0 0 40 40" className="w-full h-full">
+                          <circle cx="20" cy="20" r="8" fill={secondaryColor} opacity="0.7"/>
+                          <circle cx="15" cy="25" r="6" fill={secondaryColor} opacity="0.6"/>
+                          <circle cx="25" cy="25" r="6" fill={secondaryColor} opacity="0.6"/>
+                          <circle cx="20" cy="30" r="6" fill={secondaryColor} opacity="0.6"/>
+                          <circle cx="20" cy="20" r="3" fill="#fbbf24" opacity="0.9"/>
+                        </svg>
                       </div>
-                      <div className="absolute bottom-2 left-2">
-                        <Heart className="w-5 h-5" style={{ color: secondaryColor }} fill={secondaryColor} opacity="0.7" />
+                      <div className="absolute bottom-1 left-1">
+                        <Heart className="w-6 h-6" style={{ color: secondaryColor }} fill={secondaryColor} opacity="0.8" />
                       </div>
                     </div>
                     
@@ -759,41 +638,55 @@ export default function FloralGarden({ wedding, onEnter }) {
           </div>
         </motion.div>
 
-        {/* Couple Photo Section */}
+        {/* Couple Photo Section with FLORAL BORDER */}
         {couplePhoto ? (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, delay: 3.0 }}
             className="mb-16 text-center"
+            data-testid="couple-photo"
           >
             <div className="relative inline-block">
               {/* Romantic Glow Background */}
               <div className="absolute -inset-8 bg-gradient-to-br from-pink-100 via-rose-100 to-purple-100 rounded-3xl opacity-60 blur-2xl" />
               
-              {/* Couple Photo Frame - No Border Background */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              {/* Couple Photo Frame with FLORAL BORDER */}
+              <div className="relative rounded-3xl overflow-hidden" style={{
+                boxShadow: `0 25px 60px rgba(244, 63, 94, 0.3)`,
+              }}>
+                {/* Floral Border Overlay */}
+                <div className="absolute inset-0 pointer-events-none z-10">
+                  <FloralBorder className="top-0 left-0 w-32 h-32" style={{ opacity: 0.9 }} />
+                  <FloralBorder className="top-0 right-0 w-32 h-32 transform scale-x-[-1]" style={{ opacity: 0.9 }} />
+                  <FloralBorder className="bottom-0 left-0 w-32 h-32 transform scale-y-[-1]" style={{ opacity: 0.9 }} />
+                  <FloralBorder className="bottom-0 right-0 w-32 h-32 transform scale-[-1]" style={{ opacity: 0.9 }} />
+                </div>
+                
                 <img
                   src={couplePhoto.url || couplePhoto}
                   alt="Couple"
-                  className="w-80 h-56 object-cover"
-                  style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                  className="w-80 h-56 object-cover relative"
+                  style={{ 
+                    filter: 'contrast(1.1) saturate(1.2)',
+                    border: `6px solid ${primaryColor}`,
+                  }}
                 />
                 
                 {/* Soft Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-pink-900/10 to-transparent" />
                 
                 {/* Corner Decorations */}
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 z-20">
                   <Heart className="w-8 h-8" style={{ color: 'white' }} fill="white" opacity="0.8" />
                 </div>
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-3 right-3 z-20">
                   <Heart className="w-8 h-8" style={{ color: 'white' }} fill="white" opacity="0.8" />
                 </div>
-                <div className="absolute bottom-3 left-3">
+                <div className="absolute bottom-3 left-3 z-20">
                   <Flower2 className="w-6 h-6" style={{ color: 'white' }} opacity="0.7" />
                 </div>
-                <div className="absolute bottom-3 right-3">
+                <div className="absolute bottom-3 right-3 z-20">
                   <Flower2 className="w-6 h-6" style={{ color: 'white' }} opacity="0.7" />
                 </div>
               </div>
@@ -1032,13 +925,14 @@ export default function FloralGarden({ wedding, onEnter }) {
           </motion.div>
         )}
 
-        {/* Photo Gallery - Enhanced with Hearts */}
+        {/* Photo Gallery - Enhanced with FLORAL BORDERS */}
         {coverPhotos.length > 1 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 3.7 }}
             className="mb-16"
+            data-testid="precious-moments"
           >
             {/* Gallery Header with Icons */}
             <div className="text-center mb-12">
@@ -1073,9 +967,28 @@ export default function FloralGarden({ wedding, onEnter }) {
                     className="relative group"
                   >
                     <div 
-                      className="aspect-square rounded-2xl overflow-hidden shadow-xl border-4 relative"
-                      style={{ borderColor: idx % 2 === 0 ? primaryColor : secondaryColor }}
+                      className="aspect-square rounded-2xl overflow-hidden relative"
+                      style={{ 
+                        border: `4px solid ${idx % 2 === 0 ? primaryColor : secondaryColor}`,
+                        boxShadow: `0 10px 30px rgba(244, 63, 94, 0.2)`,
+                      }}
                     >
+                      {/* Floral border overlay on hover */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                        <div className="absolute top-0 left-0 w-16 h-16">
+                          <svg viewBox="0 0 64 64" className="w-full h-full">
+                            <circle cx="32" cy="32" r="12" fill={idx % 2 === 0 ? primaryColor : secondaryColor} opacity="0.8"/>
+                            <circle cx="24" cy="38" r="9" fill={idx % 2 === 0 ? primaryColor : secondaryColor} opacity="0.7"/>
+                            <circle cx="40" cy="38" r="9" fill={idx % 2 === 0 ? primaryColor : secondaryColor} opacity="0.7"/>
+                            <circle cx="32" cy="48" r="9" fill={idx % 2 === 0 ? primaryColor : secondaryColor} opacity="0.7"/>
+                            <circle cx="32" cy="32" r="5" fill="#fbbf24" opacity="0.95"/>
+                          </svg>
+                        </div>
+                        <div className="absolute bottom-0 right-0">
+                          <Flower2 className="w-10 h-10" style={{ color: idx % 2 === 0 ? primaryColor : secondaryColor }} opacity="0.8" />
+                        </div>
+                      </div>
+                      
                       {(moment.type === 'video' || moment.url?.includes('.mp4') || moment.url?.includes('.mov')) ? (
                         <div className="relative">
                           <video
@@ -1146,7 +1059,7 @@ export default function FloralGarden({ wedding, onEnter }) {
           </motion.div>
         )}
 
-        {/* Watch Live Button - Enhanced */}
+        {/* Watch Live Button - Enhanced (Scrollable - at bottom) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1242,7 +1155,6 @@ export default function FloralGarden({ wedding, onEnter }) {
           </div>
         </motion.div>
       </div>
-    </div>
     </div>
   );
 }

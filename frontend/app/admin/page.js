@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Users, Video, TrendingUp, DollarSign, Eye, Trash2, Search, 
-  BarChart3, Calendar, Activity, Crown, AlertCircle 
+  BarChart3, Calendar, Activity, Crown, AlertCircle, Image as ImageIcon 
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -181,6 +181,17 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Quick Actions */}
+        <div className="mb-6">
+          <Button
+            onClick={() => router.push('/admin/theme-assets')}
+            className="bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600"
+          >
+            <ImageIcon className="w-4 h-4 mr-2" />
+            Manage Theme Assets
+          </Button>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white">

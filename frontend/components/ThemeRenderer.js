@@ -23,12 +23,27 @@ const CinemaScope = dynamic(() => import('@/components/themes/CinemaScope'), {
   loading: () => <div className="min-h-screen bg-slate-900 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-red-500" /></div>,
 });
 
+const PremiumWeddingCard = dynamic(() => import('@/components/themes/PremiumWeddingCard'), {
+  loading: () => <div className="min-h-screen bg-gradient-to-br from-amber-50 to-white flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-amber-500" /></div>,
+});
+
+const RomanticPastel = dynamic(() => import('@/components/themes/RomanticPastel'), {
+  loading: () => <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-pink-500" /></div>,
+});
+
+const TraditionalSouthIndian = dynamic(() => import('@/components/themes/TraditionalSouthIndian'), {
+  loading: () => <div className="min-h-screen bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>,
+});
+
 // Theme component map
 const THEME_COMPONENTS = {
   floral_garden: FloralGarden,
   royal_palace: RoyalPalace,
   modern_minimalist: ModernMinimalist,
   cinema_scope: CinemaScope,
+  premium_wedding_card: PremiumWeddingCard,
+  romantic_pastel: RomanticPastel,
+  traditional_south_indian: TraditionalSouthIndian,
   default_modern: FloralGarden, // Default fallback
 };
 
