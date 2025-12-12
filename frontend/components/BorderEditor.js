@@ -291,7 +291,7 @@ export default function BorderEditor({
     // Draw shapes/borders
     const borderToDraw = mode === 'draw' && currentPath.length > 0 ? currentPath : detectedBorder;
     
-    if (borderToDraw.length > 0) {
+    if (borderToDraw && Array.isArray(borderToDraw) && borderToDraw.length > 0) {
       // Apply shadow effects
       if (shadowBlur[0] > 0) {
         overlayCtx.shadowBlur = shadowBlur[0];
@@ -329,7 +329,7 @@ export default function BorderEditor({
       overlayCtx.shadowOffsetY = 0;
       
       // Draw control points for edit mode
-      if (mode === 'edit') {
+      if (mode === 'edit' && detectedBorder && Array.isArray(detectedBorder)) {
         overlayCtx.fillStyle = '#ef4444';
         detectedBorder.forEach(point => {
           overlayCtx.beginPath();
