@@ -204,12 +204,12 @@ async def upload_precious_style(
     frame_shapes: str = Form(""),
     tags: str = Form(""),
     preview_image: Optional[UploadFile] = File(None),
-    current_user: dict = Depends(get_current_admin)
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """
     Upload a precious moment style configuration
     """
-    db = get_db()
     temp_path = None
     
     try:
@@ -270,10 +270,10 @@ async def upload_precious_style(
 async def list_precious_styles(
     current_user: dict = Depends(get_current_admin),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    db = Depends(get_db_dependency)
 ):
     """List all precious moment styles (admin only)"""
-    db = get_db()
     cursor = db.precious_moment_styles.find().sort("created_at", -1).skip(skip).limit(limit)
     styles = await cursor.to_list(length=limit)
     return [PreciousMomentStyleResponse(**style) for style in styles]
@@ -281,10 +281,10 @@ async def list_precious_styles(
 @router.delete("/admin/theme-assets/precious-styles/{style_id}")
 async def delete_precious_style(
     style_id: str,
-    current_user: dict = Depends(get_current_admin)
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """Delete a precious moment style"""
-    db = get_db()
     result = await db.precious_moment_styles.delete_one({"id": style_id})
     
     if result.deleted_count == 0:
@@ -302,13 +302,13 @@ async def upload_background_images(
     files: List[UploadFile] = File(...),
     names: Optional[str] = Form(None),
     category: str = Form("general"),
-    tags: Optional[str] = Form(""),
-    current_user: dict = Depends(get_current_admin)
+    tags: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """
     Upload multiple background images (max 10MB each)
     """
-    db = get_db()
     uploaded_backgrounds = []
     
     # Parse names if provided
@@ -382,10 +382,10 @@ async def upload_background_images(
 async def list_background_images(
     current_user: dict = Depends(get_current_admin),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    db = Depends(get_db_dependency)
 ):
     """List all background images (admin only)"""
-    db = get_db()
     cursor = db.background_images.find().sort("created_at", -1).skip(skip).limit(limit)
     backgrounds = await cursor.to_list(length=limit)
     return [BackgroundImageResponse(**bg) for bg in backgrounds]
@@ -393,10 +393,10 @@ async def list_background_images(
 @router.delete("/admin/theme-assets/backgrounds/{bg_id}")
 async def delete_background_image(
     bg_id: str,
-    current_user: dict = Depends(get_current_admin)
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """Delete a background image"""
-    db = get_db()
     result = await db.background_images.delete_one({"id": bg_id})
     
     if result.deleted_count == 0:

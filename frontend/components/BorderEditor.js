@@ -1,13 +1,26 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Upload, Wand2, Save, X, ZoomIn, ZoomOut, RotateCw, 
-  MousePointer, Circle, Square, Triangle, PenTool, Edit3
+  Pen, Eraser, Undo, Redo, ZoomIn, ZoomOut, Grid, Move, Save, Eye, 
+  Plus, X, Download, Upload, Layers, Droplet, Sun, Wand2, Edit3
 } from 'lucide-react';
+
+/**
+ * Border Editor - Advanced drawing tool for creating photo borders
+ * 
+ * Features:
+ * - Freehand drawing with pen tool (same as TemplateEditor)
+ * - Canvas zoom, pan, and grid
+ * - Undo/redo functionality
+ * - Shape editing and manipulation
+ * - Automatic border detection
+ * - Feather and shadow controls
+ * - Multiple drawing modes
+ */
 
 export default function BorderEditor({ 
   imageUrl, 
@@ -17,19 +30,35 @@ export default function BorderEditor({
   className = '' 
 }) {
   const canvasRef = useRef(null);
+  const overlayCanvasRef = useRef(null);
+  const containerRef = useRef(null);
+  
+  // Drawing state (same as TemplateEditor)
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentTool, setCurrentTool] = useState('pen'); // pen, eraser, move
+  const [currentPath, setCurrentPath] = useState([]);
+  const [shapes, setShapes] = useState([]);
+  const [selectedShape, setSelectedShape] = useState(null);
+  
+  // Canvas state (same as TemplateEditor)
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [showGrid, setShowGrid] = useState(true);
+  const [templateOpacity, setTemplateOpacity] = useState(0.7);
+  
+  // History for undo/redo (same as TemplateEditor)
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  
+  // Border-specific state
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [detectedBorder, setDetectedBorder] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragIndex, setDragIndex] = useState(null);
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [mode, setMode] = useState('detect'); // 'detect', 'draw', 'edit'
   const [sensitivity, setSensitivity] = useState([50]);
   const [featherRadius, setFeatherRadius] = useState([5]);
-  const [mode, setMode] = useState('detect'); // 'detect', 'draw', 'edit'
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [drawnPoints, setDrawnPoints] = useState([]);
-  const [shapes, setShapes] = useState([]);
+  const [shadowBlur, setShadowBlur] = useState([10]);
+  const [shadowOffset, setShadowOffset] = useState([5]);
 
   // Load image when URL changes
   useEffect(() => {
@@ -43,6 +72,74 @@ export default function BorderEditor({
       img.src = imageUrl;
     }
   }, [imageUrl]);
+
+  // Add to history (same as TemplateEditor)
+  const addToHistory = useCallback(() => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(JSON.parse(JSON.stringify(shapes)));
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [shapes, history, historyIndex]);
+
+  // Undo/Redo (same as TemplateEditor)
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setShapes(history[historyIndex - 1]);
+    }
+  }, [history, historyIndex]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setShapes(history[historyIndex + 1]);
+    }
+  }, [history, historyIndex]);
+
+  // Drawing functions (same as TemplateEditor)
+  const startDrawing = (e) => {
+    if (currentTool !== 'pen' || mode !== 'draw') return;
+    
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / zoom - pan.x;
+    const y = (e.clientY - rect.top) / zoom - pan.y;
+    
+    setIsDrawing(true);
+    setCurrentPath([{ x, y }]);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing || currentTool !== 'pen' || mode !== 'draw') return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / zoom - pan.x;
+    const y = (e.clientY - rect.top) / zoom - pan.y;
+    
+    setCurrentPath(prev => [...prev, { x, y }]);
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing && currentPath.length > 3) {
+      const newShape = {
+        id: Date.now(),
+        type: 'freehand',
+        points: currentPath,
+        feather: featherRadius[0],
+        shadowBlur: shadowBlur[0],
+        shadowOffset: shadowOffset[0]
+      };
+      
+      const newShapes = [...shapes, newShape];
+      setShapes(newShapes);
+      setDetectedBorder(currentPath);
+      addToHistory();
+    }
+    
+    setIsDrawing(false);
+    setCurrentPath([]);
+  };
 
   // Simple border detection
   const detectBorder = async (img) => {
@@ -105,78 +202,26 @@ export default function BorderEditor({
     }
   };
 
-  // Drawing functions
-  const startDrawing = (e) => {
-    if (mode !== 'draw') return;
-    
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoom - pan.x;
-    const y = (e.clientY - rect.top) / zoom - pan.y;
-    
-    setIsDrawing(true);
-    setDrawnPoints([{ x, y }]);
-  };
-
-  const draw = (e) => {
-    if (!isDrawing || mode !== 'draw') return;
-
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoom - pan.x;
-    const y = (e.clientY - rect.top) / zoom - pan.y;
-    
-    setDrawnPoints(prev => [...prev, { x, y }]);
-  };
-
-  const stopDrawing = () => {
-    if (isDrawing && drawnPoints.length > 3) {
-      // Convert drawn points to a shape
-      const newShape = {
-        id: Date.now(),
-        type: 'freehand',
-        points: drawnPoints,
-        feather: featherRadius[0]
-      };
-      setShapes(prev => [...prev, newShape]);
-      setDetectedBorder(drawnPoints);
-    }
-    
-    setIsDrawing(false);
-    setDrawnPoints([]);
-  };
-
-  // Canvas mouse handlers
+  // Canvas mouse handlers (enhanced like TemplateEditor)
   const handleMouseDown = (e) => {
     if (mode === 'draw') {
       startDrawing(e);
-    } else if (mode === 'edit') {
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / zoom - pan.x;
-      const y = (e.clientY - rect.top) / zoom - pan.y;
-
-      // Check if clicking near a border point
-      const pointIndex = findNearestPoint(x, y);
-      if (pointIndex !== -1) {
-        setIsDragging(true);
-        setDragIndex(pointIndex);
-      }
+    } else if (mode === 'edit' && currentTool === 'move') {
+      // Pan functionality
+      setIsDrawing(true);
+      const startX = e.clientX - pan.x * zoom;
+      const startY = e.clientY - pan.y * zoom;
+      setCurrentPath([{ x: startX, y: startY }]);
     }
   };
 
   const handleMouseMove = (e) => {
     if (mode === 'draw') {
       draw(e);
-    } else if (isDragging && dragIndex !== null && mode === 'edit') {
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / zoom - pan.x;
-      const y = (e.clientY - rect.top) / zoom - pan.y;
-
-      const newBorder = [...detectedBorder];
-      newBorder[dragIndex] = { x, y };
-      setDetectedBorder(newBorder);
+    } else if (mode === 'edit' && currentTool === 'move' && isDrawing) {
+      const newX = (e.clientX - currentPath[0].x) / zoom;
+      const newY = (e.clientY - currentPath[0].y) / zoom;
+      setPan({ x: newX, y: newY });
     }
   };
 
@@ -184,81 +229,124 @@ export default function BorderEditor({
     if (mode === 'draw') {
       stopDrawing();
     } else {
-      setIsDragging(false);
-      setDragIndex(null);
+      setIsDrawing(false);
+      setCurrentPath([]);
     }
   };
 
-  const findNearestPoint = (x, y) => {
-    for (let i = 0; i < detectedBorder.length; i++) {
-      const point = detectedBorder[i];
-      const dist = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
-      if (dist < 20) { // 20px threshold
-        return i;
-      }
-    }
-    return -1;
-  };
-
-  // Draw canvas
+  // Draw canvas (enhanced like TemplateEditor)
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !image) return;
+    const overlayCanvas = overlayCanvasRef.current;
+    if (!canvas || !overlayCanvas || !image) return;
 
     const ctx = canvas.getContext('2d');
+    const overlayCtx = overlayCanvas.getContext('2d');
     
-    // Clear and setup
+    // Setup canvases
+    canvas.width = image.width;
+    canvas.height = image.height;
+    overlayCanvas.width = image.width;
+    overlayCanvas.height = image.height;
+    
+    // Clear canvases
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     
     // Apply zoom and pan
+    ctx.save();
+    overlayCtx.save();
     ctx.scale(zoom, zoom);
+    overlayCtx.scale(zoom, zoom);
     ctx.translate(pan.x, pan.y);
+    overlayCtx.translate(pan.x, pan.y);
     
-    // Draw image
+    // Draw background image
+    ctx.globalAlpha = templateOpacity;
     ctx.drawImage(image, 0, 0);
+    ctx.globalAlpha = 1;
     
-    // Draw detected border/shapes
-    const borderToDraw = mode === 'draw' && drawnPoints.length > 0 ? drawnPoints : detectedBorder;
+    // Draw grid (same as TemplateEditor)
+    if (showGrid) {
+      overlayCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+      overlayCtx.lineWidth = 1;
+      const gridSize = 50;
+      
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(x, 0);
+        overlayCtx.lineTo(x, canvas.height);
+        overlayCtx.stroke();
+      }
+      
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(0, y);
+        overlayCtx.lineTo(canvas.width, y);
+        overlayCtx.stroke();
+      }
+    }
+    
+    // Draw shapes/borders
+    const borderToDraw = mode === 'draw' && currentPath.length > 0 ? currentPath : detectedBorder;
     
     if (borderToDraw.length > 0) {
-      ctx.strokeStyle = mode === 'draw' ? '#10b981' : '#ef4444';
-      ctx.lineWidth = mode === 'draw' ? 2 : 3;
-      ctx.setLineDash(mode === 'draw' ? [] : [5, 5]);
+      // Apply shadow effects
+      if (shadowBlur[0] > 0) {
+        overlayCtx.shadowBlur = shadowBlur[0];
+        overlayCtx.shadowOffsetX = shadowOffset[0];
+        overlayCtx.shadowOffsetY = shadowOffset[0];
+        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      }
       
-      ctx.beginPath();
+      overlayCtx.strokeStyle = mode === 'draw' ? '#10b981' : '#ef4444';
+      overlayCtx.lineWidth = mode === 'draw' ? 3 : 4;
+      overlayCtx.setLineDash(mode === 'draw' ? [] : [5, 5]);
+      overlayCtx.lineCap = 'round';
+      overlayCtx.lineJoin = 'round';
+      
+      overlayCtx.beginPath();
       borderToDraw.forEach((point, i) => {
         if (i === 0) {
-          ctx.moveTo(point.x, point.y);
+          overlayCtx.moveTo(point.x, point.y);
         } else {
-          ctx.lineTo(point.x, point.y);
+          overlayCtx.lineTo(point.x, point.y);
         }
       });
-      if (mode !== 'draw' || drawnPoints.length > 2) {
-        ctx.closePath();
+      
+      if (mode !== 'draw' || currentPath.length > 2) {
+        overlayCtx.closePath();
       }
-      ctx.stroke();
+      overlayCtx.stroke();
+      
+      // Reset shadow
+      overlayCtx.shadowBlur = 0;
+      overlayCtx.shadowOffsetX = 0;
+      overlayCtx.shadowOffsetY = 0;
       
       // Draw control points for edit mode
       if (mode === 'edit') {
-        ctx.fillStyle = '#ef4444';
+        overlayCtx.fillStyle = '#ef4444';
         detectedBorder.forEach(point => {
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
-          ctx.fill();
+          overlayCtx.beginPath();
+          overlayCtx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+          overlayCtx.fill();
         });
       }
     }
     
     ctx.restore();
-  }, [image, detectedBorder, drawnPoints, zoom, pan, mode]);
+    overlayCtx.restore();
+  }, [image, detectedBorder, currentPath, zoom, pan, showGrid, templateOpacity, mode, shadowBlur, shadowOffset]);
 
   const handleSave = () => {
-    const finalBorder = mode === 'draw' && drawnPoints.length > 3 ? drawnPoints : detectedBorder;
+    const finalBorder = mode === 'draw' && currentPath.length > 3 ? currentPath : detectedBorder;
     if (finalBorder.length > 0 && onBorderSave) {
       onBorderSave({
         points: finalBorder,
         feather: featherRadius[0],
+        shadowBlur: shadowBlur[0],
+        shadowOffset: shadowOffset[0],
         assetType,
         mode,
         shapes,
@@ -271,14 +359,20 @@ export default function BorderEditor({
     if (image) {
       detectBorder(image);
       setShapes([]);
-      setDrawnPoints([]);
+      setCurrentPath([]);
     }
   };
 
   const clearDrawing = () => {
-    setDrawnPoints([]);
+    setCurrentPath([]);
     setShapes([]);
     setDetectedBorder([]);
+    addToHistory();
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
   };
 
   return (
@@ -308,7 +402,7 @@ export default function BorderEditor({
             variant={mode === 'draw' ? 'default' : 'outline'}
             size="sm"
           >
-            <PenTool className="w-4 h-4 mr-2" />
+            <Pen className="w-4 h-4 mr-2" />
             Draw
           </Button>
           <Button
@@ -320,6 +414,42 @@ export default function BorderEditor({
             Edit
           </Button>
         </div>
+
+        {/* Drawing Tools (same as TemplateEditor) */}
+        {mode === 'draw' && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setCurrentTool('pen')}
+              variant={currentTool === 'pen' ? 'default' : 'outline'}
+              size="sm"
+            >
+              <Pen className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={undo}
+              disabled={historyIndex <= 0}
+              variant="outline"
+              size="sm"
+            >
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={redo}
+              disabled={historyIndex >= history.length - 1}
+              variant="outline"
+              size="sm"
+            >
+              <Redo className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={() => setShowGrid(!showGrid)}
+              variant={showGrid ? 'default' : 'outline'}
+              size="sm"
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="flex flex-wrap gap-2">
@@ -335,21 +465,10 @@ export default function BorderEditor({
             </Button>
           )}
           
-          {mode === 'draw' && (
-            <Button
-              onClick={clearDrawing}
-              variant="outline"
-              size="sm"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Clear
-            </Button>
-          )}
-          
           <Button
             onClick={handleSave}
             disabled={(mode === 'detect' && detectedBorder.length === 0) || 
-                     (mode === 'draw' && drawnPoints.length < 3)}
+                     (mode === 'draw' && currentPath.length < 3)}
             size="sm"
           >
             <Save className="w-4 h-4 mr-2" />
@@ -375,16 +494,16 @@ export default function BorderEditor({
           </div>
           
           <Button
-            onClick={() => setPan({ x: 0, y: 0 })}
+            onClick={resetView}
             variant="outline"
             size="sm"
           >
-            <RotateCw className="w-4 h-4" />
+            <Move className="w-4 h-4" />
           </Button>
         </div>
 
-        {/* Sliders */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Advanced Controls (same as TemplateEditor) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium mb-2 block">
               Detection Sensitivity
@@ -401,14 +520,42 @@ export default function BorderEditor({
           
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Feather Radius
+              Shadow Blur
             </label>
             <Slider
-              value={featherRadius}
-              onValueChange={setFeatherRadius}
+              value={shadowBlur}
+              onValueChange={setShadowBlur}
+              max={50}
+              min={0}
+              step={1}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Shadow Offset
+            </label>
+            <Slider
+              value={shadowOffset}
+              onValueChange={setShadowOffset}
               max={20}
               min={0}
               step={1}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Template Opacity
+            </label>
+            <Slider
+              value={templateOpacity}
+              onValueChange={setTemplateOpacity}
+              max={1}
+              min={0.1}
+              step={0.1}
               className="w-full"
             />
           </div>
@@ -425,38 +572,44 @@ export default function BorderEditor({
           {mode === 'draw' && (
             <>
               <p>• <strong>Click & Drag</strong> to draw custom border shape</p>
-              <p>• <strong>Clear</strong> to start over</p>
+              <p>• <strong>Undo/Redo</strong> to correct mistakes</p>
+              <p>• <strong>Grid</strong> for precision drawing</p>
             </>
           )}
           {mode === 'edit' && (
             <>
-              <p>• <strong>Click & Drag</strong> border points to adjust</p>
+              <p>• <strong>Move tool</strong> to pan the canvas</p>
               <p>• Switch to <strong>Draw</strong> mode to create new shapes</p>
             </>
           )}
         </div>
 
-        {/* Mode Badge */}
+        {/* Status */}
         <div className="flex items-center gap-2">
           <Badge variant={mode === 'detect' ? 'default' : 'secondary'}>
             {mode === 'detect' ? 'Auto-Detect' : mode === 'draw' ? 'Drawing' : 'Editing'}
           </Badge>
-          {mode === 'draw' && drawnPoints.length > 0 && (
-            <Badge variant="outline">{drawnPoints.length} points</Badge>
+          {mode === 'draw' && currentPath.length > 0 && (
+            <Badge variant="outline">{currentPath.length} points</Badge>
+          )}
+          {showGrid && (
+            <Badge variant="outline">Grid On</Badge>
           )}
         </div>
 
-        {/* Canvas */}
-        <div className="border rounded-lg overflow-auto bg-gray-50 max-h-96">
+        {/* Canvas Container (same as TemplateEditor) */}
+        <div 
+          ref={containerRef}
+          className="border rounded-lg overflow-auto bg-gray-50 max-h-96 relative"
+        >
           <canvas
             ref={canvasRef}
-            width={image ? image.width : 800}
-            height={image ? image.height : 600}
-            className={`cursor-${mode === 'draw' ? 'crosshair' : 'pointer'}`}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            className="absolute top-0 left-0"
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+          <canvas
+            ref={overlayCanvasRef}
+            className="absolute top-0 left-0 pointer-events-none"
             style={{ maxWidth: '100%', height: 'auto' }}
           />
         </div>
