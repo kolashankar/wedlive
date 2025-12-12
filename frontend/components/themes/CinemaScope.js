@@ -2,8 +2,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Play, Film, Video, Star, Sparkles, Camera, Heart, Flower2 } from 'lucide-react';
-import { format } from 'date-fns';
-import ReactPlayer from 'react-player';
 import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 
 export default function CinemaScope({ wedding, onEnter }) {

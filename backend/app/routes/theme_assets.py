@@ -8,7 +8,7 @@ from app.models import (
     WeddingThemeAssets, UpdateWeddingThemeAssets
 )
 from app.auth import get_current_admin, get_current_user
-from app.database import get_db
+from app.database import get_db, get_db_dependency
 from app.services.telegram_service import TelegramCDNService
 from typing import List, Optional, Dict
 from datetime import datetime
@@ -84,13 +84,13 @@ def determine_orientation(width: int, height: int) -> str:
 async def upload_photo_borders(
     files: List[UploadFile] = File(...),
     names: Optional[str] = Form(None),
-    tags: Optional[str] = Form(""),
-    current_user: dict = Depends(get_current_admin)
+    tags: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """
     Upload multiple photo borders (max 10MB each)
     """
-    db = get_db()
     uploaded_borders = []
     
     # Parse names if provided (comma-separated)
@@ -168,10 +168,10 @@ async def upload_photo_borders(
 async def list_photo_borders(
     current_user: dict = Depends(get_current_admin),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    db = Depends(get_db_dependency)
 ):
     """List all photo borders (admin only)"""
-    db = get_db()
     cursor = db.photo_borders.find().sort("created_at", -1).skip(skip).limit(limit)
     borders = await cursor.to_list(length=limit)
     return [PhotoBorderResponse(**border) for border in borders]
@@ -179,10 +179,10 @@ async def list_photo_borders(
 @router.delete("/admin/theme-assets/borders/{border_id}")
 async def delete_photo_border(
     border_id: str,
-    current_user: dict = Depends(get_current_admin)
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """Delete a photo border"""
-    db = get_db()
     result = await db.photo_borders.delete_one({"id": border_id})
     
     if result.deleted_count == 0:
@@ -410,25 +410,34 @@ async def delete_background_image(
 # ==================== PUBLIC/CREATOR ENDPOINTS ====================
 
 @router.get("/theme-assets/borders", response_model=List[PhotoBorderResponse])
-async def get_available_borders(skip: int = 0, limit: int = 100):
+async def get_available_borders(
+    skip: int = 0, 
+    limit: int = 100,
+    db = Depends(get_db_dependency)
+):
     """Get all available photo borders (public access)"""
-    db = get_db()
     cursor = db.photo_borders.find().sort("created_at", -1).skip(skip).limit(limit)
     borders = await cursor.to_list(length=limit)
     return [PhotoBorderResponse(**border) for border in borders]
 
 @router.get("/theme-assets/precious-styles", response_model=List[PreciousMomentStyleResponse])
-async def get_available_precious_styles(skip: int = 0, limit: int = 100):
+async def get_available_precious_styles(
+    skip: int = 0, 
+    limit: int = 100,
+    db = Depends(get_db_dependency)
+):
     """Get all available precious moment styles (public access)"""
-    db = get_db()
     cursor = db.precious_moment_styles.find().sort("created_at", -1).skip(skip).limit(limit)
     styles = await cursor.to_list(length=limit)
     return [PreciousMomentStyleResponse(**style) for style in styles]
 
 @router.get("/theme-assets/backgrounds", response_model=List[BackgroundImageResponse])
-async def get_available_backgrounds(skip: int = 0, limit: int = 100):
+async def get_available_backgrounds(
+    skip: int = 0, 
+    limit: int = 100,
+    db = Depends(get_db_dependency)
+):
     """Get all available background images (public access)"""
-    db = get_db()
     cursor = db.background_images.find().sort("created_at", -1).skip(skip).limit(limit)
     backgrounds = await cursor.to_list(length=limit)
     return [BackgroundImageResponse(**bg) for bg in backgrounds]

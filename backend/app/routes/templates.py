@@ -5,7 +5,7 @@ Handles freehand template creation, shape management, and mask generation
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form
 from pydantic import BaseModel
 from app.auth import get_current_admin, get_current_user
-from app.database import get_db
+from app.database import get_db, get_db_dependency
 from app.services.telegram_service import TelegramCDNService
 from app.services.image_processing import ImageProcessingService
 from typing import List, Optional, Dict
@@ -86,12 +86,12 @@ async def upload_template(
     category: str = Form("general"),
     shapes_json: str = Form(""),
     tags: str = Form(""),
-    current_user: dict = Depends(get_current_admin)
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """
     Upload a template with freehand drawn shapes
     """
-    db = get_db()
     temp_path = None
     
     try:
@@ -166,10 +166,10 @@ async def upload_template(
 async def list_templates(
     current_user: dict = Depends(get_current_admin),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    db = Depends(get_db_dependency)
 ):
     """List all templates (admin only)"""
-    db = get_db()
     cursor = db.templates.find().sort("created_at", -1).skip(skip).limit(limit)
     templates = await cursor.to_list(length=limit)
     return [TemplateResponse(**template) for template in templates]
@@ -177,10 +177,10 @@ async def list_templates(
 @router.delete("/admin/templates/{template_id}")
 async def delete_template(
     template_id: str,
-    current_user: dict = Depends(get_current_admin)
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
 ):
     """Delete a template"""
-    db = get_db()
     result = await db.templates.delete_one({"id": template_id})
     
     if result.deleted_count == 0:
@@ -192,17 +192,22 @@ async def delete_template(
     return {"message": "Template deleted successfully"}
 
 @router.get("/templates", response_model=List[TemplateResponse])
-async def get_available_templates(skip: int = 0, limit: int = 100):
+async def get_available_templates(
+    skip: int = 0, 
+    limit: int = 100,
+    db = Depends(get_db_dependency)
+):
     """Get all available templates (public access)"""
-    db = get_db()
     cursor = db.templates.find().sort("created_at", -1).skip(skip).limit(limit)
     templates = await cursor.to_list(length=limit)
     return [TemplateResponse(**template) for template in templates]
 
 @router.get("/templates/{template_id}")
-async def get_template(template_id: str):
+async def get_template(
+    template_id: str,
+    db = Depends(get_db_dependency)
+):
     """Get template details by ID"""
-    db = get_db()
     template = await db.templates.find_one({"id": template_id})
     
     if not template:

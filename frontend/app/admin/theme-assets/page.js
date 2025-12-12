@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import TemplateEditor from '@/components/TemplateEditor';
+import BorderEditor from '@/components/BorderEditor';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -25,6 +26,12 @@ export default function ThemeAssetsManagement() {
   const [templateFile, setTemplateFile] = useState(null);
   const [templatePreview, setTemplatePreview] = useState(null);
   const [templates, setTemplates] = useState([]);
+  
+  // Border editor state
+  const [showBorderEditor, setShowBorderEditor] = useState(false);
+  const [editingAsset, setEditingAsset] = useState(null); // 'border', 'style', 'background'
+  const [editorImage, setEditorImage] = useState(null);
+  const [editorFile, setEditorFile] = useState(null);
 
   // Data states
   const [borders, setBorders] = useState([]);
@@ -156,7 +163,65 @@ export default function ThemeAssetsManagement() {
     }
   };
 
-  const handleFileSelect = (e) => {
+  const handleBorderEdit = (file, assetType) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setEditorImage(e.target.result);
+      setEditorFile(file);
+      setEditingAsset(assetType);
+      setShowBorderEditor(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBorderSave = async (borderData) => {
+    try {
+      setUploading(true);
+      
+      const formData = new FormData();
+      formData.append('files', editorFile);
+      formData.append('names', `${editingAsset} with custom border`);
+      formData.append('tags', `custom-border,${editingAsset}`);
+      formData.append('border_data', JSON.stringify(borderData));
+      
+      let endpoint;
+      if (editingAsset === 'border') {
+        endpoint = `${API_URL}/api/admin/theme-assets/borders/upload`;
+      } else if (editingAsset === 'style') {
+        endpoint = `${API_URL}/api/admin/theme-assets/precious-styles/upload`;
+      } else if (editingAsset === 'background') {
+        endpoint = `${API_URL}/api/admin/theme-assets/backgrounds/upload`;
+      }
+      
+      const response = await axios.post(endpoint, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setSuccess(`${editingAsset} with custom border uploaded successfully!`);
+      
+      // Update the respective list
+      if (editingAsset === 'border') {
+        setBorders(prev => [...prev, ...response.data]);
+      } else if (editingAsset === 'style') {
+        setStyles(prev => [...prev, ...response.data]);
+      } else if (editingAsset === 'background') {
+        setBackgrounds(prev => [...prev, ...response.data]);
+      }
+      
+      setShowBorderEditor(false);
+      setEditorImage(null);
+      setEditorFile(null);
+      setEditingAsset(null);
+      
+    } catch (err) {
+      console.error('Error uploading custom border:', err);
+      setError(err.response?.data?.detail || 'Failed to upload custom border');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileSelect = (e, assetType) => {
     const files = Array.from(e.target.files);
     
     // Validate file size (10MB max)
@@ -173,18 +238,24 @@ export default function ThemeAssetsManagement() {
       return;
     }
 
-    setSelectedFiles(files);
-    
-    // Generate previews
-    const previews = files.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve({ file, url: e.target.result });
-        reader.readAsDataURL(file);
+    // If single file, open border editor
+    if (files.length === 1) {
+      handleBorderEdit(files[0], assetType);
+    } else {
+      // For multiple files, use regular upload
+      setSelectedFiles(files);
+      
+      // Generate previews
+      const previews = files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve({ file, url: e.target.result });
+          reader.readAsDataURL(file);
+        });
       });
-    });
 
-    Promise.all(previews).then(setUploadPreview);
+      Promise.all(previews).then(setUploadPreview);
+    }
   };
 
   const uploadBorders = async () => {
@@ -485,7 +556,7 @@ export default function ThemeAssetsManagement() {
                     type="file"
                     multiple
                     accept="image/*"
-                    onChange={handleFileSelect}
+                    onChange={(e) => handleFileSelect(e, 'border')}
                     className="block w-full text-sm text-gray-500
                       file:mr-4 file:py-2 file:px-4
                       file:rounded-md file:border-0
@@ -699,19 +770,23 @@ export default function ThemeAssetsManagement() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Preview Image (optional)
+                    Style Image (Auto-detect borders)
                   </label>
                   <input
                     id="style-preview-input"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setStylePreviewImage(e.target.files[0])}
+                    onChange={(e) => {
+                      if (e.target.files[0]) {
+                        handleBorderEdit(e.target.files[0], 'style');
+                      }
+                    }}
                     className="block w-full text-sm text-gray-500
                       file:mr-4 file:py-2 file:px-4
                       file:rounded-md file:border-0
                       file:text-sm file:font-semibold
-                      file:bg-rose-50 file:text-rose-700
-                      hover:file:bg-rose-100"
+                      file:bg-purple-50 file:text-purple-700
+                      hover:file:bg-purple-100"
                   />
                 </div>
 
@@ -813,13 +888,13 @@ export default function ThemeAssetsManagement() {
                     type="file"
                     multiple
                     accept="image/*"
-                    onChange={handleFileSelect}
+                    onChange={(e) => handleFileSelect(e, 'background')}
                     className="block w-full text-sm text-gray-500
                       file:mr-4 file:py-2 file:px-4
                       file:rounded-md file:border-0
                       file:text-sm file:font-semibold
-                      file:bg-rose-50 file:text-rose-700
-                      hover:file:bg-rose-100"
+                      file:bg-blue-50 file:text-blue-700
+                      hover:file:bg-blue-100"
                   />
                 </div>
 
@@ -1073,6 +1148,26 @@ export default function ThemeAssetsManagement() {
                 <p className="text-center text-gray-500 py-8">No templates created yet</p>
               )}
             </Card>
+          </div>
+        )}
+        
+        {/* Border Editor Modal */}
+        {showBorderEditor && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-auto">
+              <BorderEditor
+                imageUrl={editorImage}
+                onBorderSave={handleBorderSave}
+                onClose={() => {
+                  setShowBorderEditor(false);
+                  setEditorImage(null);
+                  setEditorFile(null);
+                  setEditingAsset(null);
+                }}
+                assetType={editingAsset}
+                className="m-4"
+              />
+            </div>
           </div>
         )}
       </div>

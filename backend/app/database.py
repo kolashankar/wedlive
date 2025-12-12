@@ -29,6 +29,12 @@ def get_db():
     """Get database instance"""
     return db_instance.db
 
+async def get_db_dependency():
+    """Database dependency for FastAPI routes"""
+    if not db_instance.db:
+        await init_db()
+    return db_instance.db
+
 # Alias for compatibility
 async def get_database():
     """Get database instance (async alias)"""
