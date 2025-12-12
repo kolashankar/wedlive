@@ -20,6 +20,7 @@ import {
  * - Automatic border detection
  * - Feather and shadow controls
  * - Multiple drawing modes
+ * - NATURAL FREEHAND DRAWING - follows cursor path point-by-point
  */
 
 export default function BorderEditor({ 
@@ -314,7 +315,10 @@ export default function BorderEditor({
         }
       });
       
-      if (mode !== 'draw' || currentPath.length > 2) {
+      // IMPORTANT: NATURAL FREEHAND DRAWING BEHAVIOR
+      // NEVER close the path during active drawing - only follow the cursor path point-by-point
+      // Only close shapes when in edit mode or when drawing is completed (detectedBorder)
+      if (mode !== 'draw') {
         overlayCtx.closePath();
       }
       overlayCtx.stroke();
@@ -465,6 +469,17 @@ export default function BorderEditor({
             </Button>
           )}
           
+          {mode === 'draw' && (
+            <Button
+              onClick={clearDrawing}
+              variant="outline"
+              size="sm"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear
+            </Button>
+          )}
+          
           <Button
             onClick={handleSave}
             disabled={(mode === 'detect' && detectedBorder.length === 0) || 
@@ -513,6 +528,20 @@ export default function BorderEditor({
               onValueChange={setSensitivity}
               max={100}
               min={1}
+              step={1}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Feather Radius
+            </label>
+            <Slider
+              value={featherRadius}
+              onValueChange={setFeatherRadius}
+              max={20}
+              min={0}
               step={1}
               className="w-full"
             />
@@ -574,6 +603,7 @@ export default function BorderEditor({
               <p>• <strong>Click & Drag</strong> to draw custom border shape</p>
               <p>• <strong>Undo/Redo</strong> to correct mistakes</p>
               <p>• <strong>Grid</strong> for precision drawing</p>
+              <p>• <strong>Natural freehand</strong> - follows cursor path exactly</p>
             </>
           )}
           {mode === 'edit' && (
