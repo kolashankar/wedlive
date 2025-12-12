@@ -4,9 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Play, Film, Video, Star, Sparkles, Camera, Heart, Flower2 } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactPlayer from 'react-player';
+import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 
 export default function CinemaScope({ wedding, onEnter }) {
   const theme = wedding.theme_settings || {};
+  const themeAssets = wedding.theme_assets || {};
+  
+  // Get dynamic theme assets
+  const brideBorderUrl = themeAssets.bride_border_url;
+  const groomBorderUrl = themeAssets.groom_border_url;
+  const coupleStyleUrl = themeAssets.couple_style_url;
+  const backgroundUrl = themeAssets.background_url;
   
   const FONT_FAMILY_MAP = {
     'Inter': 'Inter, sans-serif',
@@ -81,7 +89,15 @@ export default function CinemaScope({ wedding, onEnter }) {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 relative overflow-hidden">
+    <div 
+      className="min-h-screen bg-slate-900 relative overflow-hidden"
+      style={{
+        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       {/* Enhanced Animated Background with Cinematic Glow */}
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-red-950 to-slate-900">
         <div 
@@ -519,12 +535,35 @@ export default function CinemaScope({ wedding, onEnter }) {
                 >
                   <div className="absolute -inset-2 bg-gradient-to-r from-red-600 to-red-400 rounded-lg opacity-0 group-hover:opacity-75 blur-lg transition duration-300" />
                   <div className="relative border-2 sm:border-4 rounded-lg overflow-hidden" style={{ borderColor: primaryColor }}>
-                    <img
-                      src={photo?.url || photo}
-                      alt={`Behind the scenes ${index + 1}`}
-                      className="w-full h-40 sm:h-48 md:h-56 object-cover"
-                      style={{ filter: 'contrast(1.2) saturate(1.1)' }}
-                    />
+                    {/* Use dynamic border for bride photos */}
+                    {index === 0 && brideBorderUrl ? (
+                      <ExactFitPhotoFrame
+                        photoUrl={photo.url}
+                        borderUrl={brideBorderUrl}
+                        aspectRatio="4:6"
+                        className="w-full h-48 sm:h-56 md:h-64 object-cover"
+                        alt={`Behind the scenes ${index + 1}`}
+                        feather={8}
+                        shadow={true}
+                      />
+                    ) : index === 1 && groomBorderUrl ? (
+                      <ExactFitPhotoFrame
+                        photoUrl={photo.url}
+                        borderUrl={groomBorderUrl}
+                        aspectRatio="4:6"
+                        className="w-full h-48 sm:h-56 md:h-64 object-cover"
+                        alt={`Behind the scenes ${index + 1}`}
+                        feather={8}
+                        shadow={true}
+                      />
+                    ) : (
+                      <img
+                        src={photo.url}
+                        alt={`Behind the scenes ${index + 1}`}
+                        className="w-full h-48 sm:h-56 md:h-64 object-cover"
+                        style={{ filter: 'contrast(1.2) saturate(1.1)' }}
+                      />
+                    )}
                     {/* Film strip overlay effect */}
                     <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-b from-black to-transparent opacity-70" />
                     <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-t from-black to-transparent opacity-70" />

@@ -5,10 +5,18 @@ import { Calendar, MapPin, Play, Heart, Sparkles, Mail, Phone, MapPinned, Flower
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
+import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 
 export default function PremiumWeddingCard({ wedding, onEnter }) {
   const [cardOpened, setCardOpened] = useState(false);
   const theme = wedding.theme_settings || {};
+  const themeAssets = wedding.theme_assets || {};
+  
+  // Get dynamic theme assets
+  const brideBorderUrl = themeAssets.bride_border_url;
+  const groomBorderUrl = themeAssets.groom_border_url;
+  const coupleStyleUrl = themeAssets.couple_style_url;
+  const backgroundUrl = themeAssets.background_url;
   
   const FONT_FAMILY_MAP = {
     'Inter': 'Inter, sans-serif',

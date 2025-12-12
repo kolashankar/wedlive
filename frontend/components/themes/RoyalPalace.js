@@ -1,12 +1,21 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Crown, Play, Sparkles, Heart } from 'lucide-react';
+import { Calendar, MapPin, Play, Phone, Mail, MapPinned, Sparkles, Crown, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactPlayer from 'react-player';
+import ExactFitPhotoFrame from '@/components/ExactFitPhotoFrame';
 
 export default function RoyalPalace({ wedding, onEnter }) {
   const theme = wedding.theme_settings || {};
+  const themeAssets = wedding.theme_assets || {};
+  
+  // Get dynamic theme assets
+  const brideBorderUrl = themeAssets.bride_border_url;
+  const groomBorderUrl = themeAssets.groom_border_url;
+  const coupleStyleUrl = themeAssets.couple_style_url;
+  const backgroundUrl = themeAssets.background_url;
   
   const FONT_FAMILY_MAP = {
     'Inter': 'Inter, sans-serif',
