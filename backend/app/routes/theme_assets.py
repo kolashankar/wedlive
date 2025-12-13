@@ -5,7 +5,8 @@ Handles admin uploads and creator access to dynamic borders, precious moment sty
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form
 from app.models import (
     PhotoBorderResponse, PreciousMomentStyleResponse, BackgroundImageResponse,
-    WeddingThemeAssets, UpdateWeddingThemeAssets
+    BackgroundTemplateResponse, WeddingThemeAssets, UpdateWeddingThemeAssets, MaskData,
+    MaskSlot, AnimationType
 )
 from app.auth import get_current_admin, get_current_user
 from app.database import get_db, get_db_dependency
