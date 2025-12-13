@@ -19,6 +19,13 @@ class StreamStatus(str, Enum):
     ENDED = "ended"
     RECORDED = "recorded"
 
+class LiveStatus(str, Enum):
+    IDLE = "idle"                    # Not started yet
+    WAITING = "waiting"              # Go Live clicked, waiting for OBS
+    LIVE = "live"                    # Currently streaming
+    PAUSED = "paused"                # OBS stopped, but not ended
+    ENDED = "ended"                  # Manually ended by host (final state)
+
 class CameraStatus(str, Enum):
     WAITING = "waiting"
     CONNECTED = "connected"
