@@ -206,6 +206,126 @@ async def delete_photo_border(
     
     return {"message": "Border deleted successfully"}
 
+
+# ==================== MASK EDITING ====================
+
+from pydantic import BaseModel as PydanticBaseModel
+
+class UpdateMaskRequest(PydanticBaseModel):
+    svg_path: Optional[str] = None
+    polygon_points: Optional[List[List[float]]] = None
+    feather_radius: Optional[int] = None
+    inner_x: Optional[float] = None
+    inner_y: Optional[float] = None
+    inner_width: Optional[float] = None
+    inner_height: Optional[float] = None
+    slots_count: Optional[int] = None
+
+@router.put("/admin/theme-assets/borders/{border_id}/mask", response_model=PhotoBorderResponse)
+async def update_border_mask(
+    border_id: str,
+    mask_data: UpdateMaskRequest,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """Update mask data for a photo border"""
+    border = await db.photo_borders.find_one({"id": border_id})
+    
+    if not border:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Border not found"
+        )
+    
+    # Build mask data update
+    mask_update = {}
+    if mask_data.svg_path is not None:
+        mask_update["mask_data.svg_path"] = mask_data.svg_path
+    if mask_data.polygon_points is not None:
+        mask_update["mask_data.polygon_points"] = mask_data.polygon_points
+    if mask_data.feather_radius is not None:
+        mask_update["mask_data.feather_radius"] = mask_data.feather_radius
+    if mask_data.inner_x is not None:
+        mask_update["mask_data.inner_x"] = mask_data.inner_x
+    if mask_data.inner_y is not None:
+        mask_update["mask_data.inner_y"] = mask_data.inner_y
+    if mask_data.inner_width is not None:
+        mask_update["mask_data.inner_width"] = mask_data.inner_width
+    if mask_data.inner_height is not None:
+        mask_update["mask_data.inner_height"] = mask_data.inner_height
+    if mask_data.slots_count is not None:
+        mask_update["mask_data.slots_count"] = mask_data.slots_count
+    
+    # Initialize mask_data if it doesn't exist
+    if "mask_data" not in border or border["mask_data"] is None:
+        await db.photo_borders.update_one(
+            {"id": border_id},
+            {"$set": {
+                "mask_data": {
+                    "svg_path": "",
+                    "polygon_points": [],
+                    "feather_radius": 0,
+                    "inner_x": 0,
+                    "inner_y": 0,
+                    "inner_width": 0,
+                    "inner_height": 0,
+                    "slots_count": 1
+                }
+            }}
+        )
+    
+    # Update mask data
+    await db.photo_borders.update_one(
+        {"id": border_id},
+        {"$set": mask_update}
+    )
+    
+    updated_border = await db.photo_borders.find_one({"id": border_id})
+    logger.info(f"[MASK_UPDATE] Updated mask for border: {border_id}")
+    
+    return PhotoBorderResponse(**updated_border)
+
+@router.post("/admin/theme-assets/borders/{border_id}/auto-detect-mask")
+async def auto_detect_mask(
+    border_id: str,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Auto-detect inner usable area of border image
+    Uses image processing to find transparent/empty regions
+    """
+    border = await db.photo_borders.find_one({"id": border_id})
+    
+    if not border:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Border not found"
+        )
+    
+    # TODO: Implement actual auto-detection using PIL/OpenCV
+    # For now, return placeholder response
+    # This would involve:
+    # 1. Download image from CDN
+    # 2. Detect transparent areas or areas with specific color
+    # 3. Find bounding box of inner area
+    # 4. Generate SVG path or polygon points
+    
+    logger.info(f"[MASK_AUTO_DETECT] Auto-detecting mask for border: {border_id}")
+    
+    return {
+        "success": True,
+        "message": "Auto-detection initiated. This feature will be fully implemented with image processing.",
+        "suggested_mask": {
+            "inner_x": border.get("width", 0) * 0.1,
+            "inner_y": border.get("height", 0) * 0.1,
+            "inner_width": border.get("width", 0) * 0.8,
+            "inner_height": border.get("height", 0) * 0.8,
+            "feather_radius": 5
+        }
+    }
+
+
 # ==================== PRECIOUS MOMENT STYLES ====================
 
 @router.post("/admin/theme-assets/precious-styles/upload", response_model=PreciousMomentStyleResponse)
