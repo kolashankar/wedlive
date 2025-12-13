@@ -21,6 +21,10 @@ import {
  * - Feather and shadow controls
  * - Multiple drawing modes
  * - NATURAL FREEHAND DRAWING - follows cursor path point-by-point
+ * - API integration for saving/loading mask data
+ * - Bezier curve smoothing
+ * - Real-time photo preview with mask
+ * - Control point editing
  */
 
 export default function BorderEditor({ 
@@ -28,7 +32,9 @@ export default function BorderEditor({
   onBorderSave, 
   onClose,
   assetType = 'border',
-  className = '' 
+  className = '',
+  borderId = null,
+  previewPhotoUrl = null
 }) {
   const canvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
