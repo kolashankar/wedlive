@@ -369,6 +369,72 @@ function ManagePageContent({ params }) {
                 )}
               </TabsContent>
 
+              {/* Theme Tab - New Phase 4 Implementation */}
+              <TabsContent value="theme" className="space-y-6">
+                {/* Theme Selection */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5" />
+                      Wedding Theme Customization
+                    </CardTitle>
+                    <CardDescription>
+                      Select a theme, upload photos by category, and customize borders & styles
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ThemeSelector
+                      weddingId={weddingId}
+                      currentThemeId={wedding?.theme_settings?.theme_id}
+                      userSubscription={user?.subscription_plan || 'free'}
+                      onThemeSelect={(theme) => {
+                        console.log('Theme selected:', theme);
+                        loadWedding(); // Reload wedding data
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Category Photo Upload */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upload Photos by Category</CardTitle>
+                    <CardDescription>
+                      Upload photos for each category based on your theme requirements
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <CategoryPhotoUpload
+                      weddingId={weddingId}
+                      themeConfig={wedding?.theme_settings}
+                      onPhotosUpdate={(photos) => {
+                        console.log('Photos updated:', photos);
+                        loadWedding(); // Reload wedding data
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Border & Style Customization */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Customize Borders & Styles</CardTitle>
+                    <CardDescription>
+                      Select borders, precious moment layouts, backgrounds, and animations
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <BorderStyleCustomizer
+                      weddingId={weddingId}
+                      onStyleUpdate={(styles) => {
+                        console.log('Styles updated:', styles);
+                        loadWedding(); // Reload wedding data
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               {/* Media Tab */}
               <TabsContent value="media" className="space-y-6">
                 {/* Folder Manager */}
