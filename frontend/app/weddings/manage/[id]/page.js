@@ -39,6 +39,9 @@ import FolderManagerNested from '@/components/FolderManagerNested';
 import ThemeManager from '@/components/ThemeManager';
 import { SocketProvider, useSocket } from '@/contexts/SocketContext';
 import CommentsSection from '@/components/CommentsSection';
+import ThemeSelector from '@/components/ThemeSelector';
+import CategoryPhotoUpload from '@/components/CategoryPhotoUpload';
+import BorderStyleCustomizer from '@/components/BorderStyleCustomizer';
 
 function ManagePageContent({ params }) {
   const { user, loading: authLoading } = useAuth();
