@@ -461,6 +461,8 @@ class WeddingResponse(BaseModel):
     multi_cameras: Optional[List[MultiCamera]] = []
     settings: Optional[WeddingSettings] = None
     theme_settings: Optional[ThemeSettings] = None
+    live_session: Optional[WeddingLiveSession] = None
+    can_go_live: bool = True  # False if ended
     created_at: datetime
     updated_at: datetime
 
