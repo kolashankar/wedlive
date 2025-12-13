@@ -94,6 +94,23 @@ export default function BorderEditor({
     }
   }, [imageUrl]);
 
+  // Load preview photo when URL changes
+  useEffect(() => {
+    if (previewPhotoUrl) {
+      console.log('Loading preview photo from URL:', previewPhotoUrl);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        console.log('Preview photo loaded successfully');
+        setPreviewPhoto(img);
+      };
+      img.onerror = (error) => {
+        console.error('Failed to load preview photo:', error);
+      };
+      img.src = previewPhotoUrl;
+    }
+  }, [previewPhotoUrl]);
+
   // Add to history (same as TemplateEditor)
   const addToHistory = useCallback(() => {
     const newHistory = history.slice(0, historyIndex + 1);
