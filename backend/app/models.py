@@ -750,3 +750,26 @@ class RecordingResponse(BaseModel):
 class RecordingListResponse(BaseModel):
     recordings: List[RecordingResponse]
     total_count: int
+
+# Live Status Session Models
+class WeddingLiveSession(BaseModel):
+    wedding_id: str
+    status: LiveStatus = LiveStatus.IDLE
+    stream_started_at: Optional[datetime] = None
+    stream_paused_at: Optional[datetime] = None
+    stream_resumed_at: Optional[datetime] = None
+    stream_ended_at: Optional[datetime] = None
+    pause_count: int = 0              # Track number of pauses
+    total_pause_duration: int = 0     # Total seconds paused
+    recording_session_id: Optional[str] = None  # Single recording across pauses
+    rtmp_url: str = ""
+    stream_key: str = ""
+    hls_playback_url: str = ""
+    
+    # Transition timestamps
+    status_history: List[dict] = []  # [{status, timestamp, reason}]
+    
+    # Recording info
+    recording_started: bool = False
+    recording_path: Optional[str] = None
+    recording_segments: List[str] = []  # Multiple segments if paused/resumed
