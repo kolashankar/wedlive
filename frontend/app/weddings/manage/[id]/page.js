@@ -266,10 +266,14 @@ function ManagePageContent({ params }) {
 
             {/* Tabs for different sections */}
             <Tabs defaultValue="stream" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="stream">
                   <Video className="w-4 h-4 mr-2" />
                   Stream
+                </TabsTrigger>
+                <TabsTrigger value="theme">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Theme
                 </TabsTrigger>
                 <TabsTrigger value="media">
                   <ImageIcon className="w-4 h-4 mr-2" />
