@@ -178,6 +178,18 @@ class UpdateThemeSettings(BaseModel):
     theme_assets: Optional['UpdateWeddingThemeAssets'] = None
 
 # Theme Assets Models (Dynamic Borders, Styles, Backgrounds)
+
+# Mask Data for Photo Borders
+class MaskData(BaseModel):
+    svg_path: str = ""  # SVG path for masking
+    polygon_points: List[List[float]] = []  # Alternative: array of [x, y] points
+    feather_radius: int = 0  # Blur/feather effect in pixels
+    inner_x: float = 0  # Inner usable area coordinates
+    inner_y: float = 0
+    inner_width: float = 0
+    inner_height: float = 0
+    slots_count: int = 1  # Number of photo slots in this border
+
 class PhotoBorder(BaseModel):
     id: str
     name: str
@@ -189,6 +201,7 @@ class PhotoBorder(BaseModel):
     height: int = 0
     file_size: int = 0
     tags: List[str] = []
+    mask_data: Optional[MaskData] = None  # NEW: Mask information for photo fitting
     created_at: datetime
     uploaded_by: str  # admin user_id
 
@@ -202,7 +215,18 @@ class PhotoBorderResponse(BaseModel):
     height: int
     file_size: int
     tags: List[str]
+    mask_data: Optional[MaskData] = None
     created_at: datetime
+
+class MaskSlot(BaseModel):
+    slot_id: str
+    svg_path: str = ""
+    polygon_points: List[List[float]] = []
+    feather_radius: int = 0
+    x: float = 0  # Position in layout
+    y: float = 0
+    width: float = 0
+    height: float = 0
 
 class PreciousMomentStyle(BaseModel):
     id: str
@@ -211,7 +235,8 @@ class PreciousMomentStyle(BaseModel):
     cdn_url: Optional[str] = ""  # Optional preview image
     telegram_file_id: Optional[str] = ""
     layout_type: str = "grid"  # grid, collage, carousel, animated-frames
-    photo_count: int = 6  # Number of photos required
+    photo_count: int = 6  # Number of photos required (slots)
+    slots: List[MaskSlot] = []  # NEW: Mask data for each photo slot
     frame_shapes: List[str] = []  # rectangle, circle, heart, custom
     tags: List[str] = []
     created_at: datetime
@@ -224,9 +249,35 @@ class PreciousMomentStyleResponse(BaseModel):
     cdn_url: Optional[str]
     layout_type: str
     photo_count: int
+    slots: List[MaskSlot]
     frame_shapes: List[str]
     tags: List[str]
     created_at: datetime
+
+class AnimationType(str, Enum):
+    NONE = "none"
+    FADE = "fade"
+    ZOOM = "zoom"
+    PARALLAX = "parallax"
+    SLOW_PAN = "slow_pan"
+    FLORAL_FLOAT = "floral_float"
+    LIGHT_SHIMMER = "light_shimmer"
+
+class BackgroundTemplate(BaseModel):
+    id: str
+    name: str
+    cdn_url: str
+    telegram_file_id: str
+    thumbnail_url: Optional[str] = ""
+    category: str = "general"  # hero, full-page, pattern, gradient
+    width: int = 0
+    height: int = 0
+    file_size: int = 0
+    tags: List[str] = []
+    supported_animations: List[AnimationType] = [AnimationType.NONE]  # NEW
+    default_animation: AnimationType = AnimationType.NONE  # NEW
+    created_at: datetime
+    uploaded_by: str
 
 class BackgroundImage(BaseModel):
     id: str
@@ -250,6 +301,20 @@ class BackgroundImageResponse(BaseModel):
     height: int
     file_size: int
     tags: List[str]
+    created_at: datetime
+
+class BackgroundTemplateResponse(BaseModel):
+    id: str
+    name: str
+    cdn_url: str
+    thumbnail_url: Optional[str]
+    category: str
+    width: int
+    height: int
+    file_size: int
+    tags: List[str]
+    supported_animations: List[AnimationType]
+    default_animation: AnimationType
     created_at: datetime
 
 # Wedding Theme Asset Selection
