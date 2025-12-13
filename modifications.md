@@ -425,12 +425,12 @@ Complete implementation of a fully dynamic, theme-driven wedding live page syste
 
 ---
 
-## Files Created
+## Files Created/Modified
 
 ### Backend (2 files):
 1. `/app/backend/app/routes/themes.py` - Theme management routes
 
-### Frontend (8 files):
+### Frontend - Theme Components (8 files):
 1. `/app/frontend/components/themes/FloralGarden.js`
 2. `/app/frontend/components/themes/RoyalPalace.js`
 3. `/app/frontend/components/themes/ModernMinimalist.js`
@@ -440,10 +440,19 @@ Complete implementation of a fully dynamic, theme-driven wedding live page syste
 7. `/app/frontend/components/themes/TraditionalSouthIndian.js`
 8. `/app/frontend/components/themes/index.js`
 
-### Documentation (1 file):
-1. `/app/modifications.md` - This file
+### Frontend - Phase 3 & 4 Components (4 files):
+9. `/app/frontend/components/ThemeSelector.js` - Theme gallery and selection ✨ NEW
+10. `/app/frontend/components/CategoryPhotoUpload.js` - Category-based photo upload ✨ NEW
+11. `/app/frontend/components/BorderStyleCustomizer.js` - Border & style customization ✨ NEW
+12. `/app/frontend/components/BorderEditor.js` - Enhanced with API integration ✏️ MODIFIED
 
-**Total Files**: 11 files created/modified
+### Frontend - Integration (1 file):
+13. `/app/frontend/app/weddings/manage/[id]/page.js` - Added Theme tab with all Phase 4 features ✏️ MODIFIED
+
+### Documentation (1 file):
+14. `/app/modifications.md` - This file ✏️ MODIFIED
+
+**Total Files**: 14 files (11 created, 3 modified)
 
 ---
 
