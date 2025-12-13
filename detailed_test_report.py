@@ -10,7 +10,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://streaming-status.preview.emergentagent.com")
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://rtmp-wedding-stream.preview.emergentagent.com")
 API_BASE = f"{BACKEND_URL}/api"
 
 async def detailed_test():
