@@ -256,22 +256,61 @@ export default function BorderEditor({
   const handleMouseDown = (e) => {
     if (mode === 'draw') {
       startDrawing(e);
-    } else if (mode === 'edit' && currentTool === 'move') {
-      // Pan functionality
-      setIsDrawing(true);
-      const startX = e.clientX - pan.x * zoom;
-      const startY = e.clientY - pan.y * zoom;
-      setCurrentPath([{ x: startX, y: startY }]);
+    } else if (mode === 'edit') {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX / zoom - pan.x;
+      const y = (e.clientY - rect.top) * scaleY / zoom - pan.y;
+
+      // Check if clicking on a control point
+      if (detectedBorder && Array.isArray(detectedBorder)) {
+        const clickThreshold = 10; // pixels
+        const pointIndex = detectedBorder.findIndex(point => {
+          const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
+          return distance < clickThreshold;
+        });
+
+        if (pointIndex !== -1) {
+          setDraggingPoint(pointIndex);
+          setIsDrawing(true);
+          return;
+        }
+      }
+
+      // Otherwise, pan functionality
+      if (currentTool === 'move') {
+        setIsDrawing(true);
+        const startX = e.clientX - pan.x * zoom;
+        const startY = e.clientY - pan.y * zoom;
+        setCurrentPath([{ x: startX, y: startY }]);
+      }
     }
   };
 
   const handleMouseMove = (e) => {
     if (mode === 'draw') {
       draw(e);
-    } else if (mode === 'edit' && currentTool === 'move' && isDrawing) {
-      const newX = (e.clientX - currentPath[0].x) / zoom;
-      const newY = (e.clientY - currentPath[0].y) / zoom;
-      setPan({ x: newX, y: newY });
+    } else if (mode === 'edit' && isDrawing) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX / zoom - pan.x;
+      const y = (e.clientY - rect.top) * scaleY / zoom - pan.y;
+
+      if (draggingPoint !== null) {
+        // Update control point position
+        const newBorder = [...detectedBorder];
+        newBorder[draggingPoint] = { x, y };
+        setDetectedBorder(newBorder);
+      } else if (currentTool === 'move') {
+        // Pan functionality
+        const newX = (e.clientX - currentPath[0].x) / zoom;
+        const newY = (e.clientY - currentPath[0].y) / zoom;
+        setPan({ x: newX, y: newY });
+      }
     }
   };
 
@@ -281,6 +320,7 @@ export default function BorderEditor({
     } else {
       setIsDrawing(false);
       setCurrentPath([]);
+      setDraggingPoint(null);
     }
   };
 
