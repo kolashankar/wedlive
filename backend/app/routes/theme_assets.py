@@ -571,6 +571,20 @@ async def get_available_precious_styles(
     styles = await cursor.to_list(length=limit)
     return [PreciousMomentStyleResponse(**style) for style in styles]
 
+@router.get("/theme-assets/precious-styles/{style_id}", response_model=PreciousMomentStyleResponse)
+async def get_precious_style(
+    style_id: str,
+    db = Depends(get_db_dependency)
+):
+    """Get a specific precious moment style by ID"""
+    style = await db.precious_moment_styles.find_one({"id": style_id})
+    if not style:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Precious moment style not found"
+        )
+    return PreciousMomentStyleResponse(**style)
+
 @router.get("/theme-assets/backgrounds", response_model=List[BackgroundImageResponse])
 async def get_available_backgrounds(
     skip: int = 0, 
