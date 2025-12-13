@@ -317,6 +317,68 @@ class BackgroundTemplateResponse(BaseModel):
     default_animation: AnimationType
     created_at: datetime
 
+# Theme Definition Models
+class PreciousMomentsConfig(BaseModel):
+    enabled: bool = False
+    min_photos: int = 2
+    max_photos: int = 6
+
+class ThemeRequiredSections(BaseModel):
+    bride_photo: bool = False
+    groom_photo: bool = False
+    couple_photo: bool = False
+    precious_moments: PreciousMomentsConfig = PreciousMomentsConfig()
+
+class ThemeDefaultBorders(BaseModel):
+    cover: Optional[str] = None  # border_id
+    precious_moments: Optional[str] = None  # precious_moment_style_id
+
+class Theme(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    preview_image: Optional[str] = ""
+    required_sections: ThemeRequiredSections = ThemeRequiredSections()
+    default_borders: ThemeDefaultBorders = ThemeDefaultBorders()
+    supported_layouts: List[str] = ["default"]  # default, split, overlay, etc.
+    supported_animations: List[AnimationType] = [AnimationType.NONE]
+    is_premium: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+class ThemeResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    preview_image: Optional[str]
+    required_sections: ThemeRequiredSections
+    default_borders: ThemeDefaultBorders
+    supported_layouts: List[str]
+    supported_animations: List[AnimationType]
+    is_premium: bool
+    created_at: datetime
+    updated_at: datetime
+
+class CreateThemeRequest(BaseModel):
+    name: str
+    description: str = ""
+    preview_image: Optional[str] = ""
+    required_sections: ThemeRequiredSections
+    default_borders: ThemeDefaultBorders
+    supported_layouts: List[str] = ["default"]
+    supported_animations: List[AnimationType] = [AnimationType.NONE]
+    is_premium: bool = False
+
+class UpdateThemeRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    preview_image: Optional[str] = None
+    required_sections: Optional[ThemeRequiredSections] = None
+    default_borders: Optional[ThemeDefaultBorders] = None
+    supported_layouts: Optional[List[str]] = None
+    supported_animations: Optional[List[AnimationType]] = None
+    is_premium: Optional[bool] = None
+
 # Wedding Theme Asset Selection
 class SelectedBorders(BaseModel):
     groom_border_id: Optional[str] = None
@@ -324,16 +386,25 @@ class SelectedBorders(BaseModel):
     couple_border_id: Optional[str] = None
     cover_border_id: Optional[str] = None
 
+class SelectedAnimation(BaseModel):
+    template_id: Optional[str] = None
+    animation_type: AnimationType = AnimationType.NONE
+    animation_speed: str = "normal"  # slow, normal, fast
+
 class WeddingThemeAssets(BaseModel):
     borders: SelectedBorders = SelectedBorders()
     precious_moment_style_id: Optional[str] = None
     background_image_id: Optional[str] = None
+    background_template_id: Optional[str] = None  # NEW: for animated backgrounds
+    animation: SelectedAnimation = SelectedAnimation()  # NEW
     precious_moment_photos: List[str] = []  # Array of photo URLs
 
 class UpdateWeddingThemeAssets(BaseModel):
     borders: Optional[SelectedBorders] = None
     precious_moment_style_id: Optional[str] = None
     background_image_id: Optional[str] = None
+    background_template_id: Optional[str] = None  # NEW
+    animation: Optional[SelectedAnimation] = None  # NEW
     precious_moment_photos: Optional[List[str]] = None
 
 # Wedding Models
