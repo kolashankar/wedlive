@@ -25,7 +25,7 @@ except ImportError:
     print("⚠️  PIL not available - image upload tests will be skipped")
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://photo-fit-update.preview.emergentagent.com")
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://streaming-status.preview.emergentagent.com")
 API_BASE = f"{BACKEND_URL}/api"
 
 class WedLiveAPITester:

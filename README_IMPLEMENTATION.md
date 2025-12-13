@@ -337,8 +337,8 @@ STREAM_APP_ID=1452086
 JWT_SECRET=your_super_secret_jwt_key
 
 # URLs
-NEXT_PUBLIC_BASE_URL=https://photo-fit-update.preview.emergentagent.com
-NEXT_PUBLIC_API_URL=https://photo-fit-update.preview.emergentagent.com/api
+NEXT_PUBLIC_BASE_URL=https://streaming-status.preview.emergentagent.com
+NEXT_PUBLIC_API_URL=https://streaming-status.preview.emergentagent.com/api
 ```
 
 ## 🧪 Testing
@@ -362,7 +362,7 @@ curl -X POST http://localhost:8000/api/auth/login \
 
 ### Test the Frontend
 
-1. Visit: https://photo-fit-update.preview.emergentagent.com
+1. Visit: https://streaming-status.preview.emergentagent.com
 2. Click "Get Started" or "Sign Up"
 3. Create account
 4. Go to Dashboard

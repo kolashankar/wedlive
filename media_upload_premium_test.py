@@ -15,7 +15,7 @@ from app.database import get_db, init_db, close_db
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://photo-fit-update.preview.emergentagent.com")
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://streaming-status.preview.emergentagent.com")
 API_BASE = f"{BACKEND_URL}/api"
 
 class MediaUploadPremiumTester:
