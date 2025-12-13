@@ -389,7 +389,7 @@ export default function BorderEditor({
     overlayCtx.restore();
   }, [image, detectedBorder, currentPath, zoom, pan, showGrid, templateOpacity, mode, shadowBlur, shadowOffset]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log('Save button clicked');
     console.log('Current mode:', mode);
     console.log('Current path length:', currentPath.length);
@@ -400,28 +400,59 @@ export default function BorderEditor({
     
     console.log('Final border length:', finalBorder.length);
     
-    if (finalBorder.length > 0 && onBorderSave) {
-      console.log('Calling onBorderSave with data:', {
-        points: finalBorder,
-        feather: featherRadius[0],
-        shadowBlur: shadowBlur[0],
-        shadowOffset: shadowOffset[0],
-        assetType,
-        mode,
-        shapes,
-        timestamp: Date.now()
-      });
-      
-      onBorderSave({
-        points: finalBorder,
-        feather: featherRadius[0],
-        shadowBlur: shadowBlur[0],
-        shadowOffset: shadowOffset[0],
-        assetType,
-        mode,
-        shapes,
-        timestamp: Date.now()
-      });
+    if (finalBorder.length > 0) {
+      const maskData = {
+        polygon_points: finalBorder,
+        svg_path: convertToSVGPath(finalBorder),
+        feather_radius: featherRadius[0],
+        inner_usable_area: calculateInnerArea(finalBorder)
+      };
+
+      // If borderId is provided, save to backend
+      if (borderId) {
+        try {
+          setSaving(true);
+          const api = (await import('@/lib/api')).default;
+          const { toast } = await import('sonner');
+          
+          await api.put(`/api/admin/theme-assets/borders/${borderId}/mask`, maskData);
+          
+          toast.success('Border mask saved successfully!');
+        } catch (error) {
+          console.error('Error saving mask:', error);
+          const { toast } = await import('sonner');
+          toast.error('Failed to save border mask');
+        } finally {
+          setSaving(false);
+        }
+      }
+
+      // Call callback if provided
+      if (onBorderSave) {
+        console.log('Calling onBorderSave with data:', {
+          points: finalBorder,
+          feather: featherRadius[0],
+          shadowBlur: shadowBlur[0],
+          shadowOffset: shadowOffset[0],
+          assetType,
+          mode,
+          shapes,
+          maskData,
+          timestamp: Date.now()
+        });
+        
+        onBorderSave({
+          points: finalBorder,
+          feather: featherRadius[0],
+          shadowBlur: shadowBlur[0],
+          shadowOffset: shadowOffset[0],
+          assetType,
+          mode,
+          shapes,
+          maskData,
+          timestamp: Date.now()
+        });
+      }
     } else {
       console.log('Save conditions not met:', {
         hasBorder: finalBorder.length > 0,
@@ -429,6 +460,55 @@ export default function BorderEditor({
         borderLength: finalBorder.length
       });
     }
+  };
+
+  // Convert points to SVG path string
+  const convertToSVGPath = (points) => {
+    if (!points || points.length === 0) return '';
+    
+    let path = `M ${points[0].x} ${points[0].y}`;
+    
+    // Use quadratic curves for smoother paths
+    for (let i = 1; i < points.length - 1; i++) {
+      const current = points[i];
+      const next = points[i + 1];
+      const midX = (current.x + next.x) / 2;
+      const midY = (current.y + next.y) / 2;
+      path += ` Q ${current.x} ${current.y}, ${midX} ${midY}`;
+    }
+    
+    // Close the path
+    if (points.length > 2) {
+      const last = points[points.length - 1];
+      const first = points[0];
+      path += ` L ${last.x} ${last.y} L ${first.x} ${first.y}`;
+    }
+    
+    path += ' Z';
+    return path;
+  };
+
+  // Calculate inner usable area
+  const calculateInnerArea = (points) => {
+    if (!points || points.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
+    
+    const xs = points.map(p => p.x);
+    const ys = points.map(p => p.y);
+    
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    
+    // Add padding for feather
+    const padding = featherRadius[0];
+    
+    return {
+      x: minX + padding,
+      y: minY + padding,
+      width: maxX - minX - (padding * 2),
+      height: maxY - minY - (padding * 2)
+    };
   };
 
   const handleRedetect = () => {
