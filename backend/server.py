@@ -116,6 +116,7 @@ fastapi_app.include_router(profile.router, tags=["Profile"])
 fastapi_app.include_router(security.router, tags=["Security"])
 fastapi_app.include_router(settings.router, tags=["Settings"])
 fastapi_app.include_router(theme_assets.router, prefix="/api", tags=["Theme Assets"])
+fastapi_app.include_router(themes.router, prefix="/api", tags=["Themes"])
 fastapi_app.include_router(templates.router, prefix="/api", tags=["Templates"])
 fastapi_app.include_router(rtmp_webhooks.router, prefix="/api/webhooks", tags=["RTMP Webhooks"])
 
