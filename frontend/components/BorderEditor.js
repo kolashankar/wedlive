@@ -66,6 +66,13 @@ export default function BorderEditor({
   const [featherRadius, setFeatherRadius] = useState([5]);
   const [shadowBlur, setShadowBlur] = useState([10]);
   const [shadowOffset, setShadowOffset] = useState([5]);
+  
+  // New features
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [controlPoints, setControlPoints] = useState([]);
+  const [draggingPoint, setDraggingPoint] = useState(null);
 
   // Load image when URL changes
   useEffect(() => {
