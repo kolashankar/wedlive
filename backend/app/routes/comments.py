@@ -72,7 +72,7 @@ async def create_comment(
         "id": str(uuid.uuid4()),
         "wedding_id": comment.wedding_id,
         "parent_comment_id": comment.parent_comment_id,
-        "user_id": current_user["id"],
+        "user_id": current_user.get("id", "anonymous"),
         "user_name": current_user.get("full_name", "User"),
         "user_avatar": current_user.get("avatar_url"),
         "comment": comment.comment,

@@ -16,8 +16,6 @@ import {
   Heart,
   Eye,
   Loader2,
-  Play,
-  Pause,
   Settings,
   Image as ImageIcon,
   Crown,
@@ -143,29 +141,6 @@ function ManagePageContent({ params }) {
     }
   };
 
-  const handleStartStream = async () => {
-    try {
-      await api.post(`/api/streams/start`, { wedding_id: weddingId });
-      setStreamActive(true);
-      toast.success('🎥 Stream started successfully!');
-      loadWedding();
-    } catch (error) {
-      console.error('Error starting stream:', error);
-      toast.error(error.response?.data?.detail || 'Failed to start stream');
-    }
-  };
-
-  const handleStopStream = async () => {
-    try {
-      await api.post(`/api/streams/stop`, { wedding_id: weddingId });
-      setStreamActive(false);
-      toast.success('Stream stopped');
-      loadWedding();
-    } catch (error) {
-      console.error('Error stopping stream:', error);
-      toast.error('Failed to stop stream');
-    }
-  };
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -308,55 +283,6 @@ function ManagePageContent({ params }) {
 
               {/* Stream Tab */}
               <TabsContent value="stream" className="space-y-6">
-                {/* Stream Controls */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Stream Control</CardTitle>
-                    <CardDescription>
-                      Start or stop your live stream
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {streamActive ? (
-                      <>
-                        <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                            <div>
-                              <p className="font-semibold text-red-900">Stream is LIVE</p>
-                              <p className="text-sm text-red-700">
-                                {viewerCount} {viewerCount === 1 ? 'viewer' : 'viewers'} watching
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="destructive"
-                            onClick={handleStopStream}
-                            disabled={wedding.is_locked}
-                          >
-                            <Pause className="w-4 h-4 mr-2" />
-                            Stop Stream
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
-                          Your stream is currently offline. Click the button below to go live.
-                        </p>
-                        <Button
-                          onClick={handleStartStream}
-                          disabled={wedding.is_locked}
-                          className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white hover:from-rose-600 hover:to-purple-700"
-                        >
-                          <Play className="w-4 h-4 mr-2" />
-                          Start Stream
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
                 {/* RTMP Credentials */}
                 <Card>
                   <CardHeader>

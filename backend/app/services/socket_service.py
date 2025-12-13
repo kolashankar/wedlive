@@ -16,14 +16,14 @@ active_viewers: Dict[str, Set[str]] = {}
 logger = logging.getLogger(__name__)
 
 
-@sio.event
+@sio.on('connect')
 async def connect(sid, environ):
     """Handle client connection"""
     logger.info(f"Client connected: {sid}")
     await sio.emit('connected', {'status': 'Connected to WedLive'}, to=sid)
 
 
-@sio.event
+@sio.on('disconnect')
 async def disconnect(sid):
     """Handle client disconnection"""
     logger.info(f"Client disconnected: {sid}")
@@ -39,7 +39,7 @@ async def disconnect(sid):
             }, room=wedding_id)
 
 
-@sio.event
+@sio.on('join_wedding')
 async def join_wedding(sid, data):
     """Join a wedding room"""
     wedding_id = data.get('wedding_id')
@@ -74,7 +74,7 @@ async def join_wedding(sid, data):
     return {'status': 'joined', 'viewer_count': viewer_count}
 
 
-@sio.event
+@sio.on('leave_wedding')
 async def leave_wedding(sid, data):
     """Leave a wedding room"""
     wedding_id = data.get('wedding_id')
@@ -99,7 +99,7 @@ async def leave_wedding(sid, data):
     return {'status': 'left'}
 
 
-@sio.event
+@sio.on('send_message')
 async def send_message(sid, data):
     """Send a chat message to wedding room"""
     from app.database import get_db
@@ -153,7 +153,7 @@ async def send_message(sid, data):
         return {'status': 'sent'}
 
 
-@sio.event
+@sio.on('send_reaction')
 async def send_reaction(sid, data):
     """Send an emoji reaction to wedding room"""
     wedding_id = data.get('wedding_id')
@@ -176,7 +176,7 @@ async def send_reaction(sid, data):
     return {'status': 'sent'}
 
 
-@sio.event
+@sio.on('stream_quality_update')
 async def stream_quality_update(sid, data):
     """Update stream quality metrics"""
     wedding_id = data.get('wedding_id')
@@ -190,7 +190,7 @@ async def stream_quality_update(sid, data):
     return {'status': 'recorded'}
 
 
-@sio.event
+@sio.on('camera_switch')
 async def camera_switch(sid, data):
     """Handle multi-camera switch"""
     wedding_id = data.get('wedding_id')

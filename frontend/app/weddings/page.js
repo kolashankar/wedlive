@@ -3,350 +3,467 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Calendar, MapPin, Users, Clock, Video, Search, Heart, Loader2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { 
+  Calendar, 
+  MapPin, 
+  Users, 
+  Clock, 
+  Video, 
+  Heart,
+  Share2,
+  Download,
+  Play,
+  Loader2,
+  ArrowLeft,
+  Eye
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { format, parseISO, isValid } from 'date-fns';
+import { format } from 'date-fns';
+import MediaGallery from '@/components/MediaGallery';
+import StreamVideoPlayer from '@/components/StreamVideoPlayer';
+import ThemeRenderer from '@/components/ThemeRenderer';
+import CommentsSection from '@/components/CommentsSection';
+import { SocketProvider } from '@/contexts/SocketContext';
 
-export default function WeddingsPage() {
+function WeddingViewPageContent({ params }) {
   const router = useRouter();
-  const [weddings, setWeddings] = useState([]);
-  const [filteredWeddings, setFilteredWeddings] = useState([]);
+  const weddingId = params.id;
+  
+  const [wedding, setWedding] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all'); // all, live, scheduled, recorded
+  const [viewerCount, setViewerCount] = useState(0);
+  const [showTheme, setShowTheme] = useState(null); // null = checking, true = show theme, false = skip theme
 
   useEffect(() => {
-    loadWeddings();
-  }, []);
+    if (weddingId) {
+      loadWedding();
+      
+      // Update viewer count every 10 seconds for live streams
+      const interval = setInterval(() => {
+        if (wedding?.status === 'live') {
+          updateViewerCount();
+        }
+      }, 10000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [weddingId]);
 
-  useEffect(() => {
-    filterWeddings();
-  }, [searchQuery, filter, weddings]);
-
-  const loadWeddings = async () => {
+  const loadWedding = async () => {
     try {
-      const response = await api.get('/api/weddings/');
-      setWeddings(response.data);
-      setFilteredWeddings(response.data);
+      const response = await api.get(`/api/weddings/${weddingId}`);
+      const weddingData = response.data;
+      
+      // CRITICAL FIX: Validate wedding data before setting state
+      if (!weddingData || typeof weddingData !== 'object') {
+        console.error('Invalid wedding data received');
+        toast.error('Invalid wedding data');
+        setLoading(false);
+        return;
+      }
+      
+      // Ensure theme_settings exists with ALL nested objects properly initialized
+      if (!weddingData.theme_settings || typeof weddingData.theme_settings !== 'object') {
+        weddingData.theme_settings = {
+          theme_id: 'floral_garden',
+          custom_font: 'Great Vibes',
+          primary_color: '#f43f5e',
+          secondary_color: '#a855f7',
+          pre_wedding_video: '',
+          cover_photos: [],
+          studio_details: {
+            studio_id: '',
+            name: '',
+            logo_url: '',
+            contact: ''
+          },
+          custom_messages: {
+            welcome_text: 'Welcome to our big day',
+            description: ''
+          }
+        };
+      } else {
+        // Ensure nested objects exist even if theme_settings exists
+        if (!weddingData.theme_settings.studio_details || typeof weddingData.theme_settings.studio_details !== 'object') {
+          weddingData.theme_settings.studio_details = {
+            studio_id: '',
+            name: '',
+            logo_url: '',
+            contact: ''
+          };
+        }
+        if (!weddingData.theme_settings.custom_messages || typeof weddingData.theme_settings.custom_messages !== 'object') {
+          weddingData.theme_settings.custom_messages = {
+            welcome_text: 'Welcome to our big day',
+            description: ''
+          };
+        }
+        if (!Array.isArray(weddingData.theme_settings.cover_photos)) {
+          weddingData.theme_settings.cover_photos = [];
+        }
+      }
+      
+      setWedding(weddingData);
+      setViewerCount(weddingData.viewers_count || 0);
+      
+      // Determine if we should show theme preview
+      // Check if the wedding creator is a premium user
+      // Premium users → Show theme preview first with "Go to Wedding" button
+      // Free plan users → Skip theme preview and go directly to wedding page
+      const creatorPlan = weddingData.creator_subscription_plan || 'free';
+      const isPremium = creatorPlan === 'monthly' || creatorPlan === 'yearly';
+      
+      // Show theme preview for premium users with theme settings configured, skip for free users
+      // Also check that theme_settings exists and is not empty
+      const hasThemeSettings = weddingData.theme_settings && 
+                               typeof weddingData.theme_settings === 'object' &&
+                               Object.keys(weddingData.theme_settings).length > 0;
+      setShowTheme(isPremium && hasThemeSettings);
     } catch (error) {
-      toast.error('Failed to load weddings');
-      console.error('Error loading weddings:', error);
+      toast.error('Failed to load wedding details');
+      console.error('Error loading wedding:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterWeddings = () => {
-    let filtered = weddings;
-
-    // Apply status filter
-    if (filter !== 'all') {
-      filtered = filtered.filter(w => w.status === filter);
+  const updateViewerCount = async () => {
+    try {
+      const response = await api.get(`/api/weddings/${weddingId}`);
+      setViewerCount(response.data.viewers_count || 0);
+    } catch (error) {
+      console.error('Failed to update viewer count:', error);
     }
-
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(w => 
-        w.title?.toLowerCase().includes(query) ||
-        w.bride_name?.toLowerCase().includes(query) ||
-        w.groom_name?.toLowerCase().includes(query) ||
-        w.location?.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredWeddings(filtered);
   };
 
-  const formatWeddingDate = (dateString) => {
-    try {
-      if (!dateString) return 'Date not set';
-      
-      // Try parsing as ISO string first
-      let date = parseISO(dateString);
-      
-      // If not valid, try creating a new Date
-      if (!isValid(date)) {
-        date = new Date(dateString);
-      }
-      
-      // Check if date is valid
-      if (!isValid(date)) {
-        return 'Invalid date';
-      }
-      
-      return format(date, 'PPP');
-    } catch (error) {
-      console.error('Error formatting date:', error, dateString);
-      return 'Date unavailable';
+  const handleEnterWedding = () => {
+    setShowTheme(false);
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: wedding.title,
+        text: `Watch ${wedding.bride_name} & ${wedding.groom_name}'s wedding live!`,
+        url: url
+      }).catch(() => {
+        // Fallback to clipboard
+        copyToClipboard(url);
+      });
+    } else {
+      copyToClipboard(url);
     }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Link copied to clipboard!');
   };
 
   const getStatusBadge = (status) => {
-    const badges = {
-      'live': (
-        <Badge className="bg-red-500 text-white animate-pulse" data-testid="status-badge-live">
-          <Video className="w-3 h-3 mr-1" />
-          LIVE
-        </Badge>
-      ),
-      'scheduled': (
-        <Badge variant="secondary" data-testid="status-badge-scheduled">
-          <Clock className="w-3 h-3 mr-1" />
-          Upcoming
-        </Badge>
-      ),
-      'ended': (
-        <Badge variant="outline" data-testid="status-badge-recorded">
-          Recording Available
-        </Badge>
-      ),
-      'recorded': (
-        <Badge variant="outline" data-testid="status-badge-recorded">
-          Recording Available
-        </Badge>
-      )
-    };
-    
-    return badges[status] || null;
+    switch (status) {
+      case 'live':
+        return (
+          <Badge className="bg-red-500 text-white animate-pulse text-lg px-4 py-1" data-testid="status-live">
+            <Video className="w-4 h-4 mr-2" />LIVE
+          </Badge>
+        );
+      case 'scheduled':
+        return (
+          <Badge variant="secondary" className="text-lg px-4 py-1" data-testid="status-scheduled">
+            <Clock className="w-4 h-4 mr-2" />Upcoming
+          </Badge>
+        );
+      case 'ended':
+      case 'recorded':
+        return (
+          <Badge variant="outline" className="text-lg px-4 py-1" data-testid="status-recorded">
+            Recording Available
+          </Badge>
+        );
+      default:
+        return null;
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-rose-500 mx-auto mb-4" />
+          <p className="text-lg text-gray-600">Loading wedding...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!wedding) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50 flex items-center justify-center">
+        <Card className="max-w-md text-center">
+          <CardHeader>
+            <CardTitle>Wedding Not Found</CardTitle>
+            <CardDescription>This wedding event doesn't exist or has been removed.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/weddings">
+              <Button>Browse All Weddings</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show theme landing page first (only for premium users)
+  if (showTheme === null) {
+    // Still checking - show loading
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-rose-500 mx-auto mb-4" />
+          <p className="text-lg text-gray-600">Loading wedding...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // CRITICAL FIX: Double-check theme_settings exists before showing theme
+  if (showTheme && wedding && wedding.theme_settings && typeof wedding.theme_settings === 'object') {
+    return (
+      <ThemeRenderer 
+        wedding={wedding} 
+        onEnter={handleEnterWedding}
+      />
+    );
+  }
+
+  // Main wedding stream view
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="bg-gradient-to-r from-rose-500 to-purple-600 p-2 rounded-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent">
-                WedLive
-              </span>
-            </Link>
             <div className="flex items-center space-x-4">
-              <Link href="/dashboard">
-                <Button variant="outline">Dashboard</Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.back()}
+                data-testid="back-button"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-rose-500 to-purple-600 p-2 rounded-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent">
+                  WedLive
+                </span>
               </Link>
-              <Link href="/login">
-                <Button className="bg-gradient-to-r from-rose-500 to-purple-600 text-white">
-                  Sign In
-                </Button>
-              </Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleShare}
+                data-testid="share-button"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-rose-500 to-purple-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-4">Live Wedding Celebrations</h1>
-          <p className="text-xl text-rose-100 max-w-2xl mx-auto">
-            Join couples from around the world as they celebrate their special day
-          </p>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Search and Filter */}
-        <div className="mb-8 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search weddings by name, couple, or location..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 py-6 text-lg"
-              data-testid="search-input"
-            />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <Button
-              onClick={() => setFilter('all')}
-              variant={filter === 'all' ? 'default' : 'outline'}
-              className={filter === 'all' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : ''}
-              data-testid="filter-all"
-            >
-              All Weddings
-            </Button>
-            <Button
-              onClick={() => setFilter('live')}
-              variant={filter === 'live' ? 'default' : 'outline'}
-              className={filter === 'live' ? 'bg-red-500 text-white' : ''}
-              data-testid="filter-live"
-            >
-              <Video className="w-4 h-4 mr-2" />
-              Live Now
-            </Button>
-            <Button
-              onClick={() => setFilter('scheduled')}
-              variant={filter === 'scheduled' ? 'default' : 'outline'}
-              data-testid="filter-scheduled"
-            >
-              <Clock className="w-4 h-4 mr-2" />
-              Upcoming
-            </Button>
-            <Button
-              onClick={() => setFilter('recorded')}
-              variant={filter === 'recorded' ? 'default' : 'outline'}
-              data-testid="filter-recorded"
-            >
-              Recordings
-            </Button>
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
-          </div>
-        ) : filteredWeddings.length === 0 ? (
-          <Card className="text-center py-20">
-            <CardContent>
-              <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchQuery || filter !== 'all' ? 'No weddings found' : 'No weddings yet'}
-              </h3>
-              <p className="text-gray-500 mb-6">
-                {searchQuery || filter !== 'all' 
-                  ? 'Try adjusting your search or filters' 
-                  : 'Be the first to host a live wedding!'
-                }
-              </p>
-              <Link href="/dashboard">
-                <Button className="bg-gradient-to-r from-rose-500 to-purple-600 text-white">
-                  Create Your Wedding Event
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <div className="mb-4 text-gray-600">
-              Showing {filteredWeddings.length} {filteredWeddings.length === 1 ? 'wedding' : 'weddings'}
-            </div>
-            
-            {/* Wedding Cards Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredWeddings.map((wedding) => (
-                <Card 
-                  key={wedding.id} 
-                  className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
-                  onClick={() => router.push(`/weddings/${wedding.id}`)}
-                  data-testid={`wedding-card-${wedding.id}`}
-                >
-                  {/* Cover Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-rose-400 to-purple-500">
-                    {wedding.cover_image ? (
-                      <img 
-                        src={wedding.cover_image} 
-                        alt={wedding.title || 'Wedding'}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Heart className="w-20 h-20 text-white opacity-50" />
-                      </div>
-                    )}
-                    <div className="absolute top-4 right-4">
-                      {getStatusBadge(wedding.status)}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Video Player */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Video Player Card */}
+            <Card className="overflow-hidden">
+              <div className="relative bg-black" style={{ paddingTop: '56.25%' }}>
+                {wedding.status === 'live' && wedding.playback_url ? (
+                  <div className="absolute inset-0">
+                    <StreamVideoPlayer
+                      playbackUrl={wedding.playback_url}
+                    />
+                  </div>
+                ) : wedding.status === 'recorded' && wedding.recording_url ? (
+                  <div className="absolute inset-0">
+                    <StreamVideoPlayer
+                      playbackUrl={wedding.recording_url}
+                    />
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-white p-8">
+                      <Video className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-semibold mb-2">
+                        {wedding.status === 'scheduled' ? 'Stream Not Started Yet' : 'Stream Ended'}
+                      </p>
+                      <p className="text-sm opacity-75">
+                        {wedding.status === 'scheduled' 
+                          ? `Scheduled for ${format(new Date(wedding.scheduled_date), 'PPP p')}`
+                          : 'This wedding stream has ended'}
+                      </p>
                     </div>
                   </div>
+                )}
+              </div>
+            </Card>
 
-                  <CardHeader>
-                    <CardTitle className="text-xl">{wedding.title || 'Untitled Wedding'}</CardTitle>
-                    <CardDescription className="text-base">
-                      {wedding.bride_name || 'Bride'} & {wedding.groom_name || 'Groom'}
+            {/* Wedding Info Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">{wedding.title}</CardTitle>
+                    <CardDescription className="text-base mt-2">
+                      {wedding.bride_name} & {wedding.groom_name}
                     </CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="space-y-3">
-                    {wedding.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        {wedding.description}
-                      </p>
-                    )}
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {formatWeddingDate(wedding.scheduled_date)}
+                  </div>
+                  {getStatusBadge(wedding.status)}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {wedding.description && (
+                  <>
+                    <p className="text-gray-700">{wedding.description}</p>
+                    <Separator />
+                  </>
+                )}
+                
+                <div className="grid gap-3">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Calendar className="w-5 h-5 text-rose-500" />
+                    <span>{format(new Date(wedding.scheduled_date), 'EEEE, MMMM d, yyyy')}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Clock className="w-5 h-5 text-rose-500" />
+                    <span>{format(new Date(wedding.scheduled_date), 'h:mm a')}</span>
+                  </div>
+                  {wedding.location && (
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <MapPin className="w-5 h-5 text-rose-500" />
+                      <span>{wedding.location}</span>
                     </div>
-                    
-                    {wedding.location && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin className="w-4 h-4 mr-2" />
-                        {wedding.location}
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users className="w-4 h-4 mr-2" />
-                      {wedding.viewers_count || 0} viewers
+                  )}
+                  {wedding.status === 'live' && (
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <Users className="w-5 h-5 text-rose-500" />
+                      <span>{viewerCount} {viewerCount === 1 ? 'viewer' : 'viewers'} watching</span>
                     </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-                    <Button 
-                      className="w-full mt-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/weddings/${wedding.id}`);
-                      }}
-                      data-testid={`view-wedding-button-${wedding.id}`}
-                    >
-                      {wedding.status === 'live' ? (
-                        <><Video className="w-4 h-4 mr-2" />Watch Live</>
-                      ) : wedding.status === 'recorded' || wedding.status === 'ended' ? (
-                        <>View Recording</>
-                      ) : (
-                        <>View Details</>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+            {/* Media Gallery */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Photo & Video Gallery</CardTitle>
+                <CardDescription>Memories from the celebration</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MediaGallery weddingId={weddingId} publicView={true} />
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-rose-500 to-purple-600 text-white py-16 mt-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4">Want to Host Your Own Wedding Live?</h2>
-          <p className="text-xl text-rose-100 mb-8">
-            Share your special day with loved ones around the world
-          </p>
-          <Link href="/register">
-            <Button 
-              size="lg" 
-              className="bg-white text-rose-600 hover:bg-rose-50"
-              data-testid="cta-register-button"
-            >
-              Get Started Free
-            </Button>
-          </Link>
+          {/* Right Column - Info & Comments */}
+          <div className="space-y-6">
+            {/* Creator Info */}
+            {wedding.creator_name && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Hosted By</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-gradient-to-br from-rose-500 to-purple-600 text-white">
+                        {wedding.creator_name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">{wedding.creator_name}</p>
+                      <p className="text-sm text-gray-500">Wedding Host</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={handleShare}
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Wedding
+                </Button>
+                {wedding.recording_url && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    asChild
+                  >
+                    <a href={wedding.recording_url} download>
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Recording
+                    </a>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Premium Locked Message */}
+            {wedding.is_locked && (
+              <Card className="border-rose-200 bg-rose-50">
+                <CardHeader>
+                  <CardTitle className="text-lg text-rose-900">Premium Content</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-rose-800 mb-4">
+                    This wedding content is currently locked. The host needs to upgrade to Premium to unlock streaming.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Comments Section - Replaces Live Chat */}
+            <CommentsSection weddingId={weddingId} />
+          </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600">
-            © 2024 WedLive. Built with ❤️ for making every wedding moment accessible.
-          </p>
-        </div>
-      </footer>
     </div>
+  );
+}
+
+// Wrap the component with SocketProvider for real-time features
+export default function WeddingViewPage({ params }) {
+  return (
+    <SocketProvider weddingId={params.id}>
+      <WeddingViewPageContent params={params} />
+    </SocketProvider>
   );
 }

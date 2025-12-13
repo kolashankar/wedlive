@@ -6,6 +6,7 @@ from datetime import datetime
 import re
 import logging
 import asyncio
+import os
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -26,10 +27,17 @@ async def rtmp_stream_start(request: Request, background_tasks: BackgroundTasks)
         wedding_id = match.group(1)
         db = get_db()
         
-        # Update wedding status to live
+        # Update wedding status to live and set playback URL
+        hls_server_url = os.getenv("HLS_SERVER_URL", "http://localhost:8080").rstrip("/hls")
+        playback_url = f"{hls_server_url}/hls/{stream_key}/index.m3u8"
+        
         await db.weddings.update_one(
             {"id": wedding_id},
-            {"$set": {"status": "live", "started_at": datetime.utcnow()}}
+            {"$set": {
+                "status": "live", 
+                "started_at": datetime.utcnow(),
+                "playback_url": playback_url
+            }}
         )
         
         # Start auto-recording
@@ -57,10 +65,14 @@ async def rtmp_stream_stop(request: Request, background_tasks: BackgroundTasks):
         wedding_id = match.group(1)
         db = get_db()
         
-        # Update wedding status to ended
+        # Update wedding status to ended and clear playback URL
         await db.weddings.update_one(
             {"id": wedding_id},
-            {"$set": {"status": "ended", "ended_at": datetime.utcnow()}}
+            {"$set": {
+                "status": "ended", 
+                "ended_at": datetime.utcnow(),
+                "playback_url": None
+            }}
         )
         
         # Stop recording and upload to Telegram

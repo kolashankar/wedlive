@@ -117,6 +117,7 @@ fastapi_app.include_router(security.router, tags=["Security"])
 fastapi_app.include_router(settings.router, tags=["Settings"])
 fastapi_app.include_router(theme_assets.router, prefix="/api", tags=["Theme Assets"])
 fastapi_app.include_router(templates.router, prefix="/api", tags=["Templates"])
+fastapi_app.include_router(rtmp_webhooks.router, prefix="/api/webhooks", tags=["RTMP Webhooks"])
 
 # Add route aliases for backward compatibility and cleaner API paths
 # These allow frontend to call /api/branding instead of /api/phase10/branding
