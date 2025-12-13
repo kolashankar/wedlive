@@ -851,6 +851,45 @@ export default function BorderEditor({
           )}
         </div>
 
+        {/* Preview Panel */}
+        {showPreview && previewPhoto && detectedBorder.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Real-time Mask Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative border rounded-lg overflow-hidden bg-gray-100" style={{ maxWidth: '400px', maxHeight: '400px', margin: '0 auto' }}>
+                <div 
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    aspectRatio: '1',
+                    clipPath: detectedBorder.length > 0 ? `polygon(${detectedBorder.map(p => `${p.x}px ${p.y}px`).join(', ')})` : 'none'
+                  }}
+                >
+                  <img 
+                    src={previewPhotoUrl}
+                    alt="Preview"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: `blur(${featherRadius[0]}px)`
+                    }}
+                  />
+                </div>
+                <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs p-2 rounded">
+                  <div>Feather: {featherRadius[0]}px</div>
+                  <div>Points: {detectedBorder.length}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Canvas Container */}
         <div 
           ref={containerRef}
@@ -872,7 +911,7 @@ export default function BorderEditor({
               maxWidth: '100%', 
               height: 'auto',
               display: image ? 'block' : 'none',
-              cursor: mode === 'draw' && currentTool === 'pen' ? 'crosshair' : 'default'
+              cursor: mode === 'draw' && currentTool === 'pen' ? 'crosshair' : mode === 'edit' ? 'move' : 'default'
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
