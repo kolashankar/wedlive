@@ -14,7 +14,7 @@ import tempfile
 import uuid
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://border-mask-upgrade.preview.emergentagent.com")
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://photo-fit-update.preview.emergentagent.com")
 API_BASE = f"{BACKEND_URL}/api"
 
 class TelegramMediaTester:
