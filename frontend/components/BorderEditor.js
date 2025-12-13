@@ -689,15 +689,29 @@ export default function BorderEditor({
             </Button>
           )}
           
+          {previewPhotoUrl && (
+            <Button
+              onClick={() => setShowPreview(!showPreview)}
+              variant={showPreview ? 'default' : 'outline'}
+              size="sm"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              {showPreview ? 'Hide' : 'Show'} Preview
+            </Button>
+          )}
+          
           <Button
             onClick={handleSave}
-            disabled={(!onBorderSave) || 
+            disabled={saving || (!borderId && !onBorderSave) || 
                      (mode === 'detect' && detectedBorder.length === 0) || 
                      (mode === 'draw' && currentPath.length < 3)}
             size="sm"
           >
-            <Save className="w-4 h-4 mr-2" />
-            Save Border
+            {saving ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+            ) : (
+              <><Save className="w-4 h-4 mr-2" />Save Border</>
+            )}
           </Button>
           
           <div className="flex items-center gap-2">
