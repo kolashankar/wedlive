@@ -1,8 +1,9 @@
 import React from 'react';
 import { Calendar, Download } from 'lucide-react';
 import axios from 'axios';
+import CONFIG from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = `${CONFIG.API.BASE_URL}/api`;
 
 export function CalendarIntegration({ weddingId, title, scheduledDate }) {
   const handleGoogleCalendar = async () => {
