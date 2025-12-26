@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, Eye, MessageSquare, Heart, Camera, TrendingUp } from 'lucide-react';
 import axios from 'axios';
+import CONFIG from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = `${CONFIG.API.BASE_URL}/api`;
 
 const COLORS = ['#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'];
 
