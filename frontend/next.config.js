@@ -24,36 +24,9 @@ const nextConfig = {
     }
     
     // Fix for onnxruntime-web import.meta error
-    config.resolve = {
-      ...config.resolve,
-      fallback: {
-        "fs": false,
-        "path": false,
-        "os": false
-      },
-      alias: {
-        ...config.resolve.alias,
-      },
-    };
-    
-    // Configure WebAssembly loading
-    config.experiments = {
-      ...config.experiments,
-      asyncWebAssembly: true,
-      syncWebAssembly: true,
-      topLevelAwait: true,
-    };
-    
-    // Handle WASM files
-    config.module = {
-      ...config.module,
-      rules: [
-        ...(config.module?.rules || []),
-        {
-          test: /\.wasm$/,
-          type: 'webassembly/async',
-        },
-      ],
+    config.externals = {
+      ...config.externals,
+      'onnxruntime-web': 'onnxruntime-web',
     };
     
     return config;
