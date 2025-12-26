@@ -1,0 +1,175 @@
+{
+  "passed": 16,
+  "failed": 5,
+  "errors": [],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/health"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401,
+      "expected": 401,
+      "passed": true,
+      "url": "http://localhost:8001/api/auth/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/weddings/test",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/weddings/test"
+    },
+    {
+      "method": "GET",
+      "path": "/api/weddings/my-weddings",
+      "status": 401,
+      "expected": 401,
+      "passed": true,
+      "url": "http://localhost:8001/api/weddings/my-weddings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/media/telegram-proxy/test",
+      "status": 400,
+      "expected": 400,
+      "passed": true,
+      "url": "http://localhost:8001/api/media/telegram-proxy/test"
+    },
+    {
+      "method": "GET",
+      "path": "/api/streams/live",
+      "status": 500,
+      "expected": 200,
+      "passed": false,
+      "url": "http://localhost:8001/api/streams/live"
+    },
+    {
+      "method": "GET",
+      "path": "/api/weddings/",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/weddings/"
+    },
+    {
+      "method": "GET",
+      "path": "/api/weddings/test",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/weddings/test"
+    },
+    {
+      "method": "GET",
+      "path": "/api/streams/live",
+      "status": 500,
+      "expected": 200,
+      "passed": false,
+      "url": "http://localhost:8001/api/streams/live"
+    },
+    {
+      "method": "GET",
+      "path": "/api/viewer/wedding/test-id/media",
+      "status": 404,
+      "expected": 404,
+      "passed": true,
+      "url": "http://localhost:8001/api/viewer/wedding/test-id/media"
+    },
+    {
+      "method": "GET",
+      "path": "/api/viewer/wedding/test-id/all",
+      "status": 404,
+      "expected": 404,
+      "passed": true,
+      "url": "http://localhost:8001/api/viewer/wedding/test-id/all"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chat/messages/test-id",
+      "status": 500,
+      "expected": 200,
+      "passed": false,
+      "url": "http://localhost:8001/api/chat/messages/test-id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chat/reactions/test-id",
+      "status": 500,
+      "expected": 200,
+      "passed": false,
+      "url": "http://localhost:8001/api/chat/reactions/test-id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chat/guestbook/test-id",
+      "status": 500,
+      "expected": 200,
+      "passed": false,
+      "url": "http://localhost:8001/api/chat/guestbook/test-id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/theme-assets/borders",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/theme-assets/borders"
+    },
+    {
+      "method": "GET",
+      "path": "/api/theme-assets/precious-styles",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/theme-assets/precious-styles"
+    },
+    {
+      "method": "GET",
+      "path": "/api/theme-assets/backgrounds",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/theme-assets/backgrounds"
+    },
+    {
+      "method": "GET",
+      "path": "/api/theme-assets/random-defaults",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "http://localhost:8001/api/theme-assets/random-defaults"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 200,
+      "expected": 200,
+      "passed": true,
+      "url": "https://wedlive.onrender.com/api/health"
+    },
+    {
+      "method": "GET",
+      "path": "/api/weddings/my-weddings",
+      "status": 401,
+      "expected": 401,
+      "passed": true,
+      "url": "https://wedlive.onrender.com/api/weddings/my-weddings"
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "layout_id": "layout_7",
+  "name": "Editorial Grid",
+  "description": "Asymmetric grid layout inspired by editorial design with bold typography, geometric shapes, and modern artistic composition.",
+  "version": "1.0",
+  "thumbnail": "/layout-previews/layout7.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Large feature photo in grid",
+        "supports_border": false,
+        "aspect_ratio": "portrait"
+      },
+      "bridePhoto": {
+        "required": false,
+        "description": "Bride photo in offset grid position",
+        "supports_border": true,
+        "aspect_ratio": "portrait"
+      },
+      "groomPhoto": {
+        "required": false,
+        "description": "Groom photo in offset grid position",
+        "supports_border": true,
+        "aspect_ratio": "portrait"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 20,
+        "description": "Staggered grid gallery",
+        "supports_border": false,
+        "layout_style": ["staggered-grid"]
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "YouTube embed URL for pre-wedding video",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 30,
+        "description": "Bold headline text (uppercase recommended)"
+      },
+      "description": {
+        "required": false,
+        "max_length": 400,
+        "description": "Editorial-style love story"
+      }
+    },
+    
+    "studio_info": {
+      "studioName": {
+        "required": false,
+        "description": "Photography studio name"
+      },
+      "studioWebsite": {
+        "required": false,
+        "description": "Studio website URL"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "BEBAS NEUE",
+      "description": "Primary font family (bold sans-serif recommended)"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#ef4444",
+      "description": "Primary brand color (hex)"
+    },
+    "secondaryColor": {
+      "required": true,
+      "default": "#f97316",
+      "description": "Secondary accent color (hex)"
+    }
+  },
+  
+  "border_slots": {
+    "brideGroomBorder": {
+      "applies_to": ["bridePhoto", "groomPhoto"],
+      "required": false,
+      "description": "Border style for individual photos"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "hero_split_grid",
+      "description_quote",
+      "bride_groom_offset",
+      "precious_moments_staggered",
+      "video_story",
+      "studio_details"
+    ],
+    "responsive_breakpoints": {
+      "mobile": "640px",
+      "tablet": "768px",
+      "desktop": "1024px"
+    },
+    "special_features": [
+      "asymmetric_grid",
+      "bold_typography",
+      "geometric_shapes",
+      "negative_space",
+      "editorial_numbering"
+    ]
+  }
+}
