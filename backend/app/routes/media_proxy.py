@@ -79,80 +79,92 @@ async def media_proxy(url: str = None):
 async def telegram_proxy(file_path: str, request: Request):
     """
     Proxy endpoint for Telegram files to avoid CORS issues
-    Handles both direct file_ids and file paths (e.g., photos/file_id.jpg)
+    Handles both direct file_ids and file paths (e.g., photos/AgACAgUAAyEGAATO7...)
+    
+    Expected formats:
+    - Direct Telegram file_id: AgACAgUAAyEGAATO7nwaAAMhaTrImX_enn...
+    - With photos/ prefix: photos/AgACAgUAAyEGAATO7nwaAAMhaTrImX_enn...
     """
     try:
         method = request.method
         logger.info(f"{method} proxy request for file_path: {file_path}")
         
         # Extract the actual file_id from the path
-        # Handle both "photos/file_26.jpg" and "file_26" formats
+        # Handle "photos/file_id" format by removing prefix
         if file_path.startswith('photos/'):
-            # Remove "photos/" prefix
-            file_id = file_path.replace('photos/', '')
+            file_id = file_path.replace('photos/', '', 1)
         else:
-            # Use the full path as file_id
             file_id = file_path
         
-        # Remove file extension if present
-        if '.' in file_id:
-            file_id = file_id.rsplit('.', 1)[0]
+        # Remove file extension if present (e.g., .jpg, .png)
+        if '.' in file_id and not file_id.count('.') > 2:  # Telegram file_ids may contain dots
+            # Only remove extension if it's at the end
+            possible_ext = file_id.split('.')[-1].lower()
+            if possible_ext in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+                file_id = file_id.rsplit('.', 1)[0]
         
         logger.info(f"Extracted file_id: {file_id}")
         
-        # Validate file_id format - allow both direct file_ids and file_* format
-        # file_* format might be stored in database as reference
-        if not file_id or len(file_id) < 3:
-            logger.error(f"Invalid file_id format: {file_id}")
-            raise HTTPException(status_code=400, detail="Invalid file ID format")
+        # Validate basic file_id format
+        if not file_id or len(file_id) < 10:
+            logger.error(f"Invalid file_id format (too short): {file_id}")
+            raise HTTPException(status_code=400, detail="Invalid file ID format - ID too short")
         
-        # If file_id starts with "file_", it might be a database reference
-        # Try to find the actual Telegram file_id from the database
-        if file_id.startswith("file_"):
-            logger.info(f"File ID {file_id} appears to be a database reference, looking up actual file_id")
+        # Check if this is a temporary/invalid file reference (file_XX format)
+        # These are NOT valid Telegram file_ids
+        if file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").isdigit():
+            logger.error(f"Invalid temporary file reference: {file_id}. This is not a valid Telegram file_id.")
+            
+            # Try to find the actual Telegram file_id in the database
             try:
                 from app.database import get_db
                 db = get_db()
                 
-                # Look for media with this file_id or reference
+                # Extract the numeric part
+                numeric_id = file_id.replace("file_", "").split('.')[0]
+                
+                # Try multiple lookup strategies
                 media_record = await db.media.find_one({
                     "$or": [
-                        {"file_id": file_id},
-                        {"telegram_message_id": int(file_id.replace("file_", "")) if file_id.replace("file_", "").isdigit() else None}
+                        {"telegram_message_id": int(numeric_id)},
+                        {"file_id": {"$regex": f".*{numeric_id}.*"}},  # Partial match as last resort
                     ]
                 })
                 
-                if media_record and "file_id" in media_record:
+                if media_record and media_record.get("file_id"):
                     actual_file_id = media_record["file_id"]
-                    logger.info(f"Found actual file_id in database: {actual_file_id}")
+                    logger.info(f"Found actual Telegram file_id in database: {actual_file_id}")
                     file_id = actual_file_id
                 else:
-                    logger.error(f"No matching media record found for {file_id} - this is likely an invalid reference")
-                    # Don't continue with invalid file_id - return 404 immediately
-                    raise HTTPException(status_code=404, detail=f"Invalid file reference: {file_id}")
+                    logger.error(f"No matching media record found for temporary reference {file_id}")
+                    raise HTTPException(
+                        status_code=404, 
+                        detail=f"Photo not found. The reference '{file_id}' does not correspond to a valid Telegram file. Please re-upload the photo."
+                    )
+            except HTTPException:
+                raise
             except Exception as e:
-                logger.error(f"Error looking up file_id in database: {str(e)}")
-                # Don't continue with potentially invalid file_id
-                raise HTTPException(status_code=500, detail="Database lookup failed")
-        else:
-            # For actual Telegram file_ids, validate format and try to find them in database
-            # This helps with validation and logging
-            if len(file_id) < 10 or not (file_id.replace('_', '').replace('-', '').isalnum()):
-                logger.error(f"Invalid file_id format: {file_id}")
-                raise HTTPException(status_code=400, detail="Invalid file ID format")
-                
-            try:
-                from app.database import get_db
-                db = get_db()
-                
-                media_record = await db.media.find_one({"file_id": file_id})
-                if media_record:
-                    logger.info(f"Found file_id {file_id} in database for wedding {media_record.get('wedding_id')}")
-                else:
-                    logger.warning(f"File_id {file_id} not found in database, will attempt proxy anyway")
-            except Exception as e:
-                logger.error(f"Error checking database for file_id {file_id}: {str(e)}")
-                # Continue with original file_id, will fail gracefully if invalid
+                logger.error(f"Database lookup error for {file_id}: {str(e)}")
+                raise HTTPException(status_code=500, detail="Failed to resolve file reference")
+        
+        # Validate Telegram file_id format (should start with alphanumeric and contain certain patterns)
+        # Telegram file_ids are typically base64-like strings with specific prefixes
+        if not any(file_id.startswith(prefix) for prefix in ['AgAC', 'BQAc', 'BAAC', 'CgAC']):
+            logger.warning(f"Unusual file_id format (doesn't match Telegram patterns): {file_id}. Attempting anyway...")
+        
+        # Optional: Check if file_id exists in database for better logging
+        try:
+            from app.database import get_db
+            db = get_db()
+            
+            media_record = await db.media.find_one({"file_id": file_id})
+            if media_record:
+                logger.info(f"Verified file_id {file_id} exists in database for wedding {media_record.get('wedding_id')}")
+            else:
+                logger.warning(f"File_id {file_id} not found in database, but will attempt to proxy from Telegram")
+        except Exception as e:
+            logger.error(f"Error checking database for file_id {file_id}: {str(e)}")
+            # Continue anyway - file might still be valid on Telegram
         
         # Get the actual file URL from Telegram using getFile API
         logger.info(f"Calling telegram_service.get_file_url for file_id: {file_id}")
