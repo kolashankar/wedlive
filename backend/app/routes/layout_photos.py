@@ -232,12 +232,8 @@ async def upload_photo_to_placeholder(
         photo_id = str(uuid.uuid4())
         logger.info(f"[LAYOUT_PHOTO_UPLOAD] CDN URL obtained: {photo_url[:50]}...")
         
-        # Step 8: Update wedding document with proper URL generation
+        # Step 8: Update wedding document
         layout_photos = wedding.get("layout_photos", {})
-        
-        # Get current API base URL for consistent URL generation
-        from app.main import app
-        api_base_url = "http://localhost:8001" if app.debug else "https://wedlive.onrender.com"
         
         # For preciousMoments, append to array
         if placeholder == "preciousMoments":
