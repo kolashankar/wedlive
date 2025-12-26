@@ -110,10 +110,9 @@ export default function LayoutRenderer({ wedding, onEnter }) {
         const api = (await import('@/lib/api')).default;
         const response = await api.get(`/api/weddings/${wedding.id}/layout-photos`);
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log('[PHASE 3] Layout photos fetched:', data);
-          setLayoutPhotos(data.photos || {});
+        if (response.status === 200 && response.data) {
+          console.log('[PHASE 3] Layout photos fetched:', response.data);
+          setLayoutPhotos(response.data.photos || {});
         } else {
           console.warn('[PHASE 3] Failed to fetch layout photos:', response.status);
           setLayoutPhotos({});
