@@ -172,10 +172,18 @@ async def telegram_proxy(file_path: str, request: Request):
             file_url = await telegram_service.get_file_url(file_id)
             if not file_url:
                 logger.error(f"telegram_service.get_file_url returned None for file_id: {file_id}")
-                raise HTTPException(status_code=404, detail="File not found on Telegram")
+                raise HTTPException(
+                    status_code=404, 
+                    detail="File not found on Telegram. The file may have been deleted or the file_id is invalid."
+                )
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Exception in telegram_service.get_file_url: {str(e)}", exc_info=True)
-            raise HTTPException(status_code=502, detail="Failed to get file URL from Telegram")
+            raise HTTPException(
+                status_code=502, 
+                detail=f"Failed to get file URL from Telegram: {str(e)}"
+            )
         
         logger.info(f"Got file URL from Telegram: {file_url}")
         
