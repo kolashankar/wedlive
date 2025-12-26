@@ -665,16 +665,31 @@ async def get_wedding_gallery(wedding_id: str, skip: int = 0, limit: int = 50, i
             ))
         else:
             # Regular photo/video from Telegram CDN
-            file_url = f"{base_url}/api/media/telegram-proxy/photos/{media['file_id']}"
+            file_id = media.get('file_id', '')
+            
+            # CRITICAL FIX: Skip media with invalid/placeholder file_ids
+            # Invalid file_ids are temporary references like "file_61", "file_62"
+            # These indicate placeholder/template images that were never properly uploaded
+            if file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").isdigit():
+                logger.warning(f"Skipping media {media['id']} with invalid placeholder file_id: {file_id}")
+                continue
+            
+            # Validate that file_id looks like a real Telegram file_id
+            # Telegram file_ids are typically 50+ characters and start with specific prefixes
+            if not file_id or len(file_id) < 20:
+                logger.warning(f"Skipping media {media['id']} with suspiciously short file_id: {file_id}")
+                continue
+            
+            file_url = f"{base_url}/api/media/telegram-proxy/photos/{file_id}"
             
             result.append(MediaResponse(
                 id=media["id"],
                 wedding_id=media["wedding_id"],
                 media_type=media["media_type"],
-                file_id=media["file_id"],
-                telegram_message_id=media["telegram_message_id"],
+                file_id=file_id,
+                telegram_message_id=media.get("telegram_message_id"),
                 caption=media.get("caption"),
-                file_size=media["file_size"],
+                file_size=media.get("file_size"),
                 width=media.get("width"),
                 height=media.get("height"),
                 duration=media.get("duration"),
