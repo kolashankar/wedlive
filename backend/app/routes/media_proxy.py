@@ -112,41 +112,21 @@ async def telegram_proxy(file_path: str, request: Request):
             raise HTTPException(status_code=400, detail="Invalid file ID format - ID too short")
         
         # Check if this is a temporary/invalid file reference (file_XX format)
-        # These are NOT valid Telegram file_ids
+        # These are NOT valid Telegram file_ids and indicate placeholder/template images
         if file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").isdigit():
-            logger.error(f"Invalid temporary file reference: {file_id}. This is not a valid Telegram file_id.")
+            logger.error(f"Invalid temporary file reference: {file_id}. This is a placeholder, not a valid Telegram file_id.")
             
-            # Try to find the actual Telegram file_id in the database
-            try:
-                from app.database import get_db
-                db = get_db()
-                
-                # Extract the numeric part
-                numeric_id = file_id.replace("file_", "").split('.')[0]
-                
-                # Try multiple lookup strategies
-                media_record = await db.media.find_one({
-                    "$or": [
-                        {"telegram_message_id": int(numeric_id)},
-                        {"file_id": {"$regex": f".*{numeric_id}.*"}},  # Partial match as last resort
-                    ]
-                })
-                
-                if media_record and media_record.get("file_id"):
-                    actual_file_id = media_record["file_id"]
-                    logger.info(f"Found actual Telegram file_id in database: {actual_file_id}")
-                    file_id = actual_file_id
-                else:
-                    logger.error(f"No matching media record found for temporary reference {file_id}")
-                    raise HTTPException(
-                        status_code=404, 
-                        detail=f"Photo not found. The reference '{file_id}' does not correspond to a valid Telegram file. Please re-upload the photo."
-                    )
-            except HTTPException:
-                raise
-            except Exception as e:
-                logger.error(f"Database lookup error for {file_id}: {str(e)}")
-                raise HTTPException(status_code=500, detail="Failed to resolve file reference")
+            # Return a proper 404 with clear error message
+            # This prevents retries and shows proper error on frontend
+            raise HTTPException(
+                status_code=404, 
+                detail={
+                    "error": "placeholder_image",
+                    "message": f"The image reference '{file_id}' is a placeholder. Please upload actual photos.",
+                    "file_id": file_id,
+                    "action": "re_upload_required"
+                }
+            )
         
         # Validate Telegram file_id format (should start with alphanumeric and contain certain patterns)
         # Telegram file_ids are typically base64-like strings with specific prefixes
