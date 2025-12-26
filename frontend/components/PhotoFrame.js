@@ -47,7 +47,9 @@ export default function PhotoFrame({
     
     // Handle relative URLs
     if (url.startsWith('/')) {
-      return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}${url}`;
+      // Use config for consistent URL handling
+      const CONFIG = require('@/lib/config').default;
+      return `${CONFIG.API.BASE_URL}${url}`;
     }
     
     // Handle absolute URLs (Telegram CDN, etc.)
