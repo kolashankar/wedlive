@@ -306,7 +306,10 @@ async def get_layout_photos(
     wedding_id: str,
     db = Depends(get_db_dependency)
 ):
-    """Get all layout photos for a wedding (public access)"""
+    """
+    Get all layout photos for a wedding (public access)
+    FIXED: Read from layout_photos field directly, not from cover_photos
+    """
     try:
         wedding = await db.weddings.find_one({"id": wedding_id})
         if not wedding:
@@ -317,47 +320,56 @@ async def get_layout_photos(
         
         layout_id = wedding.get("theme_settings", {}).get("layout_id") or wedding.get("theme_settings", {}).get("theme_id") or "layout_1"
         
-        # CRITICAL FIX: Get photos from theme_settings.cover_photos instead of layout_photos
-        cover_photos = wedding.get("theme_settings", {}).get("cover_photos", [])
+        # Get photos from layout_photos field (NEW location)
+        layout_photos = wedding.get("layout_photos", {})
         
-        # Convert cover_photos array to placeholder-based structure
-        layout_photos = {}
-        
-        for photo in cover_photos:
-            if isinstance(photo, dict):
-                category = photo.get("category", "general")
-                url = photo.get("url", "")
-                media_id = photo.get("media_id", "")
-                
-                # Map categories to placeholder names
-                placeholder_name = None
-                if category == "bride":
-                    placeholder_name = "bridePhoto"
-                elif category == "groom":
-                    placeholder_name = "groomPhoto"
-                elif category == "couple":
-                    placeholder_name = "couplePhoto"
-                elif category == "moment":
-                    placeholder_name = "preciousMoments"
-                elif category == "studio":
-                    placeholder_name = "studioImage"
-                
-                if placeholder_name and url:
-                    # Handle arrays for precious moments
-                    if placeholder_name == "preciousMoments":
-                        if placeholder_name not in layout_photos:
-                            layout_photos[placeholder_name] = []
-                        layout_photos[placeholder_name].append({
-                            "url": url,
-                            "media_id": media_id,
-                            "type": photo.get("type", "photo")
-                        })
-                    else:
-                        layout_photos[placeholder_name] = {
-                            "url": url,
-                            "media_id": media_id,
-                            "type": photo.get("type", "photo")
-                        }
+        # If no layout_photos but has cover_photos (legacy), migrate data
+        if not layout_photos:
+            cover_photos = wedding.get("theme_settings", {}).get("cover_photos", [])
+            
+            # Convert cover_photos array to placeholder-based structure
+            layout_photos = {}
+            
+            for photo in cover_photos:
+                if isinstance(photo, dict):
+                    category = photo.get("category", "general")
+                    url = photo.get("url", "")
+                    media_id = photo.get("media_id", "")
+                    file_id = photo.get("file_id", "")  # Get actual Telegram file_id
+                    
+                    # Map categories to placeholder names
+                    placeholder_name = None
+                    if category == "bride":
+                        placeholder_name = "bridePhoto"
+                    elif category == "groom":
+                        placeholder_name = "groomPhoto"
+                    elif category == "couple":
+                        placeholder_name = "couplePhoto"
+                    elif category == "moment":
+                        placeholder_name = "preciousMoments"
+                    elif category == "studio":
+                        placeholder_name = "studioImage"
+                    
+                    if placeholder_name and (url or file_id):
+                        # Handle arrays for precious moments
+                        if placeholder_name == "preciousMoments":
+                            if placeholder_name not in layout_photos:
+                                layout_photos[placeholder_name] = []
+                            layout_photos[placeholder_name].append({
+                                "url": url,
+                                "file_id": file_id,  # CRITICAL: Include file_id
+                                "media_id": media_id,
+                                "photo_id": media_id or str(uuid.uuid4()),
+                                "type": photo.get("type", "photo")
+                            })
+                        else:
+                            layout_photos[placeholder_name] = {
+                                "url": url,
+                                "file_id": file_id,  # CRITICAL: Include file_id
+                                "media_id": media_id,
+                                "photo_id": media_id or str(uuid.uuid4()),
+                                "type": photo.get("type", "photo")
+                            }
         
         # Filter photos based on supported placeholders
         supported_placeholders = get_supported_photo_placeholders(layout_id)
