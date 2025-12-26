@@ -201,46 +201,47 @@ async def telegram_proxy(file_path: str, request: Request):
                 ) as client:
                     logger.info(f"Proxy attempt {attempt + 1}/{max_retries} for file_id: {file_id}")
                     
-                    # Use streaming for large files
-                    async with client.stream('GET', file_url) as response:
-                        if response.status_code != 200:
-                            raise httpx.HTTPStatusError(f"HTTP {response.status_code}: {response.reason}")
-                        
-                        # Get content type and length
-                        content_type = response.headers.get('content-type', 'image/jpeg')
-                        content_length = response.headers.get('content-length', '0')
-                        
-                        # Validate content type
-                        # Note: Telegram sometimes returns 'application/octet-stream' for images
-                        # We allow this and default to 'image/jpeg' for such cases
-                        if not content_type.startswith('image/') and content_type != 'application/octet-stream':
-                            raise ValueError(f"Invalid content type: {content_type}")
-                        
-                        # Override content-type if it's octet-stream (Telegram quirk)
-                        if content_type == 'application/octet-stream':
-                            # Try to guess from file path or default to jpeg
-                            if '.png' in file_url.lower():
-                                content_type = 'image/png'
-                            elif '.webp' in file_url.lower():
-                                content_type = 'image/webp'
-                            elif '.gif' in file_url.lower():
-                                content_type = 'image/gif'
-                            else:
-                                content_type = 'image/jpeg'  # Default to JPEG
-                            logger.info(f"Overriding content-type from octet-stream to {content_type}")
-                        
-                        logger.info(f"Streaming file: {file_id}, size: {content_length}, type: {content_type}")
-                        
-                        # Create streaming response
-                        return StreamingResponse(
-                            content=response.aiter_bytes(),
-                            status_code=200,
-                            media_type=content_type,
-                            headers={
-                                "Content-Length": content_length,
-                                **MEDIA_RESPONSE_HEADERS
-                            }
-                        )
+                    # Fetch the file content fully before creating streaming response
+                    response = await client.get(file_url)
+                    
+                    if response.status_code != 200:
+                        raise httpx.HTTPStatusError(f"HTTP {response.status_code}: {response.reason_phrase}", request=None, response=response)
+                    
+                    # Get content type and length
+                    content_type = response.headers.get('content-type', 'image/jpeg')
+                    content_length = len(response.content)
+                    
+                    # Validate content type
+                    # Note: Telegram sometimes returns 'application/octet-stream' for images
+                    # We allow this and default to 'image/jpeg' for such cases
+                    if not content_type.startswith('image/') and content_type != 'application/octet-stream':
+                        raise ValueError(f"Invalid content type: {content_type}")
+                    
+                    # Override content-type if it's octet-stream (Telegram quirk)
+                    if content_type == 'application/octet-stream':
+                        # Try to guess from file path or default to jpeg
+                        if '.png' in file_url.lower():
+                            content_type = 'image/png'
+                        elif '.webp' in file_url.lower():
+                            content_type = 'image/webp'
+                        elif '.gif' in file_url.lower():
+                            content_type = 'image/gif'
+                        else:
+                            content_type = 'image/jpeg'  # Default to JPEG
+                        logger.info(f"Overriding content-type from octet-stream to {content_type}")
+                    
+                    logger.info(f"Streaming file: {file_id}, size: {content_length}, type: {content_type}")
+                    
+                    # Return buffered response to avoid stream closing issues
+                    return Response(
+                        content=response.content,
+                        status_code=200,
+                        media_type=content_type,
+                        headers={
+                            "Content-Length": str(content_length),
+                            **MEDIA_RESPONSE_HEADERS
+                        }
+                    )
                         
             except httpx.TimeoutException as e:
                 last_exception = e
