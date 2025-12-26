@@ -111,59 +111,47 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
         # Handle shared bride_groom border (applies to both) - check both key formats
         bride_groom_id = borders.get("bride_groom_border") or borders.get("bride_groom_border_id")
         if bride_groom_id:
-            border_url = await get_asset_url(bride_groom_id, "photo_borders")
+            border_url = await get_asset_url(bride_groom_id, "photo_borders", "bride_groom_border")
             if border_url:
                 resolved_assets["bride_border_url"] = border_url
                 resolved_assets["groom_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] bride_groom_border resolved: {bride_groom_id} -> {border_url}")
-            else:
-                logger.warning(f"[RESOLVE_ASSET] bride_groom_border not found: {bride_groom_id}")
         
         # Individual borders override shared borders - check both key formats
         bride_id = borders.get("bride_border") or borders.get("bride_border_id")
         if bride_id:
-            border_url = await get_asset_url(bride_id, "photo_borders")
+            border_url = await get_asset_url(bride_id, "photo_borders", "bride_border")
             if border_url:
                 resolved_assets["bride_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] bride_border resolved: {bride_id} -> {border_url}")
-            else:
-                logger.warning(f"[RESOLVE_ASSET] bride_border not found: {bride_id}")
         
         groom_id = borders.get("groom_border") or borders.get("groom_border_id")
         if groom_id:
-            border_url = await get_asset_url(groom_id, "photo_borders")
+            border_url = await get_asset_url(groom_id, "photo_borders", "groom_border")
             if border_url:
                 resolved_assets["groom_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] groom_border resolved: {groom_id} -> {border_url}")
-            else:
-                logger.warning(f"[RESOLVE_ASSET] groom_border not found: {groom_id}")
         
         couple_id = borders.get("couple_border") or borders.get("couple_border_id")
         if couple_id:
-            border_url = await get_asset_url(couple_id, "photo_borders")
+            border_url = await get_asset_url(couple_id, "photo_borders", "couple_border")
             if border_url:
                 resolved_assets["couple_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] couple_border resolved: {couple_id} -> {border_url}")
-            else:
-                logger.warning(f"[RESOLVE_ASSET] couple_border not found: {couple_id}")
         
         precious_id = borders.get("precious_moments_border") or borders.get("precious_moments_border_id")
         if precious_id:
-            border_url = await get_asset_url(precious_id, "photo_borders")
+            border_url = await get_asset_url(precious_id, "photo_borders", "precious_moments_border")
             if border_url:
                 resolved_assets["precious_moments_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] precious_moments_border resolved: {precious_id} -> {border_url}")
-            else:
-                logger.warning(f"[RESOLVE_ASSET] precious_moments_border not found: {precious_id}")
         
         studio_id = borders.get("studio_border") or borders.get("studio_border_id")
         if studio_id:
-            border_url = await get_asset_url(studio_id, "photo_borders")
+            border_url = await get_asset_url(studio_id, "photo_borders", "studio_border")
             if border_url:
                 resolved_assets["studio_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] studio_border resolved: {studio_id} -> {border_url}")
-            else:
-                logger.warning(f"[RESOLVE_ASSET] studio_border not found: {studio_id}")
     
     # === BACKGROUND RESOLUTION ===
     
