@@ -66,6 +66,8 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
     COMPLETE THEME ASSET RESOLVER
     Converts ALL border/background IDs to ready-to-use URLs
     Returns flat structure for frontend consumption
+    
+    IMPROVED: Filters out invalid/missing asset references to prevent 404 errors
     """
     import logging
     logger = logging.getLogger(__name__)
@@ -75,9 +77,10 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
         return {}
     
     resolved_assets = {}
+    missing_assets = []  # Track missing assets for logging
     
     # Helper function to get URL from asset ID
-    async def get_asset_url(asset_id: str, collection: str) -> str:
+    async def get_asset_url(asset_id: str, collection: str, asset_name: str = "") -> str:
         if not asset_id:
             return None
         try:
@@ -87,7 +90,12 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
                 logger.info(f"[RESOLVE_ASSET] {collection}/{asset_id} -> {url}")
                 return url
             else:
-                logger.warning(f"[RESOLVE_ASSET] Asset not found: {collection}/{asset_id}")
+                logger.warning(f"[RESOLVE_ASSET] Asset not found: {collection}/{asset_id} ({asset_name})")
+                missing_assets.append({
+                    "id": asset_id,
+                    "type": collection,
+                    "name": asset_name
+                })
                 return None
         except Exception as e:
             logger.error(f"[RESOLVE_ASSET] Error resolving {collection}/{asset_id}: {e}")
