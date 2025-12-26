@@ -107,8 +107,8 @@ export default function LayoutRenderer({ wedding, onEnter }) {
       }
 
       try {
-        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-        const response = await fetch(`${backendUrl}/api/weddings/${wedding.id}/layout-photos`);
+        const api = (await import('@/lib/api')).default;
+        const response = await api.get(`/api/weddings/${wedding.id}/layout-photos`);
         
         if (response.ok) {
           const data = await response.json();
