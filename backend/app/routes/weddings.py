@@ -157,7 +157,7 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
     
     # Resolve legacy background_image_id
     if theme_assets.get("background_image_id"):
-        bg_url = await get_asset_url(theme_assets["background_image_id"], "background_images")
+        bg_url = await get_asset_url(theme_assets["background_image_id"], "background_images", "background_image")
         if bg_url:
             resolved_assets["background_url"] = bg_url
             resolved_assets["hero_background"] = bg_url  # Compatibility alias
@@ -171,7 +171,7 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
         
         # Resolve layout page background
         if backgrounds.get("layout_page_background_id"):
-            layout_bg_url = await get_asset_url(backgrounds["layout_page_background_id"], "background_images")
+            layout_bg_url = await get_asset_url(backgrounds["layout_page_background_id"], "background_images", "layout_page_background")
             if layout_bg_url:
                 resolved_assets["layout_page_background_url"] = layout_bg_url
                 resolved_assets["background_url"] = layout_bg_url  # Override main background
@@ -179,7 +179,7 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
         
         # Resolve stream page background
         if backgrounds.get("stream_page_background_id"):
-            stream_bg_url = await get_asset_url(backgrounds["stream_page_background_id"], "background_images")
+            stream_bg_url = await get_asset_url(backgrounds["stream_page_background_id"], "background_images", "stream_page_background")
             if stream_bg_url:
                 resolved_assets["stream_page_background_url"] = stream_bg_url
                 logger.info(f"[RESOLVE_ASSET] stream_page_background_id resolved: {backgrounds['stream_page_background_id']} -> {stream_bg_url}")
@@ -188,7 +188,7 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
     
     # Resolve precious moment style URL
     if theme_assets.get("precious_moment_style_id"):
-        style_url = await get_asset_url(theme_assets["precious_moment_style_id"], "precious_moment_styles")
+        style_url = await get_asset_url(theme_assets["precious_moment_style_id"], "precious_moment_styles", "precious_moment_style")
         if style_url:
             resolved_assets["couple_style_url"] = style_url
             logger.info(f"[RESOLVE_ASSET] precious_moment_style_id resolved: {theme_assets['precious_moment_style_id']} -> {style_url}")
