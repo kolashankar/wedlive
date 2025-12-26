@@ -209,6 +209,11 @@ export default function MediaGallery({ weddingId, isCreator = false }) {
                       loading="lazy"
                       onError={(e) => {
                         console.error('Image failed to load:', item.file_url, e);
+                        // Check if this is a placeholder/invalid file reference
+                        const isPlaceholder = item.file_url && item.file_url.includes('/file_') && /\/file_\d+/.test(item.file_url);
+                        if (isPlaceholder) {
+                          console.warn('Detected placeholder image reference:', item.file_url);
+                        }
                         e.target.style.display = 'none';
                         e.target.nextSibling.style.display = 'flex';
                       }}
@@ -218,9 +223,10 @@ export default function MediaGallery({ weddingId, isCreator = false }) {
                       }}
                     />
                     <div className="absolute inset-0 bg-gray-200 flex items-center justify-center" style={{display: 'none'}}>
-                      <div className="text-center">
+                      <div className="text-center p-4">
                         <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-xs text-gray-500">Image unavailable</p>
+                        <p className="text-xs text-gray-500">Photo unavailable</p>
+                        <p className="text-xs text-gray-400 mt-1">Please re-upload</p>
                       </div>
                     </div>
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
