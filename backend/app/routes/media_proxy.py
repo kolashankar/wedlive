@@ -3,6 +3,7 @@ from fastapi.responses import Response, StreamingResponse
 import httpx
 import os
 import logging
+import asyncio
 from typing import Optional
 from app.services.telegram_service import TelegramCDNService
 
