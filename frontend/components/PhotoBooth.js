@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, Download, Sparkles, RotateCcw } from 'lucide-react';
 import axios from 'axios';
+import CONFIG from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = `${CONFIG.API.BASE_URL}/api`;
 
 const FILTERS = [
   { name: 'None', value: 'none', class: '' },
