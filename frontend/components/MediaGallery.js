@@ -54,8 +54,30 @@ export default function MediaGallery({ weddingId, isCreator = false }) {
         return;
       }
       
+      // Filter out items with invalid/placeholder file_ids on the frontend as well
+      const validItems = items.filter(item => {
+        if (!item.file_url) return false;
+        
+        // Check for placeholder patterns like /file_61, /file_62
+        const hasPlaceholder = item.file_url.includes('/file_') && /\/file_\d+/.test(item.file_url);
+        if (hasPlaceholder) {
+          console.warn(`Filtering out item with placeholder file_id:`, item);
+          return false;
+        }
+        
+        return true;
+      });
+      
+      if (validItems.length < items.length) {
+        const filtered = items.length - validItems.length;
+        console.log(`Filtered out ${filtered} items with placeholder/invalid file references`);
+        toast.info(`Note: ${filtered} placeholder image(s) were filtered out. Please upload actual photos.`, {
+          duration: 5000
+        });
+      }
+      
       // Log each media item's file URL for debugging
-      items.forEach((item, index) => {
+      validItems.forEach((item, index) => {
         console.log(`Original media item ${index}:`, {
           id: item.id,
           original_file_url: item.file_url,
@@ -90,7 +112,7 @@ export default function MediaGallery({ weddingId, isCreator = false }) {
         });
       });
       
-      setMedia(items);
+      setMedia(validItems);
     } catch (error) {
       console.error('Error loading media:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to load media gallery';
