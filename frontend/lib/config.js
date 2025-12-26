@@ -1,11 +1,44 @@
-// Centralized configuration management
+// Centralized configuration management with proper environment detection
+
+// Detect environment
+const isProduction = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    return hostname.includes('vercel.app') || hostname.includes('wedlive.vercel.app');
+  }
+  return process.env.NODE_ENV === 'production';
+};
+
+// Get backend URL based on environment
+const getBackendUrl = () => {
+  // Priority 1: Use environment variable if set
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // Priority 2: Auto-detect based on hostname
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Production: Vercel → Render
+    if (hostname.includes('vercel.app') || hostname.includes('wedlive.vercel.app')) {
+      return 'https://wedlive.onrender.com';
+    }
+    
+    // Local development
+    if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+      return 'http://localhost:8001';
+    }
+  }
+  
+  // Fallback
+  return 'http://localhost:8001';
+};
+
 export const CONFIG = {
   // API Configuration
   API: {
-    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 
-      (typeof window !== 'undefined' && window.location.origin === 'https://wedlive.vercel.app' 
-        ? 'https://wedlive.onrender.com' 
-        : 'http://localhost:8001'),
+    BASE_URL: getBackendUrl(),
     TIMEOUT: 90000,
     RETRY_ATTEMPTS: 2,
     RETRY_DELAY: 1000,
@@ -29,26 +62,30 @@ export const CONFIG = {
 
 // Get current API base URL with validation
 export const getApiBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    const currentOrigin = window.location.origin;
-    if (currentOrigin.includes('localhost:3000') || currentOrigin.includes('127.0.0.1:3000')) {
-      return CONFIG.API.BASE_URL;
-    }
-  }
   return CONFIG.API.BASE_URL;
 };
 
 // Validate configuration
 export const validateConfig = () => {
+  const apiBaseUrl = getApiBaseUrl();
+  const isLocal = apiBaseUrl.includes('localhost');
+  const isProd = isProduction();
+  
   console.log('🔧 Configuration Validation:', {
-    apiBaseUrl: getApiBaseUrl(),
+    apiBaseUrl,
+    environment: isProd ? 'production' : 'development',
+    isLocal,
     mediaProxy: CONFIG.MEDIA.PROXY_ENDPOINT,
-    environment: process.env.NODE_ENV,
   });
   
   // Warn if configuration seems inconsistent
-  if (getApiBaseUrl().includes('8000')) {
-    console.warn('⚠️ WARNING: API base URL is using port 8000, expected 8001');
+  if (isProd && isLocal) {
+    console.error('❌ ERROR: Production frontend using localhost backend URL!');
+    console.error('Update NEXT_PUBLIC_API_URL in Vercel environment variables to: https://wedlive.onrender.com');
+  }
+  
+  if (apiBaseUrl.includes('8000')) {
+    console.warn('⚠️ WARNING: API base URL is using port 8000, expected 8001 for local or 443 for production');
   }
   
   return true;
