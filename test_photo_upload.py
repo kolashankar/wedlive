@@ -77,7 +77,11 @@ async def test_photo_upload():
                     return False
                 
                 weddings_data = await resp.json()
-                weddings = weddings_data.get("weddings", [])
+                # API returns either a list or dict with "weddings" key
+                if isinstance(weddings_data, list):
+                    weddings = weddings_data
+                else:
+                    weddings = weddings_data.get("weddings", [])
                 
                 if not weddings:
                     print("  No weddings found, creating test wedding...")
