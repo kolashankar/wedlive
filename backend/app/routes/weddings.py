@@ -18,6 +18,49 @@ import uuid
 router = APIRouter()
 stream_service = StreamService()
 
+async def filter_invalid_photo_references(photos: list, logger) -> list:
+    """
+    Filter out invalid/placeholder photo references from photo lists
+    Returns only photos with valid Telegram file_ids or full URLs
+    """
+    if not photos:
+        return []
+    
+    valid_photos = []
+    for photo in photos:
+        if isinstance(photo, dict):
+            file_id = photo.get('file_id', '')
+            url = photo.get('url', '') or photo.get('cdn_url', '')
+            
+            # Check if photo has a valid URL (full http/https URL)
+            if url and (url.startswith('http://') or url.startswith('https://')):
+                valid_photos.append(photo)
+                continue
+            
+            # Check if file_id is valid (not a placeholder like file_61)
+            if file_id:
+                # Invalid: file_XX pattern where XX is a number
+                if file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").isdigit():
+                    logger.warning(f"[FILTER_PHOTOS] Skipping placeholder photo with file_id: {file_id}")
+                    continue
+                
+                # Invalid: suspiciously short file_ids
+                if len(file_id) < 20:
+                    logger.warning(f"[FILTER_PHOTOS] Skipping photo with suspiciously short file_id: {file_id}")
+                    continue
+                
+                # Valid file_id
+                valid_photos.append(photo)
+        elif isinstance(photo, str):
+            # String URL - check if it's valid
+            if photo.startswith('http://') or photo.startswith('https://'):
+                valid_photos.append(photo)
+            else:
+                logger.warning(f"[FILTER_PHOTOS] Skipping invalid string photo reference: {photo[:50]}")
+    
+    logger.info(f"[FILTER_PHOTOS] Filtered {len(photos)} photos -> {len(valid_photos)} valid photos")
+    return valid_photos
+
 async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
     """
     COMPLETE THEME ASSET RESOLVER
