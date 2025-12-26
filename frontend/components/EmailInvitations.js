@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Mail, Plus, X, Send } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 import axios from 'axios';
+import CONFIG from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = `${CONFIG.API.BASE_URL}/api`;
 
 export function EmailInvitations({ weddingId, weddingTitle, weddingDate, weddingUrl }) {
   const [emails, setEmails] = useState(['']);
