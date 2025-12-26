@@ -83,36 +83,15 @@ async def test_photo_upload():
                 else:
                     weddings = weddings_data.get("weddings", [])
                 
-                # Always create a new test wedding to avoid authorization issues
-                print("  Creating new test wedding...")
+                # Use existing wedding (now owned by admin)
+                if not weddings:
+                    print("❌ No weddings found")
+                    return False
                 
-                # Create a test wedding
-                from datetime import datetime, timedelta
-                create_url = f"{API_BASE_URL}/api/weddings"
-                wedding_date = (datetime.now() + timedelta(days=30)).isoformat()
-                
-                wedding_data = {
-                    "title": "Test Bride Photo & Test Groom Photo Wedding",
-                    "bride_name": "Test Bride Photo",
-                    "groom_name": "Test Groom Photo",
-                    "scheduled_date": wedding_date,
-                    "wedding_date": wedding_date,
-                    "venue": "Test Venue for Photo Upload",
-                    "status": "scheduled"
-                }
-                
-                async with session.post(create_url, json=wedding_data, headers=headers) as resp:
-                    if resp.status not in [200, 201]:
-                        text = await resp.text()
-                        print(f"❌ Failed to create wedding: {resp.status}")
-                        print(f"   Response: {text}")
-                        return False
-                    
-                    wedding = await resp.json()
-                    TEST_WEDDING_ID = wedding.get("id")
-                    print(f"✓ Created test wedding: {TEST_WEDDING_ID}")
-                    print(f"  Bride: {wedding.get('bride_name')}")
-                    print(f"  Groom: {wedding.get('groom_name')}")
+                TEST_WEDDING_ID = weddings[0].get("id")
+                print(f"✓ Using existing wedding: {TEST_WEDDING_ID}")
+                print(f"  Bride: {weddings[0].get('bride_name')}")
+                print(f"  Groom: {weddings[0].get('groom_name')}")
             
             # Step 3: Upload photo to bridePhoto placeholder
             print("\n[STEP 3] Uploading bride photo...")
