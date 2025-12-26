@@ -92,7 +92,7 @@ export default function MediaGallery({ weddingId, isCreator = false }) {
             // Don't modify Telegram URLs or other external URLs
           } else {
             // Transform local relative URLs to absolute API URLs
-            const apiBaseUrl = api.defaults.baseURL || 'http://localhost:8001';
+            const apiBaseUrl = api.defaults.baseURL;  // Already set from config
             console.log('API Base URL:', apiBaseUrl);
             // Ensure URL starts with /api/ if it doesn't already
             const normalizedUrl = item.file_url.startsWith('/api/') ? item.file_url : `/api${item.file_url}`;
