@@ -211,8 +211,23 @@ async def telegram_proxy(file_path: str, request: Request):
                         content_length = response.headers.get('content-length', '0')
                         
                         # Validate content type
-                        if not content_type.startswith('image/'):
+                        # Note: Telegram sometimes returns 'application/octet-stream' for images
+                        # We allow this and default to 'image/jpeg' for such cases
+                        if not content_type.startswith('image/') and content_type != 'application/octet-stream':
                             raise ValueError(f"Invalid content type: {content_type}")
+                        
+                        # Override content-type if it's octet-stream (Telegram quirk)
+                        if content_type == 'application/octet-stream':
+                            # Try to guess from file path or default to jpeg
+                            if '.png' in file_url.lower():
+                                content_type = 'image/png'
+                            elif '.webp' in file_url.lower():
+                                content_type = 'image/webp'
+                            elif '.gif' in file_url.lower():
+                                content_type = 'image/gif'
+                            else:
+                                content_type = 'image/jpeg'  # Default to JPEG
+                            logger.info(f"Overriding content-type from octet-stream to {content_type}")
                         
                         logger.info(f"Streaming file: {file_id}, size: {content_length}, type: {content_type}")
                         
