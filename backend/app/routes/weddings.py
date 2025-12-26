@@ -202,7 +202,8 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
     
     # Log summary
     if missing_assets:
-        logger.warning(f"[RESOLVE_ASSET] ⚠️ Missing {len(missing_assets)} asset(s): {[f'{a[\"type\"]}/{a[\"id\"]}' for a in missing_assets]}")
+        missing_summary = [f"{a['type']}/{a['id']}" for a in missing_assets]
+        logger.warning(f"[RESOLVE_ASSET] ⚠️ Missing {len(missing_assets)} asset(s): {missing_summary}")
         resolved_assets["_missing_assets"] = missing_assets  # Include in response for frontend handling
     
     logger.info(f"[RESOLVE_ASSET] Final resolved assets: {list(resolved_assets.keys())}")
