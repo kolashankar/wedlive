@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import CONFIG from '@/lib/config';
 
 /**
  * TelegramImageLoader Component
@@ -25,7 +26,7 @@ export default function TelegramImageLoader({
   const getProxyUrl = (url) => {
     if (!url) return null;
     
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+    const apiUrl = CONFIG.API.BASE_URL;
     
     // If it's already a proxy URL, return as-is
     if (url.includes('/api/media/telegram-proxy/')) {
