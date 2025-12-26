@@ -6,6 +6,12 @@ const nextConfig = {
   experimental: {
     // Remove if not using Server Components
     serverComponentsExternalPackages: ['mongodb'],
+    // Fix for onnxruntime-web import.meta error
+    serverExternalPackages: ['onnxruntime-web'],
+    // Configure WebAssembly support
+    wasm: {
+      lazyLoading: true,
+    },
   },
   webpack(config, { dev }) {
     if (dev) {
@@ -16,6 +22,40 @@ const nextConfig = {
         ignored: ['**/node_modules'],
       };
     }
+    
+    // Fix for onnxruntime-web import.meta error
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        "fs": false,
+        "path": false,
+        "os": false
+      },
+      alias: {
+        ...config.resolve.alias,
+      },
+    };
+    
+    // Configure WebAssembly loading
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      syncWebAssembly: true,
+      topLevelAwait: true,
+    };
+    
+    // Handle WASM files
+    config.module = {
+      ...config.module,
+      rules: [
+        ...(config.module?.rules || []),
+        {
+          test: /\.wasm$/,
+          type: 'webassembly/async',
+        },
+      ],
+    };
+    
     return config;
   },
   onDemandEntries: {
