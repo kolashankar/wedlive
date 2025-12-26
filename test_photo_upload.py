@@ -92,10 +92,13 @@ async def test_photo_upload():
                 wedding_date = (datetime.now() + timedelta(days=30)).isoformat()
                 
                 wedding_data = {
+                    "title": "Test Bride Photo & Test Groom Photo Wedding",
                     "bride_name": "Test Bride Photo",
                     "groom_name": "Test Groom Photo",
+                    "scheduled_date": wedding_date,
                     "wedding_date": wedding_date,
-                    "venue": "Test Venue for Photo Upload"
+                    "venue": "Test Venue for Photo Upload",
+                    "status": "scheduled"
                 }
                 
                 async with session.post(create_url, json=wedding_data, headers=headers) as resp:
