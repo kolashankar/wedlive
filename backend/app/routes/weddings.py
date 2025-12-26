@@ -760,6 +760,29 @@ async def get_wedding(
             if "custom_messages" not in theme_settings_data or not theme_settings_data["custom_messages"]:
                 theme_settings_data["custom_messages"] = {}
             
+            # CRITICAL FIX: Filter out invalid/placeholder photos before sending to frontend
+            # This prevents "file_61", "file_62" type placeholder references from being displayed
+            if "cover_photos" in theme_settings_data and theme_settings_data["cover_photos"]:
+                theme_settings_data["cover_photos"] = await filter_invalid_photo_references(
+                    theme_settings_data["cover_photos"], logger
+                )
+            
+            if "gallery_photos" in theme_settings_data and theme_settings_data["gallery_photos"]:
+                theme_settings_data["gallery_photos"] = await filter_invalid_photo_references(
+                    theme_settings_data["gallery_photos"], logger
+                )
+            
+            # Filter individual photo fields
+            for photo_field in ["bride_photo", "groom_photo", "main_couple_photo"]:
+                if photo_field in theme_settings_data and theme_settings_data[photo_field]:
+                    photo = theme_settings_data[photo_field]
+                    if isinstance(photo, dict):
+                        file_id = photo.get('file_id', '')
+                        # Check for invalid placeholder file_ids
+                        if file_id and file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").isdigit():
+                            logger.warning(f"[GET_WEDDING] Removing invalid {photo_field}: {file_id}")
+                            theme_settings_data[photo_field] = None
+            
             # CRITICAL FIX: Resolve theme asset IDs to URLs and merge with existing data
             theme_assets = theme_settings_data.get("theme_assets", {})
             if theme_assets:
