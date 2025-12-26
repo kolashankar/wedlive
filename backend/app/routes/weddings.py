@@ -195,10 +195,15 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
     
     # Resolve background template URL (animated backgrounds)
     if theme_assets.get("background_template_id"):
-        template_url = await get_asset_url(theme_assets["background_template_id"], "background_templates")
+        template_url = await get_asset_url(theme_assets["background_template_id"], "background_templates", "background_template")
         if template_url:
             resolved_assets["background_template_url"] = template_url
             logger.info(f"[RESOLVE_ASSET] background_template_id resolved: {theme_assets['background_template_id']} -> {template_url}")
+    
+    # Log summary
+    if missing_assets:
+        logger.warning(f"[RESOLVE_ASSET] ⚠️ Missing {len(missing_assets)} asset(s): {[f'{a[\"type\"]}/{a[\"id\"]}' for a in missing_assets]}")
+        resolved_assets["_missing_assets"] = missing_assets  # Include in response for frontend handling
     
     logger.info(f"[RESOLVE_ASSET] Final resolved assets: {list(resolved_assets.keys())}")
     return resolved_assets
