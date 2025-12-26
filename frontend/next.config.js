@@ -6,12 +6,6 @@ const nextConfig = {
   experimental: {
     // Remove if not using Server Components
     serverComponentsExternalPackages: ['mongodb'],
-    // Fix for onnxruntime-web import.meta error
-    serverExternalPackages: ['onnxruntime-web'],
-    // Configure WebAssembly support
-    wasm: {
-      lazyLoading: true,
-    },
   },
   webpack(config, { dev }) {
     if (dev) {
@@ -22,12 +16,6 @@ const nextConfig = {
         ignored: ['**/node_modules'],
       };
     }
-    
-    // Fix for onnxruntime-web import.meta error
-    config.externals = {
-      ...config.externals,
-      'onnxruntime-web': 'onnxruntime-web',
-    };
     
     return config;
   },

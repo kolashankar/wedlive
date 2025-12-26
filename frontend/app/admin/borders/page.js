@@ -10,7 +10,6 @@ import {
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import BorderEditor from '@/components/BorderEditor';
-import { removeBackground } from '@imgly/background-removal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
