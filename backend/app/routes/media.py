@@ -437,15 +437,15 @@ async def upload_photo(
         await storage_service.add_file_to_storage(current_user["user_id"], result["file_size"])
         
         # Get file URL
-        logger.info(f"[UPLOAD] Getting file URL from Telegram")
-        file_url = await telegram_service.get_file_url(result["file_id"])
+        logger.info(f"[UPLOAD] Getting file URL from Telegram for validated file_id")
+        file_url = await telegram_service.get_file_url(file_id)
         logger.info(f"[UPLOAD] Upload completed successfully, file_url={file_url}")
         
         return MediaResponse(
             id=media["id"],
             wedding_id=media["wedding_id"],
             media_type=media["media_type"],
-            file_id=media["file_id"],
+            file_id=file_id,  # Use validated file_id
             telegram_message_id=media["telegram_message_id"],
             caption=media.get("caption"),
             file_size=media["file_size"],
