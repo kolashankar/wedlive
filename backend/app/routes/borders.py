@@ -164,12 +164,24 @@ async def upload_border(
         upload_method = "document" if (has_transparency or remove_background) else "photo"
         logger.info(f"[BORDER_UPLOAD] Using {upload_method} upload method for transparency preservation")
         
-        # Upload to Telegram CDN
-        upload_result = await telegram_service.upload_photo(
-            file_path=temp_path,
-            caption=f"Photo Border: {name}",
-            wedding_id="photo-borders"
-        )
+        # Upload to Telegram CDN - USE CORRECT METHOD BASED ON TRANSPARENCY
+        if upload_method == "document":
+            # CRITICAL FIX: Use upload_document() to preserve PNG transparency
+            # sendDocument preserves alpha channel, sendPhoto strips it
+            logger.info(f"[BORDER_UPLOAD] Uploading as DOCUMENT to preserve transparency")
+            upload_result = await telegram_service.upload_document(
+                file_path=temp_path,
+                caption=f"Photo Border: {name} (Transparent PNG)",
+                wedding_id="photo-borders"
+            )
+        else:
+            # Regular photo upload for non-transparent images
+            logger.info(f"[BORDER_UPLOAD] Uploading as PHOTO (no transparency)")
+            upload_result = await telegram_service.upload_photo(
+                file_path=temp_path,
+                caption=f"Photo Border: {name}",
+                wedding_id="photo-borders"
+            )
         
         if not upload_result.get("success"):
             raise HTTPException(
