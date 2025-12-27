@@ -294,16 +294,16 @@ export default function PhotoFrame({
         />
       )}
       
-      {/* Border Layer - FOREGROUND overlay (z-index: 2) - 3px LARGER on all sides */}
+      {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG/WebP */}
       {normalizedMaskUrl && (
         <img
           src={normalizedMaskUrl}
           alt="Border"
           className="absolute pointer-events-none"
           style={{ 
-            // FIXED: Border is now FOREGROUND overlay (z-index: 2)
+            // FIXED: Border is FOREGROUND transparent overlay (z-index: 2)
             position: 'absolute',
-            // Border is 3px LARGER on all sides to frame the photo
+            // Border extends 3px beyond photo on all sides
             top: '-3px',
             left: '-3px',
             right: '-3px',
@@ -312,18 +312,20 @@ export default function PhotoFrame({
             height: 'calc(100% + 6px)', // 3px on each side = 6px total
             // Layer stacking - FOREGROUND overlay (z-index: 2)
             zIndex: 2,
-            // Ensure border preserves shape and aligns perfectly
+            // Preserve border shape and alignment
             objectFit: 'contain',
             objectPosition: 'center',
-            // Critical: Prevent border from blocking interactions
+            // CRITICAL: Prevent border from blocking interactions
             pointerEvents: 'none',
-            // CRITICAL: Ensure transparent areas remain transparent
+            // CRITICAL: NO background color - preserves PNG/WebP alpha channel
             backgroundColor: 'transparent',
+            // CRITICAL: Normal blend mode to preserve transparency
             mixBlendMode: 'normal',
-            // Performance and rendering optimizations
+            // CRITICAL: Ensure alpha channel is preserved
+            opacity: 1,
+            // Performance optimizations
             willChange: 'auto',
             backfaceVisibility: 'hidden',
-            // Perfect alignment with container
             display: 'block',
           }}
           onLoad={handleBorderLoad}
