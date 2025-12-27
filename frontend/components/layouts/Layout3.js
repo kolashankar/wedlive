@@ -249,7 +249,7 @@ export default function Layout3({
             <div className="overflow-x-auto pb-4">
               <div className="flex gap-6" style={{ width: 'max-content' }}>
                 {preciousMoments.map((photo, index) => (
-                  <div key={index} className="w-80 h-80 rounded-lg overflow-hidden shadow-lg flex-shrink-0">
+                  <div key={index} className="w-80 h-80 rounded-lg shadow-lg flex-shrink-0 relative">
                     <PhotoFrame
                       src={photo.url || photo.photo_url || photo.cdn_url}
                       maskUrl={borders?.preciousMoments || null}
