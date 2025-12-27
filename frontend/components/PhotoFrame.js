@@ -75,7 +75,7 @@ export default function PhotoFrame({
   const getContainerStyle = () => {
     const baseStyle = {
       // CRITICAL FIX: Allow border to extend beyond container for decorative frame effect
-      // Border extends 15% on all sides, so we need visible overflow
+      // Border extends 15% on all sides using negative positioning
       overflow: 'visible',
       position: 'relative',
       // Ensure container maintains exact dimensions
@@ -83,19 +83,14 @@ export default function PhotoFrame({
       minHeight: 0,
       // CRITICAL: Transparent background to allow layout background to show
       backgroundColor: 'transparent',
-      // Prevent content from escaping except border overlay (which needs to extend)
-      isolation: 'isolate',
       // Create stacking context for proper layering
+      isolation: 'isolate',
       transform: 'translateZ(0)',
       // Enhanced container constraints for transparent overlay with extended borders
       display: 'block',
       width: '100%',
       // Ensure proper aspect ratio behavior
       objectFit: 'contain',
-      // CRITICAL: Add padding to accommodate border extension
-      // This prevents border from being clipped by parent containers
-      padding: '15% 15%', // Matches border extension
-      boxSizing: 'content-box', // Padding adds to dimensions
     };
 
     // Use exact dimensions if provided (highest priority)
