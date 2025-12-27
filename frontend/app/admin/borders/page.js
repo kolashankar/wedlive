@@ -743,7 +743,16 @@ export default function BorderManagement() {
                 <input
                   type="checkbox"
                   checked={removeBackground}
-                  onChange={(e) => setRemoveBackground(e.target.checked)}
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
+                    setRemoveBackground(isChecked);
+                    // CRITICAL FIX: Trigger background removal immediately when checked
+                    if (isChecked && selectedFile) {
+                      setTimeout(() => {
+                        processBackgroundRemoval();
+                      }, 100);
+                    }
+                  }}
                   className="mr-2"
                 />
                 <span className="text-sm">Remove Background</span>
