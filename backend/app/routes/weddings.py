@@ -146,6 +146,14 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
                 resolved_assets["precious_moments_border_url"] = border_url
                 logger.info(f"[RESOLVE_ASSET] precious_moments_border resolved: {precious_id} -> {border_url}")
         
+        # FIX 5: Add stream border support
+        stream_id = borders.get("stream_border") or borders.get("stream_border_id")
+        if stream_id:
+            border_url = await get_asset_url(stream_id, "photo_borders", "stream_border")
+            if border_url:
+                resolved_assets["stream_border_url"] = border_url
+                logger.info(f"[RESOLVE_ASSET] stream_border resolved: {stream_id} -> {border_url}")
+        
         studio_id = borders.get("studio_border") or borders.get("studio_border_id")
         if studio_id:
             border_url = await get_asset_url(studio_id, "photo_borders", "studio_border")
