@@ -291,7 +291,7 @@ async def upload_photo_to_placeholder(
             photo_id=photo_id,
             placeholder=placeholder,
             url=photo_url,
-            file_id=upload_result["file_id"],
+            file_id=file_id,  # Use validated file_id
             uploaded_at=datetime.utcnow(),
             message=f"Photo uploaded to {placeholder} successfully"
         )
