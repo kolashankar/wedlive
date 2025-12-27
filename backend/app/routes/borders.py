@@ -68,6 +68,8 @@ async def list_admin_borders(
                 tags=border.get("tags", []),
                 mask_data=border.get("mask_data"),
                 category=border.get("category", "border"),
+                has_transparency=border.get("has_transparency", False),
+                remove_background=border.get("remove_background", False),
                 created_at=border["created_at"]
             ))
         
