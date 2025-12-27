@@ -71,10 +71,11 @@ export default function PhotoFrame({
     return ratioMap[ratio] || ratio;
   };
 
-  // Convert aspect ratio to CSS value or use exact dimensions - Enhanced for transparent overlay
+  // Convert aspect ratio to CSS value or use exact dimensions - Enhanced for border overlay framing
   const getContainerStyle = () => {
     const baseStyle = {
-      // CRITICAL: Allow border to extend beyond container (border is 3px larger)
+      // CRITICAL FIX: Allow border to extend beyond container for decorative frame effect
+      // Border extends 15% on all sides, so we need visible overflow
       overflow: 'visible',
       position: 'relative',
       // Ensure container maintains exact dimensions
@@ -82,15 +83,19 @@ export default function PhotoFrame({
       minHeight: 0,
       // CRITICAL: Transparent background to allow layout background to show
       backgroundColor: 'transparent',
-      // Prevent content from escaping (except border overlay)
+      // Prevent content from escaping except border overlay (which needs to extend)
       isolation: 'isolate',
       // Create stacking context for proper layering
       transform: 'translateZ(0)',
-      // Enhanced container constraints for transparent overlay
+      // Enhanced container constraints for transparent overlay with extended borders
       display: 'block',
       width: '100%',
       // Ensure proper aspect ratio behavior
       objectFit: 'contain',
+      // CRITICAL: Add padding to accommodate border extension
+      // This prevents border from being clipped by parent containers
+      padding: '15% 15%', // Matches border extension
+      boxSizing: 'content-box', // Padding adds to dimensions
     };
 
     // Use exact dimensions if provided (highest priority)
