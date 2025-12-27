@@ -301,6 +301,8 @@ export default function PhotoFrame({
       </div>
       
       {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG overlay */}
+      {/* CRITICAL FIX: Border should FRAME the photo, not be contained inside it */}
+      {/* The border extends significantly beyond the photo to create decorative frame effect */}
       {normalizedMaskUrl && (
         <img
           src={normalizedMaskUrl}
@@ -309,17 +311,19 @@ export default function PhotoFrame({
           style={{ 
             // Border is FOREGROUND transparent overlay (z-index: 2)
             position: 'absolute',
-            // Border extends 3px beyond photo on all sides to create frame effect
-            top: '-3px',
-            left: '-3px',
-            right: '-3px',
-            bottom: '-3px',
-            width: 'calc(100% + 6px)',  // 3px on each side = 6px total
-            height: 'calc(100% + 6px)', // 3px on each side = 6px total
+            // CRITICAL FIX: Border extends 15% beyond photo on all sides to create proper decorative frame
+            // This allows floral/decorative borders to overlay and frame the photo naturally
+            top: '-15%',
+            left: '-15%',
+            right: '-15%',
+            bottom: '-15%',
+            width: '130%',  // 15% on each side = 130% total
+            height: '130%', // 15% on each side = 130% total
             // Layer stacking - FOREGROUND overlay (z-index: 2)
             zIndex: 2,
-            // CRITICAL: Fill entire area to ensure border covers correctly
-            objectFit: 'fill',
+            // CRITICAL: contain maintains aspect ratio and fits border within extended area
+            // The photo is visible through the transparent center of the border
+            objectFit: 'contain',
             objectPosition: 'center',
             // CRITICAL: Prevent border from blocking interactions
             pointerEvents: 'none',
