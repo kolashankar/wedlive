@@ -264,57 +264,75 @@ export default function PhotoFrame({
       className={`photo-frame relative w-full ${className}`}
       style={getContainerStyle()}
     >
-      {/* Photo Layer - BACKGROUND (z-index: 1) - fills container */}
-      {normalizedPhotoUrl && (
-        <div 
-          className="absolute inset-0" 
-          style={{ 
-            overflow: 'hidden',
-            zIndex: 1,
-          }}
-        >
+      {/* Inner container for photo - clips photo to container bounds */}
+      <div 
+        className="absolute inset-0" 
+        style={{ 
+          overflow: 'hidden',
+          zIndex: 1,
+          backgroundColor: 'transparent',
+        }}
+      >
+        {/* Photo Layer - BACKGROUND layer fills container */}
+        {normalizedPhotoUrl && (
           <img
             src={normalizedPhotoUrl}
             alt={alt}
-            className="w-full h-full"
+            className="absolute inset-0 w-full h-full"
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               width: '100%',
               height: '100%',
+              // Ensure photo fills container completely
               objectFit: 'cover',
               objectPosition: position,
-              display: 'block',
+              // NO masking - photo fills entire container
+              // Border's transparent areas will reveal the photo
+              // Performance optimizations
+              willChange: 'auto',
+              backfaceVisibility: 'hidden',
             }}
             onLoad={handlePhotoLoad}
             onError={handlePhotoError}
           />
-        </div>
-      )}
+        )}
+      </div>
       
-      {/* Border Layer - FOREGROUND overlay (z-index: 10) - Transparent PNG */}
+      {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG overlay */}
       {normalizedMaskUrl && (
         <img
           src={normalizedMaskUrl}
           alt="Border"
           className="absolute pointer-events-none"
           style={{ 
+            // Border is FOREGROUND transparent overlay (z-index: 2)
             position: 'absolute',
-            // Border extends 3px beyond container
+            // Border extends 3px beyond photo on all sides to create frame effect
             top: '-3px',
             left: '-3px',
             right: '-3px',
             bottom: '-3px',
-            width: 'calc(100% + 6px)',
-            height: 'calc(100% + 6px)',
-            // CRITICAL: Higher z-index to be on top
-            zIndex: 10,
-            // Use contain to preserve aspect ratio without distortion
-            objectFit: 'contain',
+            width: 'calc(100% + 6px)',  // 3px on each side = 6px total
+            height: 'calc(100% + 6px)', // 3px on each side = 6px total
+            // Layer stacking - FOREGROUND overlay (z-index: 2)
+            zIndex: 2,
+            // CRITICAL: Fill entire area to ensure border covers correctly
+            objectFit: 'fill',
             objectPosition: 'center',
+            // CRITICAL: Prevent border from blocking interactions
             pointerEvents: 'none',
-            // NO backgrounds - pure transparent overlay
+            // CRITICAL: NO background - preserves PNG alpha transparency
             background: 'none',
             backgroundColor: 'transparent',
+            // CRITICAL: Normal blend to preserve PNG transparency
             mixBlendMode: 'normal',
+            // Full opacity to show border decorations clearly
+            opacity: 1,
+            // Performance optimizations
+            willChange: 'auto',
+            backfaceVisibility: 'hidden',
             display: 'block',
           }}
           onLoad={handleBorderLoad}
