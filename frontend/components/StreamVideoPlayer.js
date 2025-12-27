@@ -17,13 +17,18 @@ const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
  * @param {boolean} props.autoPlay - Auto-play video when ready (default: true)
  * @param {boolean} props.controls - Show video controls (default: true)
  * @param {boolean} props.muted - Mute video (default: false)
+ * @param {string} props.themeId - Theme ID for styling
+ * @param {string} props.streamBorderUrl - URL of border to apply around video player (FIX 5)
+ * @param {Object} props.streamBorderMask - Mask data for stream border (FIX 5)
  */
 export default function StreamVideoPlayer({ 
   playbackUrl, 
   autoPlay = true, 
   controls = true,
   muted = false,
-  themeId = null 
+  themeId = null,
+  streamBorderUrl = null,  // FIX 5: Stream border
+  streamBorderMask = null   // FIX 5: Stream border mask data
 }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
