@@ -249,6 +249,16 @@ async def complete_chunked_upload(
                 detail=f"Upload failed: {result.get('error', 'Unknown error')}"
             )
         
+        # CRITICAL: Validate file_id before saving to database
+        file_id = result.get("file_id")
+        is_valid, error_msg = validate_and_log_file_id(file_id, context="chunked_upload")
+        if not is_valid:
+            logger.error(f"[CHUNKED_UPLOAD] Invalid file_id returned from Telegram: {error_msg}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Invalid file_id received from Telegram CDN: {error_msg}"
+            )
+        
         # Save to database
         media_id = str(uuid.uuid4())
         media = {
@@ -256,7 +266,7 @@ async def complete_chunked_upload(
             "wedding_id": session["wedding_id"],
             "user_id": current_user["user_id"],
             "media_type": session["media_type"],
-            "file_id": result["file_id"],
+            "file_id": file_id,  # Use validated file_id
             "telegram_message_id": result["message_id"],
             "caption": session["caption"],
             "category": session.get("category", "general"),  # Add category field
