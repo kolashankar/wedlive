@@ -56,14 +56,18 @@ height: 110% /* 5% + 100% + 5% */
 
 ## Implementation Rules
 
-### ✅ Border Rendering Rules
-1. **Size**: Border is 160% of placeholder size (30% overflow per side)
-2. **Position**: Centered with uniform extension on all 4 sides
-3. **Scaling**: Uses `object-fit: cover` to ensure full coverage
-4. **Overflow**: Allowed to extend beyond container boundaries
-5. **Layering**: Border sits above photo (z-index: 2)
-6. **Transparency**: PNG alpha channels fully preserved
-7. **Cropping**: Border edges may be cropped (this is intentional)
+### ✅ Border Rendering Rules (Final v3)
+1. **Size**: Border is 110% of placeholder size (5% overflow per side)
+2. **Position**: Centered with uniform 5% extension on all 4 sides
+3. **Scaling**: Uses `object-fit: fill` to **stretch** border to fit dimensions
+4. **Stretch Behavior**: 
+   - If border height < placeholder height → stretches height automatically
+   - If border width < placeholder width → stretches width automatically
+   - No aspect ratio preservation (allows independent width/height scaling)
+5. **Overflow**: Minimal 5% extension beyond container boundaries
+6. **Layering**: Border sits above photo (z-index: 2)
+7. **Transparency**: PNG alpha channels fully preserved
+8. **Adaptation**: Automatically adjusts to any placeholder aspect ratio
 
 ### ✅ Photo Rendering Rules
 1. **Size**: Photo fills 100% of placeholder
@@ -77,46 +81,58 @@ height: 110% /* 5% + 100% + 5% */
 ## Files Modified
 
 ### 1. `/app/frontend/components/PhotoFrame.js`
-- **Line 79**: Changed `overflow: 'visible'` (was implicit)
+- **Line 79**: Changed `overflow: 'visible'`
 - **Line 269**: Added inner container with `overflow: 'hidden'`
 - **Lines 316-321**: Updated border positioning:
-  - `top: '-30%'` (was -15%)
-  - `left: '-30%'` (was -15%)
-  - `width: '160%'` (was 130%)
-  - `height: '160%'` (was 130%)
-- **Line 326**: Changed `objectFit: 'cover'` (was 'contain')
+  - `top: '-5%'` (was -30%, initially -15%)
+  - `left: '-5%'` (was -30%, initially -15%)
+  - `width: '110%'` (was 160%, initially 130%)
+  - `height: '110%'` (was 160%, initially 130%)
+- **Line 326**: Changed `objectFit: 'fill'` (was 'cover', initially 'contain')
 
 ### 2. `/app/frontend/components/ExactFitPhotoFrame.js`
-- **Line 90**: Changed `overflow: 'visible'` (was 'hidden')
+- **Line 90**: Changed `overflow: 'visible'`
 - **Line 91**: Added inner container with `overflow: 'hidden'`
 - **Lines 120-128**: Updated border positioning:
-  - `top: '-30%'`
-  - `left: '-30%'`
-  - `width: '160%'`
-  - `height: '160%'`
-- **Line 133**: Changed `objectFit: 'cover'` (was 'contain')
+  - `top: '-5%'`
+  - `left: '-5%'`
+  - `width: '110%'`
+  - `height: '110%'`
+- **Line 133**: Changed `objectFit: 'fill'` (was 'cover', initially 'contain')
 
 ### 3. `/app/frontend/components/PhotoWithBorder.js`
-- **Line 122**: Changed `overflow: 'visible'` (was implicit)
+- **Line 122**: Changed `overflow: 'visible'`
 - **Line 124**: Added inner container styling with `overflow: 'hidden'`
 - **Lines 158-166**: Updated border positioning:
-  - `top: '-30%'`
-  - `left: '-30%'`
-  - `width: '160%'`
-  - `height: '160%'`
-- **Line 171**: Kept `objectFit: 'cover'` (was already correct)
+  - `top: '-5%'`
+  - `left: '-5%'`
+  - `width: '110%'`
+  - `height: '110%'`
+- **Line 171**: Changed `objectFit: 'fill'`
 
 ---
 
 ## Technical Details
 
-### Aspect Ratio Handling
-The COVER logic ensures:
-- Border scales proportionally (no distortion)
-- Both width AND height exceed placeholder
-- Center alignment maintained
-- Overflow allowed on all sides
-- Works with any aspect ratio mismatch (16:9 border on 1:1 placeholder, etc.)
+### Aspect Ratio Handling (Stretch-to-Fit)
+The FILL logic ensures:
+- Border **stretches independently** in width and height
+- Border matches placeholder aspect ratio exactly (+ 5% overflow)
+- Height adjusts if border height < placeholder height
+- Width adjusts if border width < placeholder width
+- **No proportional scaling** - allows distortion to fit placeholder
+- Works with any aspect ratio combination (16:9, 1:1, 4:5, etc.)
+
+### Comparison: FILL vs COVER vs CONTAIN
+
+| Property | CONTAIN (v1) | COVER (v2) | FILL (v3 - Current) |
+|----------|--------------|------------|---------------------|
+| Aspect Ratio | Preserved | Preserved | **Not preserved** |
+| Stretching | No | No | **Yes** |
+| Overflow | Minimal | Large (30%) | Small (5%) |
+| Distortion | No | No | **Allowed** |
+| Fit Behavior | Fits inside | Covers fully | **Stretches to fit** |
+| Best For | Decorative | Full coverage | **Exact placeholder match** |
 
 ### Browser Compatibility
 - Uses standard CSS properties
