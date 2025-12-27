@@ -554,6 +554,16 @@ async def upload_video(
                 detail=f"Upload failed: {result.get('error', 'Unknown error')}"
             )
         
+        # CRITICAL: Validate file_id before saving to database
+        file_id = result.get("file_id")
+        is_valid, error_msg = validate_and_log_file_id(file_id, context="video_upload")
+        if not is_valid:
+            logger.error(f"[VIDEO_UPLOAD] Invalid file_id returned from Telegram: {error_msg}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Invalid file_id received from Telegram CDN: {error_msg}"
+            )
+        
         # Save to database
         media_id = str(uuid.uuid4())
         media = {
@@ -561,7 +571,7 @@ async def upload_video(
             "wedding_id": wedding_id,
             "user_id": current_user["user_id"],  # Add user_id for storage tracking
             "media_type": "video",
-            "file_id": result["file_id"],
+            "file_id": file_id,  # Use validated file_id
             "telegram_message_id": result["message_id"],
             "caption": caption,
             "category": category,  # Add category field
