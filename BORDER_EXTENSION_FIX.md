@@ -186,25 +186,44 @@ The FILL logic ensures:
 
 ## Rollback Instructions
 
-If issues occur, revert the following:
-1. Border positioning: Change back to `-15%` and `130%`
-2. Border objectFit: Change `cover` back to `contain`
-3. Container overflow: Change `visible` back to `hidden`
+If issues occur, revert to previous versions:
+
+### Rollback to v2 (30% COVER):
+1. Border positioning: Change to `-30%` and `160%`
+2. Border objectFit: Change `fill` to `cover`
+3. Restart frontend: `sudo supervisorctl restart frontend`
+
+### Rollback to v1 (15% CONTAIN):
+1. Border positioning: Change to `-15%` and `130%`
+2. Border objectFit: Change `fill` to `contain`
+3. Remove inner container, set outer `overflow: hidden`
 4. Restart frontend: `sudo supervisorctl restart frontend`
+
+---
+
+## Version History
+
+| Version | Extension | Size | objectFit | Behavior | Status |
+|---------|-----------|------|-----------|----------|--------|
+| v1 | 15% | 130% | contain | Fit inside with overflow | Deprecated |
+| v2 | 30% | 160% | cover | Full coverage, proportional | Replaced |
+| **v3** | **5%** | **110%** | **fill** | **Stretch to fit placeholder** | **✅ Current** |
 
 ---
 
 ## Next Steps
 
-1. ✅ **Completed**: Applied 30% extension fix to all components
+1. ✅ **Completed**: Applied 5% stretch-to-fit to all components
 2. **Pending**: Visual verification on actual wedding pages
-3. **Pending**: Cross-browser testing
-4. **Pending**: Mobile responsive testing
+3. **Pending**: Test with different aspect ratios (1:1, 4:5, 16:9, 3:4)
+4. **Pending**: Verify border stretching behavior
+5. **Pending**: Mobile responsive testing
 
 ---
 
-**Status**: ✅ Implementation Complete  
+**Status**: ✅ Implementation Complete (v3)  
 **Date**: 2025-01-XX  
+**Version**: v3 - Stretch-to-Fit (5% overflow)  
 **Components Modified**: 3  
-**Lines Changed**: ~45  
+**objectFit Mode**: fill (allows stretching)  
 **Frontend Status**: Running Successfully
