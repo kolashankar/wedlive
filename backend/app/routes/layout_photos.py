@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File,
 from app.auth import get_current_user
 from app.database import get_db_dependency
 from app.services.telegram_service import TelegramCDNService
+from app.utils.file_id_validator import validate_and_log_file_id, is_valid_telegram_file_id
 from app.layout_schemas import (
     get_layout_schema,
     validate_photo_placeholder,
