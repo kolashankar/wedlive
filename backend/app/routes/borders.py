@@ -229,6 +229,8 @@ async def upload_border(
             "tags": tag_list,
             "supports_mirror": supports_mirror,
             "category": category,
+            "has_transparency": has_transparency or remove_background,  # NEW: Store transparency flag
+            "remove_background": remove_background,  # NEW: Store background removal flag
             "created_at": datetime.utcnow(),
             "uploaded_by": user_id
         }
