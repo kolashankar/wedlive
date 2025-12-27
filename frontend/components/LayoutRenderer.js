@@ -429,14 +429,25 @@ export default function LayoutRenderer({ wedding, onEnter }) {
   
   console.log('[PHASE 3] Final layoutConfig:', layoutConfig);
 
+  // FIX 1: Apply layout page background with fixed attachment
+  const layoutPageBackgroundStyle = layoutPageBackgroundUrl
+    ? {
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15)), url(${layoutPageBackgroundUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+      }
+    : undefined;
+
   return (
-    <>
+    <div style={layoutPageBackgroundStyle} className="min-h-screen">
       <WatchLiveButton weddingId={wedding?.id} weddingStatus={wedding?.status} />
       <LayoutComponent 
         weddingData={wedding} 
         layoutConfig={layoutConfig}
         onEnter={onEnter} 
       />
-    </>
+    </div>
   );
 }
