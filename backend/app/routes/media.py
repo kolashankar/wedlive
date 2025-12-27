@@ -400,8 +400,18 @@ async def upload_photo(
                 detail=f"Telegram upload failed: {error_detail}"
             )
         
+        # CRITICAL: Validate file_id before saving to database
+        file_id = result.get("file_id")
+        is_valid, error_msg = validate_and_log_file_id(file_id, context="photo_upload")
+        if not is_valid:
+            logger.error(f"[UPLOAD] Invalid file_id returned from Telegram: {error_msg}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Invalid file_id received from Telegram CDN: {error_msg}"
+            )
+        
         # Save to database
-        logger.info(f"[UPLOAD] Saving media to database")
+        logger.info(f"[UPLOAD] Saving media to database with validated file_id")
         media_id = str(uuid.uuid4())
         media = {
             "id": media_id,
