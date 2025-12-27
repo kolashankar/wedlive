@@ -528,19 +528,6 @@ export default function BorderManagement() {
       maskDataProcessed: !!(maskData && maskData.processedImage)
     });
     
-    // Add background removal metadata for server-side logging with PNG-32 format info
-    if (removeBackground && processedPreview) {
-      formData.append('background_removed', 'true');
-      formData.append('original_format', originalFormat);
-      formData.append('processed_format', 'png-32');
-      formData.append('transparency_preserved', 'true');
-      console.log(`[Upload] PNG-32 Background removal metadata: ${originalFormat} → png-32`);
-    }
-    
-    // Always enforce PNG format for borders to support transparency
-    formData.append('enforce_png_format', 'true');
-    formData.append('transparency_required', 'true');
-    
     // Add mask data
     if (maskData.svg_path) {
       formData.append('mask_svg_path', maskData.svg_path);
