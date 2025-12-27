@@ -313,6 +313,7 @@ export default function LayoutRenderer({ wedding, onEnter }) {
 
   // Background URLs (resolved by backend)
   const layoutPageBackgroundUrl =
+    wedding.backgrounds?.layout_page_background_url ||
     wedding.theme_settings?.layout_page_background_url ||
     wedding.theme_settings?.theme_assets?.layout_page_background_url ||
     wedding.theme_settings?.background_url ||
@@ -322,6 +323,7 @@ export default function LayoutRenderer({ wedding, onEnter }) {
     null;
 
   const streamPageBackgroundUrl =
+    wedding.backgrounds?.stream_page_background_url ||
     wedding.theme_settings?.stream_page_background_url ||
     wedding.theme_settings?.theme_assets?.stream_page_background_url ||
     null;
