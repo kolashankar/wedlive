@@ -91,6 +91,86 @@ class TelegramCDNService:
             logger.error(f"Error uploading to Telegram: {str(e)}")
             return {"success": False, "error": str(e)}
     
+    async def upload_document(self, file_path: str, caption: str = "", wedding_id: str = "") -> Dict:
+        """
+        Upload file as document to Telegram channel (preserves PNG transparency)
+        This method MUST be used for transparent PNG images as sendPhoto compresses and strips alpha channel
+        Returns: dict with file_id, file_url, and telegram_message_id
+        """
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                # Read file
+                async with aiofiles.open(file_path, 'rb') as f:
+                    file_data = await f.read()
+                
+                # Determine file extension and MIME type
+                file_ext = os.path.splitext(file_path)[1].lower()
+                filename = os.path.basename(file_path)
+                
+                mime_type = 'image/png'  # default for transparency
+                if file_ext in ['.png']:
+                    mime_type = 'image/png'
+                elif file_ext in ['.jpg', '.jpeg']:
+                    mime_type = 'image/jpeg'
+                elif file_ext in ['.webp']:
+                    mime_type = 'image/webp'
+                
+                # Upload as DOCUMENT to preserve transparency and original quality
+                files = {'document': (filename, file_data, mime_type)}
+                data = {
+                    'chat_id': self.channel_id,
+                    'caption': f"{caption}\n\nWedding ID: {wedding_id}\nUploaded: {datetime.utcnow().isoformat()}"
+                }
+                
+                logger.info(f"[TELEGRAM] Uploading as DOCUMENT (preserves transparency): {filename}")
+                
+                response = await client.post(
+                    f"{self.api_base}/sendDocument",
+                    files=files,
+                    data=data
+                )
+                
+                result = response.json()
+                
+                if result.get("ok"):
+                    message = result["result"]
+                    
+                    # Check if document exists
+                    if "document" not in message:
+                        logger.error(f"No document in Telegram response: {message}")
+                        return {"success": False, "error": "No document in response"}
+                    
+                    document = message["document"]
+                    
+                    # Check if file_id exists
+                    if "file_id" not in document:
+                        logger.error(f"No file_id in document response: {document}")
+                        return {"success": False, "error": "No file_id in document response"}
+                    
+                    file_id = document["file_id"]
+                    
+                    # Get CDN URL for the uploaded file
+                    cdn_url = await self.get_file_url(file_id)
+                    
+                    logger.info(f"[TELEGRAM] Document uploaded successfully with transparency preserved")
+                    
+                    return {
+                        "success": True,
+                        "file_id": file_id,
+                        "cdn_url": cdn_url,
+                        "file_unique_id": document.get("file_unique_id", ""),
+                        "message_id": message.get("message_id", 0),
+                        "file_size": document.get("file_size", 0),
+                        "uploaded_at": datetime.utcnow().isoformat()
+                    }
+                else:
+                    logger.error(f"Telegram document upload failed: {result}")
+                    return {"success": False, "error": result.get("description", "Unknown error")}
+                    
+        except Exception as e:
+            logger.error(f"Error uploading document to Telegram: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
     async def upload_video(self, file_path: str, caption: str = "", wedding_id: str = "", thumb_path: Optional[str] = None) -> Dict:
         """
         Upload video to Telegram channel
