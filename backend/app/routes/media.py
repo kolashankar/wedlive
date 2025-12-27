@@ -418,7 +418,7 @@ async def upload_photo(
             "wedding_id": wedding_id,
             "user_id": current_user["user_id"],  # Add user_id for storage tracking
             "media_type": "photo",
-            "file_id": result["file_id"],
+            "file_id": file_id,  # Use validated file_id
             "telegram_message_id": result["message_id"],
             "caption": caption,
             "category": category,  # Add category field
