@@ -521,6 +521,8 @@ async def list_borders(
                 tags=border["tags"],
                 supports_mirror=border.get("supports_mirror", True),
                 category=border.get("category", "general"),
+                has_transparency=border.get("has_transparency", False),
+                remove_background=border.get("remove_background", False),
                 created_at=border["created_at"]
             )
             for border in borders
