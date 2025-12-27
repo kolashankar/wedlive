@@ -186,13 +186,21 @@ export default function BorderStyleCustomizer({ weddingId, onStyleUpdate }) {
 
         {/* Borders Tab */}
         <TabsContent value="borders" className="space-y-4 mt-4">
-          {['bride', 'groom', 'couple', 'precious_moments'].map(category => (
+          {['bride', 'groom', 'couple', 'precious_moments', 'stream'].map(category => (
             <Card key={category}>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   {getCategoryIcon(category)}
-                  {getCategoryLabel(category)} Border
+                  {getCategoryLabel(category)}
+                  {category === 'stream' && (
+                    <Badge variant="secondary" className="ml-2">New</Badge>
+                  )}
                 </CardTitle>
+                {category === 'stream' && (
+                  <CardDescription className="text-xs">
+                    Border applied to the video player area on the streaming page
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
