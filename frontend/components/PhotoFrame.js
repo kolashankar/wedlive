@@ -300,16 +300,16 @@ export default function PhotoFrame({
         )}
       </div>
       
-      {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG/WebP */}
+      {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG overlay */}
       {normalizedMaskUrl && (
         <img
           src={normalizedMaskUrl}
           alt="Border"
           className="absolute pointer-events-none"
           style={{ 
-            // FIXED: Border is FOREGROUND transparent overlay (z-index: 2)
+            // Border is FOREGROUND transparent overlay (z-index: 2)
             position: 'absolute',
-            // Border extends 3px beyond photo on all sides
+            // Border extends 3px beyond photo on all sides to create frame effect
             top: '-3px',
             left: '-3px',
             right: '-3px',
@@ -318,16 +318,17 @@ export default function PhotoFrame({
             height: 'calc(100% + 6px)', // 3px on each side = 6px total
             // Layer stacking - FOREGROUND overlay (z-index: 2)
             zIndex: 2,
-            // Preserve border shape and alignment
-            objectFit: 'contain',
+            // CRITICAL: Fill entire area to ensure border covers correctly
+            objectFit: 'fill',
             objectPosition: 'center',
             // CRITICAL: Prevent border from blocking interactions
             pointerEvents: 'none',
-            // CRITICAL: NO background color - preserves PNG/WebP alpha channel
+            // CRITICAL: NO background - preserves PNG alpha transparency
+            background: 'none',
             backgroundColor: 'transparent',
-            // CRITICAL: Normal blend mode to preserve transparency
+            // CRITICAL: Normal blend to preserve PNG transparency
             mixBlendMode: 'normal',
-            // CRITICAL: Ensure alpha channel is preserved
+            // Full opacity to show border decorations clearly
             opacity: 1,
             // Performance optimizations
             willChange: 'auto',
