@@ -87,7 +87,7 @@ export default function ExactFitPhotoFrame({
   };
 
   return (
-    <div className={`exact-fit-photo-frame relative w-full h-full overflow-hidden ${className}`}>
+    <div className={`exact-fit-photo-frame relative w-full h-full overflow-hidden ${className}`} style={{ backgroundColor: 'transparent' }}>
       {/* Photo Layer - Uses object-fit: cover to fill container with optional masking */}
       {finalPhotoUrl && (
         <img
@@ -97,6 +97,7 @@ export default function ExactFitPhotoFrame({
           style={{
             objectPosition: position,
             filter: shadow ? 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' : 'none',
+            backgroundColor: 'transparent',
             zIndex: 1,
             ...getMaskStyle(), // Apply CSS masking if maskData is provided
           }}
@@ -105,7 +106,7 @@ export default function ExactFitPhotoFrame({
         />
       )}
       
-      {/* Border Overlay - Uses object-fit: contain to preserve border shape */}
+      {/* Border Overlay - Uses object-fit: contain to preserve border shape with TRANSPARENCY */}
       {finalMaskUrl && (
         <img
           src={finalMaskUrl}
@@ -113,6 +114,7 @@ export default function ExactFitPhotoFrame({
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{ 
             objectFit: 'contain',
+            backgroundColor: 'transparent',
             zIndex: 2,
           }}
           onLoad={handleBorderLoad}
