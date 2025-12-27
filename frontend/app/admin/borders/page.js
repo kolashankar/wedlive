@@ -403,6 +403,26 @@ export default function BorderManagement() {
     }
   };
 
+  // Auto-create default rectangular mask when background removal is done without BorderEditor
+  const createDefaultMask = () => {
+    console.log('[TRANSPARENT BORDER FIX] Auto-creating default rectangular mask for background-removed border');
+    
+    // Create a default rectangular mask that covers most of the image
+    // This allows uploading transparent borders without opening BorderEditor
+    return {
+      svg_path: '',
+      polygon_points: [],
+      feather_radius: 8,
+      inner_usable_area: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      },
+      processedImage: null // Will be set from processedPreview
+    };
+  };
+
   const handleUploadBorder = async () => {
     if (!selectedFile) {
       setError('Please select an image file');
@@ -414,8 +434,19 @@ export default function BorderManagement() {
       return;
     }
 
-    if (!maskData) {
-      setError('Please define mask using Border Editor');
+    // CRITICAL FIX: Allow upload without BorderEditor if background was removed
+    // Auto-create a default mask for transparent borders
+    let effectiveMaskData = maskData;
+    
+    if (!maskData && (removeBackground || processedPreview)) {
+      console.log('[TRANSPARENT BORDER FIX] No mask defined, but background removal was done');
+      console.log('[TRANSPARENT BORDER FIX] Creating default mask to allow transparent border upload');
+      effectiveMaskData = createDefaultMask();
+      setMaskData(effectiveMaskData);
+    }
+    
+    if (!effectiveMaskData) {
+      setError('Please define mask using Border Editor or enable background removal');
       return;
     }
 
