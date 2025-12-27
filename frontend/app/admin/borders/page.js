@@ -221,10 +221,14 @@ export default function BorderManagement() {
         const processingTime = performance.now() - startTime;
         console.log(`[Background Removal] Ultra-fast processing completed in ${processingTime.toFixed(2)}ms - ${pixelsRemoved} pixels removed`);
         
-        // Convert to blob immediately
+        // Convert to blob immediately with explicit PNG format
         canvas.toBlob((blob) => {
-          resolve(blob);
-        }, 'image/png');
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create PNG blob'));
+          }
+        }, 'image/png', 1.0); // Quality 1.0 for maximum PNG quality with full alpha channel
       };
       
       img.onerror = reject;
