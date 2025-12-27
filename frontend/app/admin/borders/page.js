@@ -548,7 +548,7 @@ export default function BorderManagement() {
     formData.append('category', borderCategory);
     
     // CRITICAL: Add transparency metadata
-    const hasTransparency = removeBackground || processedPreview !== null || (maskData && maskData.processedImage);
+    const hasTransparency = removeBackground || processedPreview !== null || (effectiveMaskData && effectiveMaskData.processedImage);
     formData.append('has_transparency', hasTransparency.toString());
     formData.append('remove_background', removeBackground.toString());
     
@@ -556,23 +556,23 @@ export default function BorderManagement() {
       hasTransparency,
       removeBackground,
       processedPreview: !!processedPreview,
-      maskDataProcessed: !!(maskData && maskData.processedImage)
+      maskDataProcessed: !!(effectiveMaskData && effectiveMaskData.processedImage)
     });
     
     // Add mask data
-    if (maskData.svg_path) {
-      formData.append('mask_svg_path', maskData.svg_path);
+    if (effectiveMaskData.svg_path) {
+      formData.append('mask_svg_path', effectiveMaskData.svg_path);
     }
     
-    if (maskData.polygon_points && maskData.polygon_points.length > 0) {
-      formData.append('mask_polygon_points', JSON.stringify(maskData.polygon_points));
+    if (effectiveMaskData.polygon_points && effectiveMaskData.polygon_points.length > 0) {
+      formData.append('mask_polygon_points', JSON.stringify(effectiveMaskData.polygon_points));
     }
     
-    formData.append('feather_radius', maskData.feather_radius || 8);
-    formData.append('mask_x', maskData.inner_usable_area?.x || 0);
-    formData.append('mask_y', maskData.inner_usable_area?.y || 0);
-    formData.append('mask_width', maskData.inner_usable_area?.width || 0);
-    formData.append('mask_height', maskData.inner_usable_area?.height || 0);
+    formData.append('feather_radius', effectiveMaskData.feather_radius || 8);
+    formData.append('mask_x', effectiveMaskData.inner_usable_area?.x || 0);
+    formData.append('mask_y', effectiveMaskData.inner_usable_area?.y || 0);
+    formData.append('mask_width', effectiveMaskData.inner_usable_area?.width || 0);
+    formData.append('mask_height', effectiveMaskData.inner_usable_area?.height || 0);
 
     try {
       setUploading(true);
