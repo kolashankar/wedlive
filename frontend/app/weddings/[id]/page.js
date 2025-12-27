@@ -352,20 +352,16 @@ function WeddingViewPageContent({ params, searchParams }) {
                     <StreamVideoPlayer
                       playbackUrl={wedding.playback_url}
                       themeId={wedding.theme_settings?.theme_id}
+                      streamBorderUrl={wedding.theme_settings?.theme_assets?.stream_border_url}
                     />
-                    {/* Debug: Log theme data */}
-                    {console.log('Wedding Page - theme_settings:', wedding.theme_settings)}
-                    {console.log('Wedding Page - theme_id:', wedding.theme_settings?.theme_id)}
                   </div>
                 ) : wedding.status === 'recorded' && wedding.recording_url ? (
                   <div className="absolute inset-0">
                     <StreamVideoPlayer
                       playbackUrl={wedding.recording_url}
                       themeId={wedding.theme_settings?.theme_id}
+                      streamBorderUrl={wedding.theme_settings?.theme_assets?.stream_border_url}
                     />
-                    {/* Debug: Log theme data */}
-                    {console.log('Wedding Page - theme_settings:', wedding.theme_settings)}
-                    {console.log('Wedding Page - theme_id:', wedding.theme_settings?.theme_id)}
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
