@@ -1,4 +1,4 @@
-// File: /app/wedlive/frontend/app/auth/google/callback/page.js
+// File: /app/frontend/app/auth/google/callback/page.js
 import * as entry from '../../../../../../app/auth/google/callback/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

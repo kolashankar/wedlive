@@ -2,7 +2,7 @@
   "components/BorderEditor.js -> @/lib/api": {
     "id": 6657,
     "files": [
-      "static/chunks/6657.8cb05456d8151d59.js"
+      "static/chunks/6657.0b6040e37fabd3cf.js"
     ]
   },
   "components/BorderEditor.js -> sonner": {
@@ -15,7 +15,7 @@
     "id": 33514,
     "files": [
       "static/chunks/7622-185d18276d7fa837.js",
-      "static/chunks/4512-3253131f6214dba3.js",
+      "static/chunks/4512-c513e8fba3761423.js",
       "static/chunks/3514-b17119b4dfaa4d77.js",
       "static/chunks/2022.1950c9db2acabad3.js"
     ]
@@ -24,7 +24,7 @@
     "id": 90508,
     "files": [
       "static/chunks/7622-185d18276d7fa837.js",
-      "static/chunks/4512-3253131f6214dba3.js",
+      "static/chunks/4512-c513e8fba3761423.js",
       "static/chunks/508-a61d96329e6002b9.js",
       "static/chunks/3907.753406a949f6a104.js"
     ]
@@ -33,7 +33,7 @@
     "id": 9036,
     "files": [
       "static/chunks/7622-185d18276d7fa837.js",
-      "static/chunks/4512-3253131f6214dba3.js",
+      "static/chunks/4512-c513e8fba3761423.js",
       "static/chunks/9036-7eb092ae40c4e58e.js"
     ]
   },

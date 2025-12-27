@@ -1,4 +1,4 @@
-// File: /app/wedlive/frontend/app/join/page.js
+// File: /app/frontend/app/join/page.js
 import * as entry from '../../../../app/join/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -1,4 +1,4 @@
-// File: /app/wedlive/frontend/app/youtube/callback/page.js
+// File: /app/frontend/app/youtube/callback/page.js
 import * as entry from '../../../../../app/youtube/callback/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

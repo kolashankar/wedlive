@@ -1,4 +1,4 @@
-// File: /app/wedlive/frontend/app/webhooks/page.js
+// File: /app/frontend/app/webhooks/page.js
 import * as entry from '../../../../app/webhooks/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

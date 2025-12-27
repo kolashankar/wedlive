@@ -1,7 +1,7 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/admin/page": "app/admin/page.js",
   "/admin/borders/page": "app/admin/borders/page.js",
+  "/admin/page": "app/admin/page.js",
   "/admin/theme-assets/page": "app/admin/theme-assets/page.js",
   "/api-keys/page": "app/api-keys/page.js",
   "/auth/google/callback/page": "app/auth/google/callback/page.js",
@@ -10,8 +10,8 @@
   "/join/page": "app/join/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
-  "/payment/history/page": "app/payment/history/page.js",
   "/payment/cancel/page": "app/payment/cancel/page.js",
+  "/payment/history/page": "app/payment/history/page.js",
   "/payment/invoice/[id]/page": "app/payment/invoice/[id]/page.js",
   "/payment/success/page": "app/payment/success/page.js",
   "/pricing/page": "app/pricing/page.js",
@@ -21,8 +21,8 @@
   "/view/[id]/page": "app/view/[id]/page.js",
   "/webhooks/page": "app/webhooks/page.js",
   "/weddings/[id]/page": "app/weddings/[id]/page.js",
-  "/weddings/[id]/sections/page": "app/weddings/[id]/sections/page.js",
   "/weddings/manage/[id]/page": "app/weddings/manage/[id]/page.js",
+  "/weddings/[id]/sections/page": "app/weddings/[id]/sections/page.js",
   "/weddings/page": "app/weddings/page.js",
   "/youtube/callback/page": "app/youtube/callback/page.js",
   "/api/[[...path]]/route": "app/api/[[...path]]/route.js"

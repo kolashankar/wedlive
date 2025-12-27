@@ -1,4 +1,4 @@
-// File: /app/wedlive/frontend/app/payment/history/page.js
+// File: /app/frontend/app/payment/history/page.js
 import * as entry from '../../../../../app/payment/history/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
