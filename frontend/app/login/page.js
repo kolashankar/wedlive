@@ -198,3 +198,39 @@ function LoginFormContent() {
     </div>
   );
 }
+
+// Loading fallback component
+function LoginFormLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Link href="/" className="flex items-center justify-center space-x-2 mb-8">
+          <Heart className="w-8 h-8 text-rose-500" />
+          <span className="text-3xl font-bold bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent">
+            WedLive
+          </span>
+        </Link>
+        <Card className="border-2 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl">Welcome Back</CardTitle>
+            <CardDescription>Sign in to your WedLive account</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFormLoading />}>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
