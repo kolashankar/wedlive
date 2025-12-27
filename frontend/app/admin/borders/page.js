@@ -364,7 +364,11 @@ export default function BorderManagement() {
 
   // Process background removal with enhanced Canvas API implementation
   const processBackgroundRemoval = async () => {
-    if (!selectedFile || !removeBackground) return;
+    // CRITICAL FIX: Don't check removeBackground state - process if called
+    if (!selectedFile) {
+      console.warn('[Background Removal] No file selected');
+      return;
+    }
     
     setProcessingBackground(true);
     setBackgroundRemovalProgress(50);
