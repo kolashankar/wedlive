@@ -265,14 +265,14 @@ export default function PhotoFrame({
       className={`photo-frame relative w-full ${className}`}
       style={getContainerStyle()}
     >
-      {/* Photo Layer - BACKGROUND layer (z-index: 1) scaled 100% with mask-image applied */}
+      {/* Photo Layer - BACKGROUND layer (z-index: 1) - NO MASKING */}
       {normalizedPhotoUrl && (
         <img
           src={normalizedPhotoUrl}
           alt={alt}
           className="absolute inset-0 w-full h-full"
           style={{
-            // FIXED: Photo is now BACKGROUND layer (z-index: 1)
+            // FIXED: Photo is BACKGROUND layer (z-index: 1)
             position: 'absolute',
             top: 0,
             left: 0,
@@ -283,15 +283,11 @@ export default function PhotoFrame({
             objectPosition: position,
             // Layer stacking - BACKGROUND layer (z-index: 1)
             zIndex: 1,
-            // Visual enhancements removed from photo (shadow moved to container if needed)
-            filter: 'none',
-            // Apply CSS masking to constrain photo to mask shape
-            ...getMaskStyle(),
+            // NO masking applied - photo fills entire container
+            // Border's transparent areas will reveal the photo naturally
             // Performance optimizations
             willChange: 'auto',
             backfaceVisibility: 'hidden',
-            // Ensure proper rendering order
-            isolation: 'auto',
           }}
           onLoad={handlePhotoLoad}
           onError={handlePhotoError}
