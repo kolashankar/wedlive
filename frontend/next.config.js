@@ -31,7 +31,7 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "ALLOWALL" },
           { 
             key: "Content-Security-Policy", 
-            value: "frame-ancestors *; connect-src 'self' * ws: wss: https: http:;" 
+            value: "frame-ancestors *; connect-src 'self' * ws: wss: https: http: data: blob:;" 
           },
           { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "*" },
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
