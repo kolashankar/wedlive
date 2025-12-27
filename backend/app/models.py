@@ -243,6 +243,8 @@ class PhotoBorder(BaseModel):
     file_size: int = 0
     tags: List[str] = []
     mask_data: Optional[MaskData] = None  # NEW: Mask information for photo fitting
+    has_transparency: bool = False  # NEW: Indicates if border has transparent background
+    remove_background: bool = False  # NEW: Indicates if background removal was applied
     created_at: datetime
     uploaded_by: str  # admin user_id
 
