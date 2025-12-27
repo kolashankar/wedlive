@@ -87,34 +87,48 @@ export default function ExactFitPhotoFrame({
   };
 
   return (
-    <div className={`exact-fit-photo-frame relative w-full h-full overflow-hidden ${className}`} style={{ backgroundColor: 'transparent' }}>
-      {/* Photo Layer - Uses object-fit: cover to fill container with optional masking */}
-      {finalPhotoUrl && (
-        <img
-          src={finalPhotoUrl}
-          alt={alt}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            objectPosition: position,
-            filter: shadow ? 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' : 'none',
-            backgroundColor: 'transparent',
-            zIndex: 1,
-            ...getMaskStyle(), // Apply CSS masking if maskData is provided
-          }}
-          onLoad={handlePhotoLoad}
-          onError={handlePhotoError}
-        />
-      )}
+    <div className={`exact-fit-photo-frame relative w-full h-full ${className}`} style={{ backgroundColor: 'transparent', overflow: 'visible' }}>
+      {/* Inner container for photo - clips photo to container bounds */}
+      <div className="absolute inset-0" style={{ overflow: 'hidden', zIndex: 1 }}>
+        {/* Photo Layer - Uses object-fit: cover to fill container with optional masking */}
+        {finalPhotoUrl && (
+          <img
+            src={finalPhotoUrl}
+            alt={alt}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              objectPosition: position,
+              filter: shadow ? 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' : 'none',
+              backgroundColor: 'transparent',
+              ...getMaskStyle(), // Apply CSS masking if maskData is provided
+            }}
+            onLoad={handlePhotoLoad}
+            onError={handlePhotoError}
+          />
+        )}
+      </div>
       
-      {/* Border Overlay - Uses object-fit: contain to preserve border shape with TRANSPARENCY */}
+      {/* Border Overlay - CRITICAL FIX: Extends 30% beyond container on all sides */}
+      {/* Uses COVER logic to fully cover placeholder with uniform overflow */}
       {finalMaskUrl && (
         <img
           src={finalMaskUrl}
           alt="Border"
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          className="absolute pointer-events-none"
           style={{ 
-            objectFit: 'contain',
+            position: 'absolute',
+            // Border extends 30% beyond photo on all sides (COVER logic)
+            top: '-30%',
+            left: '-30%',
+            right: '-30%',
+            bottom: '-30%',
+            width: '160%',  // 30% + 100% + 30% = 160% total
+            height: '160%', // 30% + 100% + 30% = 160% total
+            // COVER logic: scales proportionally, covers all edges, allows cropping
+            objectFit: 'cover',
+            objectPosition: 'center',
             backgroundColor: 'transparent',
+            pointerEvents: 'none',
             zIndex: 2,
           }}
           onLoad={handleBorderLoad}
