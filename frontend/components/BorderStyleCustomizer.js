@@ -35,7 +35,8 @@ export default function BorderStyleCustomizer({ weddingId, onStyleUpdate }) {
     bride: null,
     groom: null,
     couple: null,
-    precious_moments: null
+    precious_moments: null,
+    stream: null  // FIX 5: Add stream border
   });
   const [selectedPreciousStyle, setSelectedPreciousStyle] = useState(null);
   const [selectedBackground, setSelectedBackground] = useState(null);
