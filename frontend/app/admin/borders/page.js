@@ -459,7 +459,7 @@ export default function BorderManagement() {
     let originalFormat = fileExtension;
     
     // Check if we have processed image from BorderEditor (new system)
-    if (maskData && maskData.processedImage && maskData.processedImage.blob) {
+    if (effectiveMaskData && effectiveMaskData.processedImage && effectiveMaskData.processedImage.blob) {
       try {
         console.log('[Upload] Using processed transparent image from BorderEditor');
         
