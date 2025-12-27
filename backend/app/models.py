@@ -258,6 +258,8 @@ class PhotoBorderResponse(BaseModel):
     file_size: int = 0  # Default value for backward compatibility
     tags: List[str] = []  # Default empty list
     mask_data: Optional[MaskData] = None
+    has_transparency: bool = False  # NEW: Transparency flag
+    remove_background: bool = False  # NEW: Background removal flag
     created_at: datetime
 
 class MaskSlot(BaseModel):
