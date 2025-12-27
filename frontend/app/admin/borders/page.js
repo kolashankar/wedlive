@@ -137,13 +137,13 @@ export default function BorderManagement() {
         if (transparencyResult.recommendation === 'needs_removal') {
           setRemoveBackground(true);
           setSuccess('Black background detected! Background removal has been enabled automatically.');
+          // CRITICAL FIX: Process immediately when background removal is needed
+          // Don't wait for state update - process right away
+          setTimeout(() => {
+            processBackgroundRemoval();
+          }, 100); // Small delay to ensure state updates
         } else if (transparencyResult.recommendation === 'excellent') {
           setSuccess('Perfect! This image already has good transparency.');
-        }
-        
-        // Auto-process background removal if checkbox is selected
-        if (removeBackground || transparencyResult.recommendation === 'needs_removal') {
-          processBackgroundRemoval();
         }
       } catch (error) {
         console.error('Transparency check failed:', error);
