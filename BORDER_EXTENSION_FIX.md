@@ -148,18 +148,25 @@ The FILL logic ensures:
 
 ## Visual Verification
 
-### ✅ Expected Behavior
-- Floral borders extend visibly beyond all four edges
+### ✅ Expected Behavior (v3 - Stretch-to-Fit)
+- Border extends exactly 5% beyond all four edges
+- Border stretches to match placeholder aspect ratio
 - No gaps between border and photo edges
-- Border decorations (flowers, leaves) fully visible at corners
+- Border dimensions adapt to placeholder (tall placeholders → tall borders)
+- Minimal overflow (only 5% per side)
 - Photo remains centered and fills placeholder
-- No stretching or distortion of border elements
 - Transparent PNG areas show photo underneath
+- Border automatically adjusts if height/width differs from placeholder
 
-### ❌ Previous Issue
-- Borders were constrained to 130% (15% per side)
-- Some border decorations were cut off at edges
-- Insufficient overflow for decorative frame effect
+### Behavior Examples:
+- **Square placeholder (1:1)** → Border stretches to 1:1 + 5% overflow
+- **Portrait placeholder (3:4)** → Border stretches to 3:4 + 5% overflow
+- **Landscape placeholder (16:9)** → Border stretches to 16:9 + 5% overflow
+
+### ❌ Previous Issues Resolved
+- **v1 (15% contain)**: Borders didn't extend enough, decorations cut off
+- **v2 (30% cover)**: Too much overflow, borders too large
+- **v3 (5% fill)**: ✅ Perfect fit with minimal overflow, stretches to match placeholder
 
 ---
 
