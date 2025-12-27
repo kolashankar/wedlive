@@ -42,9 +42,11 @@ function WeddingViewPageContent({ params, searchParams }) {
   // Check if live=true parameter is present to skip theme
   const skipTheme = searchParams?.live === 'true';
 
+  // FIX 3: Stream Page Background with fixed attachment
   const streamBackgroundUrl =
     wedding?.theme_settings?.stream_page_background_url ||
     wedding?.theme_settings?.theme_assets?.stream_page_background_url ||
+    wedding?.backgrounds?.stream_page_background_url ||
     null;
 
   const streamBackgroundStyle = streamBackgroundUrl
@@ -53,6 +55,7 @@ function WeddingViewPageContent({ params, searchParams }) {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
       }
     : undefined;
 
