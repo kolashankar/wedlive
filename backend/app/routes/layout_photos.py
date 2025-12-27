@@ -257,7 +257,7 @@ async def upload_photo_to_placeholder(
             current_photos.append({
                 "photo_id": photo_id,
                 "url": photo_url,  # Store full Telegram URL
-                "file_id": upload_result["file_id"],
+                "file_id": file_id,  # Use validated file_id
                 "uploaded_at": datetime.utcnow()
             })
             layout_photos[placeholder] = current_photos
@@ -266,7 +266,7 @@ async def upload_photo_to_placeholder(
             layout_photos[placeholder] = {
                 "photo_id": photo_id,
                 "url": photo_url,  # Store full Telegram URL
-                "file_id": upload_result["file_id"],
+                "file_id": file_id,  # Use validated file_id
                 "uploaded_at": datetime.utcnow()
             }
         
