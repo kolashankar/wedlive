@@ -353,6 +353,8 @@ async def list_backgrounds(
                 tags=background.get("tags", []),
                 mask_data=background.get("mask_data"),
                 category=background.get("category", "background"),
+                has_transparency=background.get("has_transparency", False),
+                remove_background=background.get("remove_background", False),
                 created_at=background["created_at"]
             ))
         
