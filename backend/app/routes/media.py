@@ -8,6 +8,7 @@ from app.database import get_db
 from app.services.telegram_service import TelegramCDNService
 from app.services.storage_service import StorageService
 from app.plan_restrictions import check_upload_allowed
+from app.utils.file_id_validator import validate_and_log_file_id, is_valid_telegram_file_id
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
