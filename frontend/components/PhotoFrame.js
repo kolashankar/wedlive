@@ -265,50 +265,14 @@ export default function PhotoFrame({
       className={`photo-frame relative w-full ${className}`}
       style={getContainerStyle()}
     >
-      {/* Border Layer - BACKGROUND layer (z-index: 0) - 3px LARGER on all sides */}
-      {normalizedMaskUrl && (
-        <img
-          src={normalizedMaskUrl}
-          alt="Border"
-          className="absolute pointer-events-none"
-          style={{ 
-            // CRITICAL FIX: Border should be BACKGROUND layer (z-index: 0)
-            position: 'absolute',
-            // CRITICAL FIX: Border should be 3px LARGER on all sides
-            top: '-3px',
-            left: '-3px',
-            right: '-3px',
-            bottom: '-3px',
-            width: 'calc(100% + 6px)',  // 3px on each side = 6px total
-            height: 'calc(100% + 6px)', // 3px on each side = 6px total
-            // Layer stacking - BACKGROUND layer (z-index: 0)
-            zIndex: 0,
-            // Ensure border preserves shape and aligns perfectly
-            objectFit: 'contain',
-            objectPosition: 'center',
-            // Critical: Prevent border from blocking interactions
-            pointerEvents: 'none',
-            // Ensure transparent areas work correctly
-            mixBlendMode: 'normal',
-            // Performance and rendering optimizations
-            willChange: 'auto',
-            backfaceVisibility: 'hidden',
-            // Perfect alignment with container
-            display: 'block',
-          }}
-          onLoad={handleBorderLoad}
-          onError={handleBorderError}
-        />
-      )}
-      
-      {/* Photo Layer - FOREGROUND layer (z-index: 1) scaled 100% with mask-image applied */}
+      {/* Photo Layer - BACKGROUND layer (z-index: 1) scaled 100% with mask-image applied */}
       {normalizedPhotoUrl && (
         <img
           src={normalizedPhotoUrl}
           alt={alt}
           className="absolute inset-0 w-full h-full"
           style={{
-            // CRITICAL FIX: Photo should be FOREGROUND layer (z-index: 1)
+            // FIXED: Photo is now BACKGROUND layer (z-index: 1)
             position: 'absolute',
             top: 0,
             left: 0,
@@ -317,10 +281,10 @@ export default function PhotoFrame({
             // Ensure photo fills container completely
             objectFit: 'cover',
             objectPosition: position,
-            // Layer stacking - FOREGROUND layer (z-index: 1)
+            // Layer stacking - BACKGROUND layer (z-index: 1)
             zIndex: 1,
-            // Visual enhancements
-            filter: shadow ? 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' : 'none',
+            // Visual enhancements removed from photo (shadow moved to container if needed)
+            filter: 'none',
             // Apply CSS masking to constrain photo to mask shape
             ...getMaskStyle(),
             // Performance optimizations
@@ -331,6 +295,43 @@ export default function PhotoFrame({
           }}
           onLoad={handlePhotoLoad}
           onError={handlePhotoError}
+        />
+      )}
+      
+      {/* Border Layer - FOREGROUND overlay (z-index: 2) - 3px LARGER on all sides */}
+      {normalizedMaskUrl && (
+        <img
+          src={normalizedMaskUrl}
+          alt="Border"
+          className="absolute pointer-events-none"
+          style={{ 
+            // FIXED: Border is now FOREGROUND overlay (z-index: 2)
+            position: 'absolute',
+            // Border is 3px LARGER on all sides to frame the photo
+            top: '-3px',
+            left: '-3px',
+            right: '-3px',
+            bottom: '-3px',
+            width: 'calc(100% + 6px)',  // 3px on each side = 6px total
+            height: 'calc(100% + 6px)', // 3px on each side = 6px total
+            // Layer stacking - FOREGROUND overlay (z-index: 2)
+            zIndex: 2,
+            // Ensure border preserves shape and aligns perfectly
+            objectFit: 'contain',
+            objectPosition: 'center',
+            // Critical: Prevent border from blocking interactions
+            pointerEvents: 'none',
+            // CRITICAL: Ensure transparent areas remain transparent
+            backgroundColor: 'transparent',
+            mixBlendMode: 'normal',
+            // Performance and rendering optimizations
+            willChange: 'auto',
+            backfaceVisibility: 'hidden',
+            // Perfect alignment with container
+            display: 'block',
+          }}
+          onLoad={handleBorderLoad}
+          onError={handleBorderError}
         />
       )}
       
