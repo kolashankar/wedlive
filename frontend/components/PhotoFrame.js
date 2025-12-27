@@ -71,7 +71,7 @@ export default function PhotoFrame({
     return ratioMap[ratio] || ratio;
   };
 
-  // Convert aspect ratio to CSS value or use exact dimensions - Enhanced for sandwich layering
+  // Convert aspect ratio to CSS value or use exact dimensions - Enhanced for transparent overlay
   const getContainerStyle = () => {
     const baseStyle = {
       overflow: 'hidden',
@@ -79,13 +79,13 @@ export default function PhotoFrame({
       // Ensure container maintains exact dimensions
       minWidth: 0,
       minHeight: 0,
+      // CRITICAL: Transparent background to allow layout background to show
+      backgroundColor: 'transparent',
       // Prevent content from escaping
       isolation: 'isolate',
       // Create stacking context for proper layering
       transform: 'translateZ(0)',
-      // Ensure mask clipping works properly
-      clipPath: 'none',
-      // Enhanced container constraints for sandwich layering
+      // Enhanced container constraints for transparent overlay
       display: 'block',
       width: '100%',
       // Ensure proper aspect ratio behavior
