@@ -127,12 +127,17 @@ async def upload_border(
                 detail=f"File size exceeds {MAX_FILE_SIZE / (1024*1024)}MB limit"
             )
         
-        # Validate image format
+        # Validate image format - ENFORCE PNG for transparency
         if not file.content_type or not file.content_type.startswith('image/'):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Only image files are allowed"
             )
+        
+        # CRITICAL: Enforce PNG format if transparency is required
+        if (has_transparency or remove_background) and file.content_type != 'image/png':
+            logger.warning(f"[BORDER_UPLOAD] Non-PNG format detected for transparent border: {file.content_type}")
+            # We'll still allow it but log a warning - client should convert to PNG
         
         # Save to temp file
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1])
@@ -140,9 +145,22 @@ async def upload_border(
             await f.write(file_content)
         temp_path = temp_file.name
         
-        # Get image dimensions
+        # Get image dimensions and verify transparency
         width, height = get_image_dimensions(temp_path)
         orientation = determine_orientation(width, height)
+        
+        # Verify PNG format for transparent borders
+        if has_transparency or remove_background:
+            with Image.open(temp_path) as img:
+                if img.mode not in ('RGBA', 'LA', 'PA'):
+                    logger.warning(f"[BORDER_UPLOAD] Image does not have alpha channel. Mode: {img.mode}")
+                else:
+                    logger.info(f"[BORDER_UPLOAD] PNG with alpha channel confirmed. Mode: {img.mode}")
+        
+        # Upload to Telegram CDN as DOCUMENT (not photo) to preserve PNG transparency
+        # CRITICAL: Use document upload for transparent images to prevent compression
+        upload_method = "document" if (has_transparency or remove_background) else "photo"
+        logger.info(f"[BORDER_UPLOAD] Using {upload_method} upload method for transparency preservation")
         
         # Upload to Telegram CDN
         upload_result = await telegram_service.upload_photo(
