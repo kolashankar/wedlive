@@ -435,6 +435,8 @@ async def update_border_mask(
             tags=updated_border["tags"],
             supports_mirror=updated_border.get("supports_mirror", True),
             category=updated_border.get("category", "general"),
+            has_transparency=updated_border.get("has_transparency", False),
+            remove_background=updated_border.get("remove_background", False),
             created_at=updated_border["created_at"]
         )
         
