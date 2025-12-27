@@ -1,6 +1,6 @@
 # Test Guide for Bug Fixes
 
-### How to Test Each Fix:
+#### How to Test Each Fix:
 
 ### Issue 1: Background Removal Delay ✅
 
