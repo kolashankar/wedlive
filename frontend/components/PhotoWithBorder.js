@@ -117,33 +117,19 @@ export default function PhotoWithBorder({
     );
   }
 
-  // With border - create layered effect
+  // With border - create layered effect with IMG tag for transparency
   return (
-    <div className={`relative ${className}`}>
-      {/* Border as background image */}
-      <div 
-        className="absolute inset-0 rounded-lg"
-        style={{
-          backgroundImage: `url(${borderUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
-      
-      {/* Photo container with padding to fit inside border */}
-      <div className="relative inset-4">
+    <div className={`relative ${className}`} style={{ backgroundColor: 'transparent' }}>
+      {/* Photo layer */}
+      <div className="relative w-full h-full">
         {children || (
           isTelegramImage ? (
             <TelegramImageLoader
               telegramUrl={photoUrl}
               alt={alt}
-              className="w-full h-full object-cover"
-              style={{
-                borderRadius: '8px' // Adjust based on border inner shape
-              }}
+              className="w-full h-full object-cover rounded-lg"
               fallbackComponent={
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center" style={{ borderRadius: '8px' }}>
+                <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
                   <span className="text-gray-500 text-sm">Image unavailable</span>
                 </div>
               }
@@ -152,10 +138,7 @@ export default function PhotoWithBorder({
             <img
               src={photoUrl}
               alt={alt}
-              className="w-full h-full object-cover"
-              style={{
-                borderRadius: '8px' // Adjust based on border inner shape
-              }}
+              className="w-full h-full object-cover rounded-lg"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
@@ -165,16 +148,32 @@ export default function PhotoWithBorder({
         )}
         {/* Fallback for regular images */}
         {!isTelegramImage && (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center" style={{ display: 'none', borderRadius: '8px' }}>
+          <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
             <span className="text-gray-500 text-sm">Image unavailable</span>
           </div>
         )}
       </div>
       
+      {/* Border overlay as IMG tag (CRITICAL for transparency) */}
+      <img 
+        src={borderUrl}
+        alt="Border overlay"
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ 
+          backgroundColor: 'transparent',
+          objectFit: 'cover',
+          zIndex: 10
+        }}
+        onError={(e) => {
+          console.error('Border image failed to load:', borderUrl);
+          e.target.style.display = 'none';
+        }}
+      />
+      
       {/* Debug indicator */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-          Border applied
+        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded z-20">
+          Border applied (transparent)
         </div>
       )}
     </div>
