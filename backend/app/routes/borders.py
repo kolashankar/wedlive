@@ -257,6 +257,8 @@ async def upload_border(
             tags=border_doc["tags"],
             supports_mirror=border_doc["supports_mirror"],
             category=border_doc["category"],
+            has_transparency=border_doc.get("has_transparency", False),  # NEW
+            remove_background=border_doc.get("remove_background", False),  # NEW
             created_at=border_doc["created_at"]
         )
         
