@@ -114,14 +114,13 @@ export default function Layout3({
               {/* Bride Photo */}
               <div className="flex flex-col items-center">
                 {bridePhoto ? (
-                  <div className="w-64 h-64 rounded-full overflow-hidden shadow-2xl mb-6 border-4"
-                       style={{ borderColor: primaryColor }}>
+                  <div className="w-64 h-64 mb-6 relative">
                     <PhotoFrame
                       src={bridePhoto.url}
                       maskUrl={borders?.bride}
                       maskData={layoutConfig?.borderMasks?.bride}
                       aspectRatio="1:1"
-                      className="w-full h-full"
+                      className="w-full h-full rounded-full shadow-2xl"
                     />
                   </div>
                 ) : (
@@ -137,14 +136,13 @@ export default function Layout3({
               <div className="flex flex-col items-center">
                 {couplePhoto ? (
                   <div className="relative">
-                    <div className="w-72 h-72 rounded-full overflow-hidden shadow-2xl mb-6 border-8"
-                         style={{ borderColor: primaryColor }}>
+                    <div className="w-72 h-72 mb-6 relative">
                       <PhotoFrame
                         src={couplePhoto.url}
                         maskUrl={borders?.couple}
                         maskData={layoutConfig?.borderMasks?.couple}
                         aspectRatio="1:1"
-                        className="w-full h-full"
+                        className="w-full h-full rounded-full shadow-2xl"
                       />
                     </div>
                     <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
@@ -162,14 +160,13 @@ export default function Layout3({
               {/* Groom Photo */}
               <div className="flex flex-col items-center">
                 {groomPhoto ? (
-                  <div className="w-64 h-64 rounded-full overflow-hidden shadow-2xl mb-6 border-4"
-                       style={{ borderColor: secondaryColor }}>
+                  <div className="w-64 h-64 mb-6 relative">
                     <PhotoFrame
                       src={groomPhoto.url}
                       maskUrl={borders?.groom}
                       maskData={layoutConfig?.borderMasks?.groom}
                       aspectRatio="1:1"
-                      className="w-full h-full"
+                      className="w-full h-full rounded-full shadow-2xl"
                     />
                   </div>
                 ) : (
