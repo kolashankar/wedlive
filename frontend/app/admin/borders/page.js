@@ -536,8 +536,9 @@ export default function BorderManagement() {
                 type: 'image/png'
               });
               fileExtension = 'png';
+              console.log('[Upload] PNG-32 conversion complete with full alpha channel');
               resolve();
-            }, 'image/png');
+            }, 'image/png', 1.0); // Quality 1.0 for maximum PNG quality with full alpha channel
           };
           img.src = URL.createObjectURL(selectedFile);
         });
