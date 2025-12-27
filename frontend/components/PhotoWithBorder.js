@@ -119,9 +119,10 @@ export default function PhotoWithBorder({
 
   // With border - create layered effect with IMG tag for transparency
   return (
-    <div className={`relative ${className}`} style={{ backgroundColor: 'transparent' }}>
-      {/* Photo layer */}
-      <div className="relative w-full h-full">
+    <div className={`relative ${className}`} style={{ backgroundColor: 'transparent', overflow: 'visible' }}>
+      {/* Inner container for photo - clips photo to container bounds */}
+      <div className="relative w-full h-full" style={{ overflow: 'hidden', zIndex: 1 }}>
+        {/* Photo layer */}
         {children || (
           isTelegramImage ? (
             <TelegramImageLoader
@@ -154,14 +155,26 @@ export default function PhotoWithBorder({
         )}
       </div>
       
-      {/* Border overlay as IMG tag (CRITICAL for transparency) */}
+      {/* Border overlay - CRITICAL FIX: Extends 30% beyond container on all sides */}
+      {/* Uses COVER logic to fully cover placeholder with uniform overflow */}
       <img 
         src={borderUrl}
         alt="Border overlay"
-        className="absolute inset-0 w-full h-full pointer-events-none"
+        className="absolute pointer-events-none"
         style={{ 
-          backgroundColor: 'transparent',
+          position: 'absolute',
+          // Border extends 30% beyond photo on all sides (COVER logic)
+          top: '-30%',
+          left: '-30%',
+          right: '-30%',
+          bottom: '-30%',
+          width: '160%',  // 30% + 100% + 30% = 160% total
+          height: '160%', // 30% + 100% + 30% = 160% total
+          // COVER logic: scales proportionally, covers all edges, allows cropping
           objectFit: 'cover',
+          objectPosition: 'center',
+          backgroundColor: 'transparent',
+          pointerEvents: 'none',
           zIndex: 10
         }}
         onError={(e) => {
