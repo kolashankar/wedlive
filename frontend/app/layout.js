@@ -4,6 +4,7 @@ import { AuthProvider } from '@/lib/auth';
 import { Toaster } from '@/components/ui/sonner';
 import { FontProvider } from '@/contexts/FontContext';
 import { BorderProvider } from '@/contexts/BorderContext';
+import SessionExpiry from '@/components/SessionExpiry';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const greatVibes = Great_Vibes({ weight: '400', subsets: ['latin'], variable: '--font-greatvibes' });
@@ -63,6 +64,7 @@ export default function RootLayout({ children }) {
           <FontProvider>
             <BorderProvider>
               {children}
+              <SessionExpiry />
               <Toaster />
             </BorderProvider>
           </FontProvider>
