@@ -1,39 +1,47 @@
-# Border Extension Fix - 30% Overflow Implementation
+# Border Extension Fix - 5% Stretch-to-Fit Implementation
 
 ## Problem Statement
-The floral borders on photo placeholders were not extending sufficiently beyond the photo edges on all four sides. The borders needed to fully cover the placeholder and overflow uniformly on all sides without distortion.
+The floral borders on photo placeholders needed to:
+1. Automatically stretch to fit placeholder dimensions (regardless of aspect ratio)
+2. Extend only 5% beyond placeholder edges on all four sides
+3. Adjust height/width independently to match placeholder proportions
 
 ## Solution Applied
-Implemented **COVER logic** with **30% uniform extension** on all sides across all photo border components.
+Implemented **FILL/STRETCH logic** with **5% uniform extension** on all sides across all photo border components.
 
 ---
 
 ## Key Changes
 
 ### 1. Border Dimensions
-**Before:**
+**Initial (v1):**
 - Extension: 15% on each side
 - Total size: 130% × 130%
 - objectFit: 'contain'
 
-**After:**
+**Iteration (v2):**
 - Extension: 30% on each side  
 - Total size: 160% × 160%
 - objectFit: 'cover'
 
+**Final (v3 - Current):**
+- Extension: 5% on each side  
+- Total size: 110% × 110%
+- objectFit: 'fill' (allows stretching)
+
 ### 2. Border Positioning
 ```css
-/* Before */
+/* Initial (v1) */
 top: -15%
 left: -15%
 width: 130%
 height: 130%
 
-/* After */
-top: -30%
-left: -30%
-width: 160%  /* 30% + 100% + 30% */
-height: 160% /* 30% + 100% + 30% */
+/* Final (v3) */
+top: -5%
+left: -5%
+width: 110%  /* 5% + 100% + 5% */
+height: 110% /* 5% + 100% + 5% */
 ```
 
 ### 3. Layout Structure
