@@ -265,14 +265,50 @@ export default function PhotoFrame({
       className={`photo-frame relative w-full ${className}`}
       style={getContainerStyle()}
     >
-      {/* Photo Layer - Bottom layer scaled 100% with mask-image applied */}
+      {/* Border Layer - BACKGROUND layer (z-index: 0) - 3px LARGER on all sides */}
+      {normalizedMaskUrl && (
+        <img
+          src={normalizedMaskUrl}
+          alt="Border"
+          className="absolute pointer-events-none"
+          style={{ 
+            // CRITICAL FIX: Border should be BACKGROUND layer (z-index: 0)
+            position: 'absolute',
+            // CRITICAL FIX: Border should be 3px LARGER on all sides
+            top: '-3px',
+            left: '-3px',
+            right: '-3px',
+            bottom: '-3px',
+            width: 'calc(100% + 6px)',  // 3px on each side = 6px total
+            height: 'calc(100% + 6px)', // 3px on each side = 6px total
+            // Layer stacking - BACKGROUND layer (z-index: 0)
+            zIndex: 0,
+            // Ensure border preserves shape and aligns perfectly
+            objectFit: 'contain',
+            objectPosition: 'center',
+            // Critical: Prevent border from blocking interactions
+            pointerEvents: 'none',
+            // Ensure transparent areas work correctly
+            mixBlendMode: 'normal',
+            // Performance and rendering optimizations
+            willChange: 'auto',
+            backfaceVisibility: 'hidden',
+            // Perfect alignment with container
+            display: 'block',
+          }}
+          onLoad={handleBorderLoad}
+          onError={handleBorderError}
+        />
+      )}
+      
+      {/* Photo Layer - FOREGROUND layer (z-index: 1) scaled 100% with mask-image applied */}
       {normalizedPhotoUrl && (
         <img
           src={normalizedPhotoUrl}
           alt={alt}
           className="absolute inset-0 w-full h-full"
           style={{
-            // Perfect sandwich layering - Bottom layer
+            // CRITICAL FIX: Photo should be FOREGROUND layer (z-index: 1)
             position: 'absolute',
             top: 0,
             left: 0,
@@ -281,7 +317,7 @@ export default function PhotoFrame({
             // Ensure photo fills container completely
             objectFit: 'cover',
             objectPosition: position,
-            // Layer stacking - Bottom layer (z-index: 1)
+            // Layer stacking - FOREGROUND layer (z-index: 1)
             zIndex: 1,
             // Visual enhancements
             filter: shadow ? 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' : 'none',
@@ -295,41 +331,6 @@ export default function PhotoFrame({
           }}
           onLoad={handlePhotoLoad}
           onError={handlePhotoError}
-        />
-      )}
-      
-      {/* Border Overlay - Top layer scaled 100% with transparency showing masked photo */}
-      {normalizedMaskUrl && (
-        <img
-          src={normalizedMaskUrl}
-          alt="Border"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ 
-            // Perfect sandwich layering - Top layer
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            // Layer stacking - Top layer (z-index: 2)
-            zIndex: 2,
-            // Ensure border preserves shape and aligns perfectly
-            objectFit: 'contain',
-            objectPosition: 'center',
-            // Critical: Prevent border from blocking interactions
-            pointerEvents: 'none',
-            // Ensure transparent areas show photo underneath
-            mixBlendMode: 'normal',
-            // Performance and rendering optimizations
-            willChange: 'auto',
-            backfaceVisibility: 'hidden',
-            // Perfect alignment with container
-            display: 'block',
-            // Ensure border renders on top of masked photo
-            isolation: 'auto',
-          }}
-          onLoad={handleBorderLoad}
-          onError={handleBorderError}
         />
       )}
       
