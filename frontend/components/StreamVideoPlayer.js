@@ -86,19 +86,31 @@ export default function StreamVideoPlayer({
     );
   }
 
+  // FIX 5: Prepare stream border styling
+  const containerStyle = {
+    ...(streamBorderUrl && {
+      backgroundImage: `url(${streamBorderUrl})`,
+      backgroundSize: 'contain',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      padding: '20px', // Space for border
+    }),
+    ...(themeId === 'modern-minimalist' && {
+      backgroundImage: streamBorderUrl 
+        ? `url(${streamBorderUrl}), url(/assets/images/bg2.png), url(/assets/images/bg2-2.png)`
+        : 'url(/assets/images/bg2.png), url(/assets/images/bg2-2.png)',
+      backgroundSize: streamBorderUrl ? 'contain, cover, cover' : 'cover, cover',
+      backgroundPosition: streamBorderUrl ? 'center, center, center' : 'center, center',
+      backgroundRepeat: streamBorderUrl ? 'no-repeat, no-repeat, no-repeat' : 'no-repeat, no-repeat',
+      backgroundAttachment: 'scroll, fixed, fixed',
+      opacity: 1
+    })
+  };
+
   return (
     <div 
       className={`w-full h-full relative ${themeId === 'modern-minimalist' ? '' : 'bg-black'}`}
-      style={{
-        ...(themeId === 'modern-minimalist' && {
-          backgroundImage: 'url(/assets/images/bg2.png), url(/assets/images/bg2-2.png)',
-          backgroundSize: 'cover, cover',
-          backgroundPosition: 'center, center',
-          backgroundRepeat: 'no-repeat, no-repeat',
-          backgroundAttachment: 'fixed, fixed',
-          opacity: 1
-        })
-      }}
+      style={containerStyle}
     >
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
