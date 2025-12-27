@@ -603,10 +603,74 @@ async def list_my_weddings_working(current_user: dict = Depends(get_current_user
         traceback.print_exc()
         return {"error": str(e), "details": traceback.format_exc()}
 
+@router.get("/my-weddings-debug")
+async def list_my_weddings_debug(current_user: dict = Depends(get_current_user)):
+    """Debug endpoint to diagnose wedding retrieval issues"""
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info("=== MY-WEDDINGS-DEBUG START ===")
+        logger.info(f"Current user payload: {current_user}")
+        
+        if not current_user or not current_user.get("user_id"):
+            return {
+                "error": "No user_id in token",
+                "current_user": current_user
+            }
+        
+        user_id = current_user.get("user_id")
+        logger.info(f"Extracted user_id: {user_id}")
+        
+        db = get_db()
+        
+        # Check total weddings in database
+        total_count = await db.weddings.count_documents({})
+        logger.info(f"Total weddings in database: {total_count}")
+        
+        # Check weddings for this user
+        user_count = await db.weddings.count_documents({"creator_id": user_id})
+        logger.info(f"Weddings for user {user_id}: {user_count}")
+        
+        # Get sample wedding to check creator_id format
+        sample_wedding = await db.weddings.find_one({})
+        sample_creator_id = sample_wedding.get("creator_id") if sample_wedding else None
+        logger.info(f"Sample creator_id from database: {sample_creator_id}")
+        
+        # Check if user exists in database
+        user_in_db = await db.users.find_one({"id": user_id})
+        logger.info(f"User exists in database: {user_in_db is not None}")
+        
+        # Get all unique creator_ids
+        pipeline = [{"$group": {"_id": "$creator_id"}}, {"$limit": 10}]
+        creator_ids = await db.weddings.aggregate(pipeline).to_list(length=10)
+        logger.info(f"Sample creator_ids in database: {[c['_id'] for c in creator_ids]}")
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "user_id_type": type(user_id).__name__,
+            "total_weddings": total_count,
+            "user_weddings": user_count,
+            "user_exists_in_db": user_in_db is not None,
+            "sample_creator_id": sample_creator_id,
+            "sample_creator_ids": [c['_id'] for c in creator_ids]
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
 @router.get("/my-weddings")
 async def list_my_weddings(current_user: dict = Depends(get_current_user)):
     """Get user's weddings - returns array of wedding objects"""
     try:
+        import logging
+        logger = logging.getLogger(__name__)
+        
         if not current_user or not current_user.get("user_id"):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -614,10 +678,16 @@ async def list_my_weddings(current_user: dict = Depends(get_current_user)):
             )
         
         user_id = current_user.get("user_id")
+        logger.info(f"[MY-WEDDINGS] Fetching weddings for user_id: {user_id}")
+        
         db = get_db()
         
+        # Log database query
+        query = {"creator_id": user_id}
+        logger.info(f"[MY-WEDDINGS] Query: {query}")
+        
         # Direct database query - minimal processing
-        cursor = db.weddings.find({"creator_id": user_id}).sort("created_at", -1)
+        cursor = db.weddings.find(query).sort("created_at", -1)
         weddings = []
         
         async for wedding in cursor:
@@ -643,6 +713,7 @@ async def list_my_weddings(current_user: dict = Depends(get_current_user)):
                 logger.error(f"Error processing wedding {wedding.get('id')}: {field_error}")
                 continue
         
+        logger.info(f"[MY-WEDDINGS] Returning {len(weddings)} weddings")
         return weddings
         
     except HTTPException:
