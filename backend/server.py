@@ -99,6 +99,7 @@ fastapi_app.include_router(weddings.router, prefix="/api/weddings", tags=["Weddi
 fastapi_app.include_router(streams.router, prefix="/api/streams", tags=["Streams"])
 fastapi_app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])
 fastapi_app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+fastapi_app.include_router(admin_cleanup.router, prefix="/api", tags=["Admin Cleanup"])
 fastapi_app.include_router(media.router, prefix="/api/media", tags=["Media"])
 fastapi_app.include_router(media_proxy.router, prefix="/api/media", tags=["Media Proxy"])
 fastapi_app.include_router(chat.router, prefix="/api/chat", tags=["Chat & Reactions"])
