@@ -1040,7 +1040,7 @@ export default function BorderManagement() {
 
             <Button
               onClick={handleUploadBorder}
-              disabled={uploading || !selectedFile || !borderName || !maskData}
+              disabled={uploading || !selectedFile || !borderName}
               className="w-full"
             >
               {uploading ? (
