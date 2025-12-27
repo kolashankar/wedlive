@@ -385,18 +385,61 @@ async def get_layout_photos(
         
         # Filter photos based on supported placeholders
         supported_placeholders = get_supported_photo_placeholders(layout_id)
-        filtered_photos = {
+        initial_filtered = {
             placeholder: layout_photos[placeholder]
             for placeholder in supported_placeholders
             if placeholder in layout_photos
         }
         
-        logger.info(f"[GET_LAYOUT_PHOTOS] Wedding {wedding_id}, Layout {layout_id}, Photos: {list(filtered_photos.keys())}")
+        # CRITICAL: Validate file_ids before sending to frontend
+        # Remove any photos with invalid/placeholder file_ids
+        validated_photos = {}
+        removed_count = 0
+        
+        for placeholder, photo_data in initial_filtered.items():
+            # Handle single photo placeholders (dict)
+            if isinstance(photo_data, dict):
+                file_id = photo_data.get('file_id', '')
+                if file_id:
+                    # Validate the file_id
+                    is_valid, error_msg = validate_and_log_file_id(file_id, context=f"GET_{placeholder}")
+                    if not is_valid:
+                        logger.warning(f"[GET_LAYOUT_PHOTOS] Skipping invalid photo in {placeholder}: {error_msg}")
+                        removed_count += 1
+                        continue  # Skip this photo
+                
+                # Photo is valid or has no file_id (maybe has URL only)
+                validated_photos[placeholder] = photo_data
+            
+            # Handle array photo placeholders (list)
+            elif isinstance(photo_data, list):
+                valid_photos = []
+                for photo in photo_data:
+                    if isinstance(photo, dict):
+                        file_id = photo.get('file_id', '')
+                        if file_id:
+                            is_valid, error_msg = validate_and_log_file_id(file_id, context=f"GET_{placeholder}_array")
+                            if not is_valid:
+                                logger.warning(f"[GET_LAYOUT_PHOTOS] Skipping invalid photo in {placeholder} array: {error_msg}")
+                                removed_count += 1
+                                continue  # Skip this photo
+                        
+                        # Photo is valid
+                        valid_photos.append(photo)
+                
+                # Only include the placeholder if it has valid photos
+                if valid_photos:
+                    validated_photos[placeholder] = valid_photos
+        
+        if removed_count > 0:
+            logger.warning(f"[GET_LAYOUT_PHOTOS] Removed {removed_count} photo(s) with invalid file_ids from wedding {wedding_id}")
+        
+        logger.info(f"[GET_LAYOUT_PHOTOS] Wedding {wedding_id}, Layout {layout_id}, Photos: {list(validated_photos.keys())}")
         
         return {
             "wedding_id": wedding_id,
             "layout_id": layout_id,
-            "photos": filtered_photos
+            "photos": validated_photos
         }
         
     except HTTPException:
