@@ -311,19 +311,21 @@ export default function PhotoFrame({
           style={{ 
             // Border is FOREGROUND transparent overlay (z-index: 2)
             position: 'absolute',
-            // CRITICAL FIX: Border extends 15% beyond photo on all sides to create proper decorative frame
-            // This allows floral/decorative borders to overlay and frame the photo naturally
-            top: '-15%',
-            left: '-15%',
-            right: '-15%',
-            bottom: '-15%',
-            width: '130%',  // 15% on each side = 130% total
-            height: '130%', // 15% on each side = 130% total
+            // CRITICAL FIX: Border extends 30% beyond photo on all sides to create proper decorative frame
+            // This allows floral/decorative borders to fully cover placeholder and overflow uniformly
+            // Using COVER logic: border scales proportionally and exceeds placeholder on all 4 sides
+            top: '-30%',
+            left: '-30%',
+            right: '-30%',
+            bottom: '-30%',
+            width: '160%',  // 30% on each side = 160% total (30% + 100% + 30%)
+            height: '160%', // 30% on each side = 160% total (30% + 100% + 30%)
             // Layer stacking - FOREGROUND overlay (z-index: 2)
             zIndex: 2,
-            // CRITICAL: contain maintains aspect ratio and fits border within extended area
-            // The photo is visible through the transparent center of the border
-            objectFit: 'contain',
+            // CRITICAL: COVER logic ensures border fully covers placeholder without distortion
+            // Border scales proportionally, covers all edges, allows cropping on overflow
+            // This prevents gaps on any side regardless of aspect ratio mismatch
+            objectFit: 'cover',
             objectPosition: 'center',
             // CRITICAL: Prevent border from blocking interactions
             pointerEvents: 'none',
