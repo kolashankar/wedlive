@@ -287,13 +287,13 @@ async def complete_chunked_upload(
         await db.upload_sessions.delete_one({"id": upload_id})
         
         # Get file URL
-        file_url = await telegram_service.get_file_url(result["file_id"])
+        file_url = await telegram_service.get_file_url(file_id)
         
         return MediaResponse(
             id=media["id"],
             wedding_id=media["wedding_id"],
             media_type=media["media_type"],
-            file_id=media["file_id"],
+            file_id=file_id,  # Use validated file_id
             telegram_message_id=media["telegram_message_id"],
             caption=media.get("caption"),
             file_size=media["file_size"],
