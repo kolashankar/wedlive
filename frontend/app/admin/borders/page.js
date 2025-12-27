@@ -516,6 +516,18 @@ export default function BorderManagement() {
     formData.append('supports_mirror', supportsMirror);
     formData.append('category', borderCategory);
     
+    // CRITICAL: Add transparency metadata
+    const hasTransparency = removeBackground || processedPreview !== null || (maskData && maskData.processedImage);
+    formData.append('has_transparency', hasTransparency.toString());
+    formData.append('remove_background', removeBackground.toString());
+    
+    console.log(`[Upload] Transparency metadata:`, {
+      hasTransparency,
+      removeBackground,
+      processedPreview: !!processedPreview,
+      maskDataProcessed: !!(maskData && maskData.processedImage)
+    });
+    
     // Add background removal metadata for server-side logging with PNG-32 format info
     if (removeBackground && processedPreview) {
       formData.append('background_removed', 'true');
