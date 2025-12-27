@@ -49,11 +49,37 @@ api.interceptors.response.use(
       console.error('Request timeout after retries - API might be down');
     }
     
+    // Handle 401 Unauthorized - token expired or invalid
     if (error.response?.status === 401) {
+      console.error('❌ Authentication failed - token expired or invalid');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        // Show a user-friendly message
+        if (typeof window.toast !== 'undefined') {
+          window.toast?.error('Your session has expired. Please log in again.');
+        }
+        window.location.href = '/login?expired=true';
+      }
+    }
+    
+    // Handle 403 Forbidden - insufficient permissions or token issue
+    if (error.response?.status === 403) {
+      console.error('❌ Access forbidden - you may not have permission or your session expired');
+      const errorDetail = error.response?.data?.detail || '';
+      
+      // If it's an authorization error, might be expired token
+      if (errorDetail.toLowerCase().includes('not authorized') || 
+          errorDetail.toLowerCase().includes('permission')) {
+        console.warn('⚠️ Token may be expired - redirecting to login');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (typeof window !== 'undefined') {
+          if (typeof window.toast !== 'undefined') {
+            window.toast?.error('Your session has expired. Please log in again.');
+          }
+          window.location.href = '/login?expired=true';
+        }
       }
     }
     
