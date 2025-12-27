@@ -180,7 +180,7 @@ export default function Layout7({
             {/* Bride */}
             {bridePhoto && (
               <div className="space-y-8">
-                <div className="aspect-[3/4] overflow-hidden">
+                <div className="aspect-[3/4] relative">
                   <ExactFitPhotoFrame
                     src={bridePhoto.url}
                     maskUrl={borders?.bride}
@@ -198,7 +198,7 @@ export default function Layout7({
             {/* Groom */}
             {groomPhoto && (
               <div className="space-y-8 md:mt-20">
-                <div className="aspect-[3/4] overflow-hidden">
+                <div className="aspect-[3/4] relative">
                   <ExactFitPhotoFrame
                     src={groomPhoto.url}
                     maskUrl={borders?.groom}
