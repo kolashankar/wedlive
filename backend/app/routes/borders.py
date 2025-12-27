@@ -95,6 +95,8 @@ async def upload_border(
     supports_mirror: bool = Form(True),
     category: str = Form("border"),
     mask_slots_json: str = Form("[]"),  # Multiple masks for precious_moments
+    remove_background: bool = Form(False),  # NEW: Background removal flag
+    has_transparency: bool = Form(False),  # NEW: Transparency flag
     current_user: dict = Depends(get_current_admin),
     db = Depends(get_db_dependency)
 ):
