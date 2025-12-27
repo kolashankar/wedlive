@@ -135,11 +135,13 @@ export default function BorderStyleCustomizer({ weddingId, onStyleUpdate }) {
       case 'groom': return <User className="w-4 h-4" />;
       case 'couple': return <Users className="w-4 h-4" />;
       case 'precious_moments': return <Heart className="w-4 h-4" />;
+      case 'stream': return <Play className="w-4 h-4" />;  // FIX 5: Stream border icon
       default: return <Frame className="w-4 h-4" />;
     }
   };
 
   const getCategoryLabel = (category) => {
+    if (category === 'stream') return 'Stream Border';  // FIX 5: Stream border label
     return category.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
