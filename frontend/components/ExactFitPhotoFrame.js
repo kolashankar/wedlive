@@ -108,8 +108,7 @@ export default function ExactFitPhotoFrame({
         )}
       </div>
       
-      {/* Border Overlay - CRITICAL FIX: Extends 30% beyond container on all sides */}
-      {/* Uses COVER logic to fully cover placeholder with uniform overflow */}
+      {/* Border Overlay - Border stretches to fit placeholder + 5% extension on all sides */}
       {finalMaskUrl && (
         <img
           src={finalMaskUrl}
@@ -117,15 +116,16 @@ export default function ExactFitPhotoFrame({
           className="absolute pointer-events-none"
           style={{ 
             position: 'absolute',
-            // Border extends 30% beyond photo on all sides (COVER logic)
-            top: '-30%',
-            left: '-30%',
-            right: '-30%',
-            bottom: '-30%',
-            width: '160%',  // 30% + 100% + 30% = 160% total
-            height: '160%', // 30% + 100% + 30% = 160% total
-            // COVER logic: scales proportionally, covers all edges, allows cropping
-            objectFit: 'cover',
+            // Border extends 5% beyond photo on all sides
+            // Stretches automatically to match placeholder aspect ratio
+            top: '-5%',
+            left: '-5%',
+            right: '-5%',
+            bottom: '-5%',
+            width: '110%',  // 5% + 100% + 5% = 110% total
+            height: '110%', // 5% + 100% + 5% = 110% total
+            // FILL stretches border to fit dimensions (no aspect ratio preservation)
+            objectFit: 'fill',
             objectPosition: 'center',
             backgroundColor: 'transparent',
             pointerEvents: 'none',
