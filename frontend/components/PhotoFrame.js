@@ -264,34 +264,41 @@ export default function PhotoFrame({
       className={`photo-frame relative w-full ${className}`}
       style={getContainerStyle()}
     >
-      {/* Photo Layer - BACKGROUND layer (z-index: 1) - NO MASKING */}
-      {normalizedPhotoUrl && (
-        <img
-          src={normalizedPhotoUrl}
-          alt={alt}
-          className="absolute inset-0 w-full h-full"
-          style={{
-            // FIXED: Photo is BACKGROUND layer (z-index: 1)
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            // Ensure photo fills container completely
-            objectFit: 'cover',
-            objectPosition: position,
-            // Layer stacking - BACKGROUND layer (z-index: 1)
-            zIndex: 1,
-            // NO masking applied - photo fills entire container
-            // Border's transparent areas will reveal the photo naturally
-            // Performance optimizations
-            willChange: 'auto',
-            backfaceVisibility: 'hidden',
-          }}
-          onLoad={handlePhotoLoad}
-          onError={handlePhotoError}
-        />
-      )}
+      {/* Inner container for photo - clips photo to container bounds */}
+      <div 
+        className="absolute inset-0" 
+        style={{ 
+          overflow: 'hidden',
+          zIndex: 1,
+          backgroundColor: 'transparent',
+        }}
+      >
+        {/* Photo Layer - BACKGROUND layer fills container */}
+        {normalizedPhotoUrl && (
+          <img
+            src={normalizedPhotoUrl}
+            alt={alt}
+            className="absolute inset-0 w-full h-full"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              // Ensure photo fills container completely
+              objectFit: 'cover',
+              objectPosition: position,
+              // NO masking - photo fills entire container
+              // Border's transparent areas will reveal the photo
+              // Performance optimizations
+              willChange: 'auto',
+              backfaceVisibility: 'hidden',
+            }}
+            onLoad={handlePhotoLoad}
+            onError={handlePhotoError}
+          />
+        )}
+      </div>
       
       {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG/WebP */}
       {normalizedMaskUrl && (
