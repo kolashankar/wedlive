@@ -301,8 +301,7 @@ export default function PhotoFrame({
       </div>
       
       {/* Border Layer - FOREGROUND overlay (z-index: 2) - Transparent PNG overlay */}
-      {/* CRITICAL FIX: Border should FRAME the photo, not be contained inside it */}
-      {/* The border extends significantly beyond the photo to create decorative frame effect */}
+      {/* Border stretches automatically to fit placeholder + 5% extension on all sides */}
       {normalizedMaskUrl && (
         <img
           src={normalizedMaskUrl}
@@ -311,21 +310,19 @@ export default function PhotoFrame({
           style={{ 
             // Border is FOREGROUND transparent overlay (z-index: 2)
             position: 'absolute',
-            // CRITICAL FIX: Border extends 30% beyond photo on all sides to create proper decorative frame
-            // This allows floral/decorative borders to fully cover placeholder and overflow uniformly
-            // Using COVER logic: border scales proportionally and exceeds placeholder on all 4 sides
-            top: '-30%',
-            left: '-30%',
-            right: '-30%',
-            bottom: '-30%',
-            width: '160%',  // 30% on each side = 160% total (30% + 100% + 30%)
-            height: '160%', // 30% on each side = 160% total (30% + 100% + 30%)
+            // Border extends 5% beyond photo on all sides
+            // Stretches automatically to match placeholder aspect ratio
+            top: '-5%',
+            left: '-5%',
+            right: '-5%',
+            bottom: '-5%',
+            width: '110%',  // 5% + 100% + 5% = 110% total
+            height: '110%', // 5% + 100% + 5% = 110% total
             // Layer stacking - FOREGROUND overlay (z-index: 2)
             zIndex: 2,
-            // CRITICAL: COVER logic ensures border fully covers placeholder without distortion
-            // Border scales proportionally, covers all edges, allows cropping on overflow
-            // This prevents gaps on any side regardless of aspect ratio mismatch
-            objectFit: 'cover',
+            // CRITICAL: FILL stretches border to fit dimensions (no aspect ratio preservation)
+            // Border automatically stretches in width/height to match placeholder + 5% overflow
+            objectFit: 'fill',
             objectPosition: 'center',
             // CRITICAL: Prevent border from blocking interactions
             pointerEvents: 'none',
