@@ -217,16 +217,31 @@ async def upload_photo_to_placeholder(
                 }
             )
         
+        # CRITICAL: Validate file_id before saving to database
+        file_id = upload_result.get("file_id")
+        is_valid, error_msg = validate_and_log_file_id(file_id, context=f"layout_photo_{placeholder}")
+        if not is_valid:
+            logger.error(f"[LAYOUT_PHOTO_UPLOAD] Invalid file_id returned from Telegram: {error_msg}")
+            await cleanup_temp_file(temp_path)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": "Invalid file_id received from Telegram CDN",
+                    "details": error_msg,
+                    "file_id": file_id
+                }
+            )
+        
         # Step 7: Get CDN URL
-        photo_url = await telegram_service.get_file_url(upload_result["file_id"])
+        photo_url = await telegram_service.get_file_url(file_id)
         if not photo_url:
-            logger.error(f"[LAYOUT_PHOTO_UPLOAD] Failed to get CDN URL for file_id: {upload_result['file_id']}")
+            logger.error(f"[LAYOUT_PHOTO_UPLOAD] Failed to get CDN URL for file_id: {file_id}")
             await cleanup_temp_file(temp_path)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "error": "Failed to retrieve photo URL from CDN",
-                    "file_id": upload_result["file_id"]
+                    "file_id": file_id
                 }
             )
         
