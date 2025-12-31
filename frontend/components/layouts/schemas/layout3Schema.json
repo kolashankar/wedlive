@@ -1,0 +1,75 @@
+{
+  "layout_id": "layout_3",
+  "name": "Horizontal Timeline",
+  "description": "Interactive horizontal scrolling journey on desktop, beautiful vertical timeline on mobile. Tells a chronological love story.",
+  "version": "2.0",
+  "thumbnail": "/layout-previews/layout3.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Hero photo at start of timeline",
+        "supports_border": true,
+        "aspect_ratio": "portrait"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 10,
+        "description": "Photos scattered along the timeline",
+        "supports_border": true
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 50,
+        "description": "Opening tagline"
+      },
+      "description": {
+        "required": false,
+        "max_length": 400,
+        "description": "Love story narrative"
+      }
+    },
+    
+    "border_slots": {
+      "coupleBorder": {
+        "applies_to": ["couplePhoto"],
+        "required": false,
+        "description": "Border for hero photo"
+      },
+      "preciousMomentsBorder": {
+        "applies_to": ["preciousMoments"],
+        "required": false,
+        "description": "Border for timeline photos"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "Lato",
+      "description": "Primary font family"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#be185d",
+      "description": "Timeline connector color"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "horizontal_scroll_container",
+      "hero_section",
+      "story_card",
+      "moments_scattered",
+      "event_details_card",
+      "media_cta"
+    ]
+  }
+}

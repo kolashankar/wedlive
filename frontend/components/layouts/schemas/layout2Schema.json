@@ -1,0 +1,136 @@
+{
+  "layout_id": "layout_2",
+  "name": "Center Focus",
+  "description": "Large centered couple photo as hero with gallery below. Emphasizes the couple's unity.",
+  "version": "1.0",
+  "thumbnail": "/layout-previews/layout2.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Main couple photo (hero image)",
+        "supports_border": true,
+        "default_position": "center",
+        "aspect_ratio": "square"
+      },
+      "coverPhotos": {
+        "required": false,
+        "type": "array",
+        "max_count": 5,
+        "description": "Background carousel photos"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 20,
+        "description": "Gallery photos with precious moments",
+        "supports_border": true,
+        "layout_style": ["grid", "carousel"]
+      },
+      "studioImage": {
+        "required": false,
+        "description": "Studio partner logo/photo",
+        "supports_border": false
+      },
+      "streamImage": {
+        "required": false,
+        "description": "Live stream thumbnail"
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "YouTube embed URL for pre-wedding video",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 150,
+        "description": "Welcome greeting text"
+      },
+      "description": {
+        "required": false,
+        "max_length": 400,
+        "description": "Love story or event description"
+      }
+    },
+    
+    "studio_info": {
+      "studioName": {
+        "required": false,
+        "description": "Photography studio name"
+      },
+      "studioLogo": {
+        "required": false,
+        "description": "Studio logo URL"
+      },
+      "studioContact": {
+        "required": false,
+        "description": "Studio contact information"
+      }
+    },
+    
+    "backgrounds": {
+      "heroBackground": {
+        "required": false,
+        "description": "Hero section background image"
+      },
+      "liveBackground": {
+        "required": false,
+        "description": "Live streaming section background"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "Cormorant Garamond",
+      "description": "Primary font family"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#3b82f6",
+      "description": "Primary brand color (hex)"
+    },
+    "secondaryColor": {
+      "required": true,
+      "default": "#8b5cf6",
+      "description": "Secondary accent color (hex)"
+    }
+  },
+  
+  "border_slots": {
+    "coupleBorder": {
+      "applies_to": ["couplePhoto"],
+      "required": false,
+      "description": "Border style for couple photo"
+    },
+    "preciousMomentsBorder": {
+      "applies_to": ["preciousMoments"],
+      "required": false,
+      "description": "Border style for gallery photos"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "hero_center",
+      "couple_intro",
+      "event_details",
+      "precious_moments_gallery",
+      "live_stream",
+      "studio_details"
+    ],
+    "responsive_breakpoints": {
+      "mobile": "640px",
+      "tablet": "768px",
+      "desktop": "1024px"
+    }
+  }
+}

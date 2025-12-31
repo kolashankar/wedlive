@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>
+  <rect fill='#e0e7ff' width='400' height='300'/>
+  <text x='50%' y='45%' dominant-baseline='middle' text-anchor='middle' fill='#4338ca' font-size='28' font-family='Arial, sans-serif' font-weight='bold'>Layout 2</text>
+  <text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='#3730a3' font-size='16' font-family='Arial, sans-serif'>Modern Elegance</text>
+</svg>

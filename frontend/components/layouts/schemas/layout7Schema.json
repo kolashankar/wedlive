@@ -1,0 +1,83 @@
+{
+  "layout_id": "layout_7",
+  "name": "Editorial Grid",
+  "description": "Avant-garde broken grid layout. Asymmetrical image placement, sticky hero, brutalist typography, and museum-like aesthetic.",
+  "version": "2.0",
+  "thumbnail": "/layout-previews/layout7.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Sticky hero background image",
+        "supports_border": true,
+        "aspect_ratio": "portrait"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 8,
+        "description": "Asymmetrical gallery images",
+        "supports_border": true
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "Full-width motion picture",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 30,
+        "description": "Top corner label"
+      },
+      "description": {
+        "required": false,
+        "max_length": 600,
+        "description": "Exhibition note (main text)"
+      }
+    },
+    
+    "border_slots": {
+      "coupleBorder": {
+        "applies_to": ["couplePhoto"],
+        "required": false,
+        "description": "Border for hero image"
+      },
+      "preciousMomentsBorder": {
+        "applies_to": ["preciousMoments"],
+        "required": false,
+        "description": "Border for gallery images"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "Space Grotesk",
+      "description": "Primary font family (Sans Serif recommended)"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#000000",
+      "description": "Primary text color"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "sticky_parallax_hero",
+      "exhibition_intro",
+      "asymmetrical_gallery",
+      "brutalist_details",
+      "cinema_video",
+      "footer"
+    ]
+  }
+}

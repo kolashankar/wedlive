@@ -1,0 +1,97 @@
+{
+  "layout_id": "layout_8",
+  "name": "Zen Minimalist",
+  "description": "Ultra-minimalist vertical flow with maximum white space, large impactful typography, and single-column layout focused on essential elements.",
+  "version": "2.0",
+  "thumbnail": "/layout-previews/layout8.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Primary couple photo (full-width)",
+        "supports_border": true,
+        "aspect_ratio": "landscape"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 3,
+        "description": "Three-column minimal gallery (limited to 3)",
+        "supports_border": false,
+        "layout_style": ["three-column"]
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "YouTube embed URL for pre-wedding video",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 50,
+        "description": "Simple, elegant message"
+      },
+      "description": {
+        "required": false,
+        "max_length": 300,
+        "description": "Minimal love story"
+      }
+    },
+    
+    "studio_info": {
+      "studioName": {
+        "required": false,
+        "description": "Photography studio name"
+      }
+    },
+    
+    "border_slots": {
+      "coupleBorder": {
+        "applies_to": ["couplePhoto"],
+        "required": false,
+        "description": "Border style for couple photo"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "CINZEL",
+      "description": "Primary font family (serif recommended)"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#18181b",
+      "description": "Primary text color (dark recommended)"
+    },
+    "secondaryColor": {
+      "required": true,
+      "default": "#71717a",
+      "description": "Secondary text color (gray recommended)"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "hero_minimal",
+      "couple_photo_fullwidth",
+      "description_centered",
+      "event_details_vertical",
+      "precious_moments_three_column",
+      "video_story",
+      "studio_details_minimal"
+    ],
+    "responsive_breakpoints": {
+      "mobile": "640px",
+      "tablet": "768px",
+      "desktop": "1024px"
+    }
+  }
+}

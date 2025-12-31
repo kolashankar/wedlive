@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>
+  <rect fill='#dbeafe' width='400' height='300'/>
+  <text x='50%' y='45%' dominant-baseline='middle' text-anchor='middle' fill='#1e40af' font-size='28' font-family='Arial, sans-serif' font-weight='bold'>Layout 4</text>
+  <text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='#1e3a8a' font-size='16' font-family='Arial, sans-serif'>Ocean Blue</text>
+</svg>
