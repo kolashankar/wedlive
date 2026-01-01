@@ -1,4 +1,4 @@
-# WedLive - Wedding Event Management Platform
+## WedLive - Wedding Event Management Platform
 
 A full-stack wedding event management platform with live streaming capabilities.
 
