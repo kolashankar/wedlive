@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Save, Sparkles } from 'lucide-react';
 
 const ENDPOINT_OPTIONS = [
   { value: 'bride_name', label: "Bride's Name" },
@@ -31,19 +32,32 @@ const ENDPOINT_OPTIONS = [
 ];
 
 const ANIMATION_TYPES = [
-  { value: 'fade', label: 'Fade' },
+  { value: 'fade-in', label: 'Fade In' },
+  { value: 'fade-out', label: 'Fade Out' },
   { value: 'slide-up', label: 'Slide Up' },
   { value: 'slide-down', label: 'Slide Down' },
   { value: 'slide-left', label: 'Slide Left' },
   { value: 'slide-right', label: 'Slide Right' },
-  { value: 'scale', label: 'Scale' },
-  { value: 'zoom', label: 'Zoom' },
-  { value: 'bounce', label: 'Bounce' },
-  { value: 'rotate', label: 'Rotate' },
-  { value: 'typewriter', label: 'Typewriter' }
+  { value: 'scale-up', label: 'Scale Up' },
+  { value: 'scale-down', label: 'Scale Down' },
+  { value: 'zoom-in', label: 'Zoom In' },
+  { value: 'bounce-in', label: 'Bounce In' },
+  { value: 'bounce-out', label: 'Bounce Out' },
+  { value: 'rotate-in', label: 'Rotate In' },
+  { value: 'spin', label: 'Spin' },
+  { value: 'typewriter', label: 'Typewriter' },
+  { value: 'blur-in', label: 'Blur In' },
+  { value: 'blur-out', label: 'Blur Out' },
+  { value: 'fade-slide-up', label: 'Fade + Slide Up' },
+  { value: 'scale-fade', label: 'Scale + Fade' }
 ];
 
 const FONT_FAMILIES = [
+  'Playfair Display',
+  'Montserrat',
+  'Roboto',
+  'Open Sans',
+  'Lato',
   'Arial',
   'Helvetica',
   'Times New Roman',
@@ -53,13 +67,7 @@ const FONT_FAMILIES = [
   'Trebuchet MS',
   'Palatino',
   'Garamond',
-  'Comic Sans MS',
-  'Impact',
-  'Playfair Display',
-  'Montserrat',
-  'Roboto',
-  'Open Sans',
-  'Lato'
+  'Impact'
 ];
 
 const FONT_WEIGHTS = [
@@ -78,63 +86,83 @@ const TEXT_ALIGNMENTS = [
   { value: 'right', label: 'Right' }
 ];
 
-export default function OverlayConfigurator({ overlay, duration, currentTime, onUpdate, onSeek }) {
-  const [formData, setFormData] = useState({
-    endpoint_key: overlay?.endpoint_key || 'couple_names',
-    label: overlay?.label || 'Couple Names',
-    placeholder_text: overlay?.placeholder_text || 'Sample Text',
-    position: overlay?.position || { x: 960, y: 540, alignment: 'center', anchor_point: 'center' },
-    timing: overlay?.timing || { start_time: 0, end_time: duration || 10 },
-    styling: overlay?.styling || {
-      font_family: 'Arial',
-      font_size: 48,
-      font_weight: 'bold',
-      color: '#ffffff',
-      text_align: 'center',
-      text_shadow: '0 2px 4px rgba(0,0,0,0.3)'
-    },
-    animation: overlay?.animation || {
-      type: 'fade',
-      duration: 1.0,
-      easing: 'ease-in-out'
-    }
-  });
+const EASING_OPTIONS = [
+  { value: 'ease-in-out', label: 'Ease In-Out' },
+  { value: 'ease-in', label: 'Ease In' },
+  { value: 'ease-out', label: 'Ease Out' },
+  { value: 'linear', label: 'Linear' },
+  { value: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', label: 'Bounce' }
+];
 
-  useEffect(() => {
-    // Update form when overlay changes
-    if (overlay) {
-      setFormData({
-        endpoint_key: overlay.endpoint_key || 'couple_names',
-        label: overlay.label || 'Couple Names',
-        placeholder_text: overlay.placeholder_text || 'Sample Text',
-        position: overlay.position || { x: 960, y: 540, alignment: 'center', anchor_point: 'center' },
-        timing: overlay.timing || { start_time: 0, end_time: duration || 10 },
-        styling: overlay.styling || {
-          font_family: 'Arial',
-          font_size: 48,
-          font_weight: 'bold',
-          color: '#ffffff',
-          text_align: 'center',
-          text_shadow: '0 2px 4px rgba(0,0,0,0.3)'
+export default function OverlayConfigurator({ overlay, duration, currentTime, onUpdate, onSeek }) {
+  const [formData, setFormData] = useState(getDefaultFormData());
+
+  function getDefaultFormData() {
+    return {
+      endpoint_key: overlay?.endpoint_key || 'couple_names',
+      label: overlay?.label || 'Couple Names',
+      placeholder_text: overlay?.placeholder_text || 'Sample Text',
+      position: overlay?.position || { x: 960, y: 540, alignment: 'center', anchor_point: 'center' },
+      timing: overlay?.timing || { start_time: 0, end_time: duration || 10 },
+      styling: {
+        font_family: overlay?.styling?.font_family || 'Playfair Display',
+        font_size: overlay?.styling?.font_size || 72,
+        font_weight: overlay?.styling?.font_weight || 'bold',
+        color: overlay?.styling?.color || '#ffffff',
+        text_align: overlay?.styling?.text_align || 'center',
+        letter_spacing: overlay?.styling?.letter_spacing || 2,
+        line_height: overlay?.styling?.line_height || 1.2,
+        text_shadow: overlay?.styling?.text_shadow || '0 2px 4px rgba(0,0,0,0.3)',
+        stroke: overlay?.styling?.stroke || {
+          enabled: false,
+          color: '#000000',
+          width: 2
+        }
+      },
+      animation: {
+        type: overlay?.animation?.type || 'fade-in',
+        duration: overlay?.animation?.duration || 1.0,
+        easing: overlay?.animation?.easing || 'ease-in-out',
+        entrance: overlay?.animation?.entrance || {
+          type: 'fade-in',
+          duration: 1.0,
+          easing: 'ease-in-out'
         },
-        animation: overlay.animation || {
-          type: 'fade',
+        exit: overlay?.animation?.exit || {
+          type: 'fade-out',
           duration: 1.0,
           easing: 'ease-in-out'
         }
-      });
+      },
+      responsive: overlay?.responsive || {
+        mobile_font_size: 48,
+        mobile_position: { x: 50, y: 30, unit: 'percent' }
+      }
+    };
+  }
+
+  useEffect(() => {
+    if (overlay) {
+      setFormData(getDefaultFormData());
     }
   }, [overlay, duration]);
 
-  const handleUpdate = (field, value) => {
+  const handleUpdate = (path, value) => {
     setFormData(prev => {
       const updated = { ...prev };
-      if (field.includes('.')) {
-        const [parent, child] = field.split('.');
-        updated[parent] = { ...updated[parent], [child]: value };
-      } else {
-        updated[field] = value;
+      const keys = path.split('.');
+      let current = updated;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        } else {
+          current[keys[i]] = { ...current[keys[i]] };
+        }
+        current = current[keys[i]];
       }
+      
+      current[keys[keys.length - 1]] = value;
       return updated;
     });
   };
@@ -146,7 +174,10 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold">Configure Overlay</h3>
+        <h3 className="font-semibold flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-blue-500" />
+          Configure Overlay
+        </h3>
         <Button size="sm" onClick={handleSave} data-testid="save-overlay-btn">
           <Save className="w-4 h-4" />
         </Button>
@@ -156,15 +187,15 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
         <Tabs defaultValue="content" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="content">Content</TabsTrigger>
-            <TabsTrigger value="position">Position</TabsTrigger>
-            <TabsTrigger value="timing">Timing</TabsTrigger>
             <TabsTrigger value="style">Style</TabsTrigger>
+            <TabsTrigger value="timing">Timing</TabsTrigger>
+            <TabsTrigger value="animation">Animation</TabsTrigger>
           </TabsList>
 
           {/* Content Tab */}
-          <TabsContent value="content" className="space-y-4">
+          <TabsContent value="content" className="space-y-4 mt-4">
             <div>
-              <Label>Data Endpoint</Label>
+              <Label>Data Source</Label>
               <Select
                 value={formData.endpoint_key}
                 onValueChange={(value) => {
@@ -189,7 +220,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
             </div>
 
             <div>
-              <Label>Placeholder Text</Label>
+              <Label>Preview Text</Label>
               <Input
                 value={formData.placeholder_text}
                 onChange={(e) => handleUpdate('placeholder_text', e.target.value)}
@@ -198,143 +229,42 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 data-testid="placeholder-text-input"
               />
               <p className="text-xs text-gray-500 mt-1">
-                This text will be shown in preview. Real data will be populated from wedding details.
+                This text will be shown in preview. Real wedding data will populate automatically.
               </p>
             </div>
-          </TabsContent>
-
-          {/* Position Tab */}
-          <TabsContent value="position" className="space-y-4">
-            <div>
-              <Label>X Position (px)</Label>
-              <Input
-                type="number"
-                value={formData.position.x}
-                onChange={(e) => handleUpdate('position.x', parseInt(e.target.value) || 0)}
-                className="mt-1"
-                data-testid="position-x-input"
-              />
-            </div>
 
             <div>
-              <Label>Y Position (px)</Label>
-              <Input
-                type="number"
-                value={formData.position.y}
-                onChange={(e) => handleUpdate('position.y', parseInt(e.target.value) || 0)}
-                className="mt-1"
-                data-testid="position-y-input"
-              />
-            </div>
-
-            <div>
-              <Label>Alignment</Label>
-              <Select
-                value={formData.styling.text_align}
-                onValueChange={(value) => handleUpdate('styling.text_align', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TEXT_ALIGNMENTS.map(align => (
-                    <SelectItem key={align.value} value={align.value}>
-                      {align.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-xs text-blue-900">
-                <strong>Tip:</strong> Video dimensions are 1920x1080. Center is at (960, 540).
+              <Label>Position</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <div>
+                  <Label className="text-xs">X (px)</Label>
+                  <Input
+                    type="number"
+                    value={formData.position.x}
+                    onChange={(e) => handleUpdate('position.x', parseInt(e.target.value) || 0)}
+                    className="mt-1"
+                    data-testid="position-x-input"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Y (px)</Label>
+                  <Input
+                    type="number"
+                    value={formData.position.y}
+                    onChange={(e) => handleUpdate('position.y', parseInt(e.target.value) || 0)}
+                    className="mt-1"
+                    data-testid="position-y-input"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Video size: 1920x1080, Center: (960, 540)
               </p>
-            </div>
-          </TabsContent>
-
-          {/* Timing Tab */}
-          <TabsContent value="timing" className="space-y-4">
-            <div>
-              <Label>Start Time: {formatTime(formData.timing.start_time)}</Label>
-              <Slider
-                value={[formData.timing.start_time]}
-                onValueChange={([value]) => handleUpdate('timing.start_time', value)}
-                max={duration || 100}
-                step={0.1}
-                className="mt-2"
-                data-testid="start-time-slider"
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  handleUpdate('timing.start_time', currentTime);
-                  onSeek(currentTime);
-                }}
-                className="mt-2 w-full"
-              >
-                Set to Current Time
-              </Button>
-            </div>
-
-            <div>
-              <Label>End Time: {formatTime(formData.timing.end_time)}</Label>
-              <Slider
-                value={[formData.timing.end_time]}
-                onValueChange={([value]) => handleUpdate('timing.end_time', value)}
-                max={duration || 100}
-                step={0.1}
-                className="mt-2"
-                data-testid="end-time-slider"
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  handleUpdate('timing.end_time', currentTime);
-                  onSeek(currentTime);
-                }}
-                className="mt-2 w-full"
-              >
-                Set to Current Time
-              </Button>
-            </div>
-
-            <div>
-              <Label>Animation Type</Label>
-              <Select
-                value={formData.animation.type}
-                onValueChange={(value) => handleUpdate('animation.type', value)}
-              >
-                <SelectTrigger className="mt-1" data-testid="animation-type-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ANIMATION_TYPES.map(anim => (
-                    <SelectItem key={anim.value} value={anim.value}>
-                      {anim.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Animation Duration: {formData.animation.duration}s</Label>
-              <Slider
-                value={[formData.animation.duration]}
-                onValueChange={([value]) => handleUpdate('animation.duration', value)}
-                min={0.1}
-                max={5}
-                step={0.1}
-                className="mt-2"
-              />
             </div>
           </TabsContent>
 
           {/* Style Tab */}
-          <TabsContent value="style" className="space-y-4">
+          <TabsContent value="style" className="space-y-4 mt-4">
             <div>
               <Label>Font Family</Label>
               <Select
@@ -404,6 +334,266 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                   className="flex-1"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label>Text Alignment</Label>
+              <Select
+                value={formData.styling.text_align}
+                onValueChange={(value) => handleUpdate('styling.text_align', value)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TEXT_ALIGNMENTS.map(align => (
+                    <SelectItem key={align.value} value={align.value}>
+                      {align.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Letter Spacing: {formData.styling.letter_spacing}px</Label>
+              <Slider
+                value={[formData.styling.letter_spacing]}
+                onValueChange={([value]) => handleUpdate('styling.letter_spacing', value)}
+                min={0}
+                max={20}
+                step={1}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Line Height: {formData.styling.line_height}</Label>
+              <Slider
+                value={[formData.styling.line_height]}
+                onValueChange={([value]) => handleUpdate('styling.line_height', value)}
+                min={0.8}
+                max={3.0}
+                step={0.1}
+                className="mt-2"
+              />
+            </div>
+
+            {/* Text Stroke */}
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <Label>Text Stroke/Outline</Label>
+                <Switch
+                  checked={formData.styling.stroke.enabled}
+                  onCheckedChange={(checked) => handleUpdate('styling.stroke.enabled', checked)}
+                  data-testid="stroke-enabled-switch"
+                />
+              </div>
+              
+              {formData.styling.stroke.enabled && (
+                <div className="space-y-3 pl-4 border-l-2 border-blue-200">
+                  <div>
+                    <Label className="text-xs">Stroke Color</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        type="color"
+                        value={formData.styling.stroke.color}
+                        onChange={(e) => handleUpdate('styling.stroke.color', e.target.value)}
+                        className="w-16 h-8 p-1"
+                      />
+                      <Input
+                        type="text"
+                        value={formData.styling.stroke.color}
+                        onChange={(e) => handleUpdate('styling.stroke.color', e.target.value)}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Stroke Width: {formData.styling.stroke.width}px</Label>
+                    <Slider
+                      value={[formData.styling.stroke.width]}
+                      onValueChange={([value]) => handleUpdate('styling.stroke.width', value)}
+                      min={1}
+                      max={10}
+                      step={1}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Timing Tab */}
+          <TabsContent value="timing" className="space-y-4 mt-4">
+            <div>
+              <Label>Start Time: {formatTime(formData.timing.start_time)}</Label>
+              <Slider
+                value={[formData.timing.start_time]}
+                onValueChange={([value]) => handleUpdate('timing.start_time', value)}
+                max={duration || 100}
+                step={0.1}
+                className="mt-2"
+                data-testid="start-time-slider"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  handleUpdate('timing.start_time', currentTime);
+                  onSeek(currentTime);
+                }}
+                className="mt-2 w-full"
+              >
+                Set to Current Time ({formatTime(currentTime)})
+              </Button>
+            </div>
+
+            <div>
+              <Label>End Time: {formatTime(formData.timing.end_time)}</Label>
+              <Slider
+                value={[formData.timing.end_time]}
+                onValueChange={([value]) => handleUpdate('timing.end_time', value)}
+                max={duration || 100}
+                step={0.1}
+                className="mt-2"
+                data-testid="end-time-slider"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  handleUpdate('timing.end_time', currentTime);
+                  onSeek(currentTime);
+                }}
+                className="mt-2 w-full"
+              >
+                Set to Current Time ({formatTime(currentTime)})
+              </Button>
+            </div>
+
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs text-blue-900">
+                <strong>Duration:</strong> {formatTime(formData.timing.end_time - formData.timing.start_time)}
+              </p>
+            </div>
+          </TabsContent>
+
+          {/* Animation Tab */}
+          <TabsContent value="animation" className="space-y-4 mt-4">
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Entrance Animation</h4>
+              
+              <div>
+                <Label>Animation Type</Label>
+                <Select
+                  value={formData.animation.entrance.type}
+                  onValueChange={(value) => handleUpdate('animation.entrance.type', value)}
+                >
+                  <SelectTrigger className="mt-1" data-testid="entrance-animation-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ANIMATION_TYPES.map(anim => (
+                      <SelectItem key={anim.value} value={anim.value}>
+                        {anim.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Duration: {formData.animation.entrance.duration}s</Label>
+                <Slider
+                  value={[formData.animation.entrance.duration]}
+                  onValueChange={([value]) => handleUpdate('animation.entrance.duration', value)}
+                  min={0.1}
+                  max={5}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label>Easing</Label>
+                <Select
+                  value={formData.animation.entrance.easing}
+                  onValueChange={(value) => handleUpdate('animation.entrance.easing', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EASING_OPTIONS.map(easing => (
+                      <SelectItem key={easing.value} value={easing.value}>
+                        {easing.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
+              <h4 className="font-medium text-sm">Exit Animation</h4>
+              
+              <div>
+                <Label>Animation Type</Label>
+                <Select
+                  value={formData.animation.exit.type}
+                  onValueChange={(value) => handleUpdate('animation.exit.type', value)}
+                >
+                  <SelectTrigger className="mt-1" data-testid="exit-animation-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ANIMATION_TYPES.map(anim => (
+                      <SelectItem key={anim.value} value={anim.value}>
+                        {anim.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Duration: {formData.animation.exit.duration}s</Label>
+                <Slider
+                  value={[formData.animation.exit.duration]}
+                  onValueChange={([value]) => handleUpdate('animation.exit.duration', value)}
+                  min={0.1}
+                  max={5}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label>Easing</Label>
+                <Select
+                  value={formData.animation.exit.easing}
+                  onValueChange={(value) => handleUpdate('animation.exit.easing', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EASING_OPTIONS.map(easing => (
+                      <SelectItem key={easing.value} value={easing.value}>
+                        {easing.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <p className="text-xs text-purple-900">
+                <strong>Tip:</strong> Entrance plays when text appears, exit when it disappears
+              </p>
             </div>
           </TabsContent>
         </Tabs>
