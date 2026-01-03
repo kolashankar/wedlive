@@ -440,6 +440,15 @@ export default function TemplateEditor({ template, onSave }) {
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => setGridSnap(!gridSnap)}
+                  data-testid="toggle-grid-snap-btn"
+                  className={gridSnap ? 'bg-blue-100' : ''}
+                >
+                  Grid Snap {gridSnap ? 'ON' : 'OFF'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setShowOverlays(!showOverlays)}
                   data-testid="toggle-overlays-btn"
                 >
@@ -457,8 +466,8 @@ export default function TemplateEditor({ template, onSave }) {
               </div>
             </div>
 
-            {/* Video with Canvas Overlay */}
-            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+            {/* Video with Interactive Canvas Overlay */}
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden" ref={videoContainerRef}>
               <ReactPlayer
                 ref={playerRef}
                 url={template?.video_data?.original_url}
@@ -471,12 +480,15 @@ export default function TemplateEditor({ template, onSave }) {
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
               />
-              <canvas
-                ref={canvasRef}
-                width={1920}
-                height={1080}
-                className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                style={{ display: showOverlays ? 'block' : 'none' }}
+              <InteractiveOverlayCanvas
+                overlays={overlays}
+                currentTime={currentTime}
+                duration={duration}
+                selectedOverlay={selectedOverlay}
+                showOverlays={showOverlays}
+                onSelectOverlay={setSelectedOverlay}
+                onUpdateOverlay={handleUpdateOverlay}
+                containerRef={videoContainerRef}
               />
             </div>
 
