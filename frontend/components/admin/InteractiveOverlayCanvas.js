@@ -167,20 +167,38 @@ export default function InteractiveOverlayCanvas({
     const fontSize = styling.font_size || 48;
     const fontWeight = styling.font_weight || 'normal';
     const fontFamily = styling.font_family || 'Arial';
+    const letterSpacing = styling.letter_spacing || 0;
+    const lineHeight = styling.line_height || 1.2;
+    
     ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
     ctx.fillStyle = styling.color || '#ffffff';
     ctx.textAlign = styling.text_align || 'center';
     ctx.textBaseline = 'middle';
 
-    // Calculate animation progress
-    const progress = calculateAnimationProgress(overlay, currentTime);
-    ctx.globalAlpha = progress;
+    // Calculate animation progress and transformations
+    const animState = calculateAnimationState(overlay, currentTime);
+    
+    // Save context for transformations
+    ctx.save();
+    
+    // Apply animation transformations
+    ctx.translate(position.x, position.y);
+    ctx.globalAlpha = animState.opacity;
+    ctx.scale(animState.scale, animState.scale);
+    ctx.rotate(animState.rotation);
+    ctx.translate(animState.translateX, animState.translateY);
 
     // Apply stroke if enabled
     if (styling.stroke?.enabled) {
       ctx.strokeStyle = styling.stroke.color || '#000000';
       ctx.lineWidth = styling.stroke.width || 2;
-      ctx.strokeText(text, position.x, position.y);
+      
+      // Apply letter spacing for stroke
+      if (letterSpacing > 0) {
+        renderTextWithLetterSpacing(ctx, text, 0, 0, letterSpacing, true);
+      } else {
+        ctx.strokeText(text, 0, 0);
+      }
     }
 
     // Add text shadow
@@ -191,12 +209,42 @@ export default function InteractiveOverlayCanvas({
       ctx.shadowOffsetY = 2;
     }
 
-    // Render text
-    ctx.fillText(text, position.x, position.y);
+    // Render text with letter spacing
+    if (letterSpacing > 0) {
+      renderTextWithLetterSpacing(ctx, text, 0, 0, letterSpacing, false);
+    } else {
+      ctx.fillText(text, 0, 0);
+    }
 
     // Reset
-    ctx.shadowColor = 'transparent';
-    ctx.globalAlpha = 1;
+    ctx.restore();
+  };
+
+  const renderTextWithLetterSpacing = (ctx, text, x, y, spacing, isStroke) => {
+    const chars = text.split('');
+    let currentX = x;
+    
+    // Calculate total width for alignment
+    const totalWidth = chars.reduce((width, char) => {
+      return width + ctx.measureText(char).width + spacing;
+    }, -spacing);
+    
+    // Adjust starting position based on text align
+    if (ctx.textAlign === 'center') {
+      currentX = x - totalWidth / 2;
+    } else if (ctx.textAlign === 'right') {
+      currentX = x - totalWidth;
+    }
+    
+    // Render each character
+    chars.forEach((char) => {
+      if (isStroke) {
+        ctx.strokeText(char, currentX, y);
+      } else {
+        ctx.fillText(char, currentX, y);
+      }
+      currentX += ctx.measureText(char).width + spacing;
+    });
   };
 
   const renderSelectionBox = (ctx, overlay) => {
