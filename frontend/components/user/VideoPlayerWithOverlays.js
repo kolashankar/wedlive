@@ -14,10 +14,27 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
   const [duration, setDuration] = useState(0);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(0.8);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Load custom fonts
+  useEffect(() => {
+    loadCustomFonts();
+  }, [overlays]);
 
   useEffect(() => {
     renderOverlays();
-  }, [currentTime, overlays]);
+  }, [currentTime, overlays, fontsLoaded, isMobile]);
 
   const renderOverlays = () => {
     const canvas = canvasRef.current;
