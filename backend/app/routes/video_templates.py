@@ -1,0 +1,872 @@
+"""
+Video Template Routes
+Handles video template creation, management, and assignment
+"""
+from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form
+from app.models_video_templates import (
+    VideoTemplate, VideoTemplateCreate, VideoTemplateUpdate,
+    TextOverlay, TextOverlayCreate, TextOverlayUpdate,
+    WeddingTemplateAssignment, TemplateAssignmentCreate,
+    TemplatePreviewRequest, VideoData, PreviewThumbnail, TemplateMetadata
+)
+from app.auth import get_current_admin, get_current_user
+from app.database import get_db, get_db_dependency
+from app.services.telegram_service import TelegramCDNService
+from app.services.video_processing_service import VideoProcessingService
+from app.services.wedding_data_mapper import WeddingDataMapper
+from typing import List, Optional
+from datetime import datetime
+import uuid
+import os
+import logging
+import tempfile
+import aiofiles
+import json
+
+logger = logging.getLogger(__name__)
+router = APIRouter()
+telegram_service = TelegramCDNService()
+video_service = VideoProcessingService()
+wedding_mapper = WeddingDataMapper()
+
+# Maximum file size: 50MB
+MAX_VIDEO_SIZE = 50 * 1024 * 1024
+
+
+async def validate_and_save_video(file: UploadFile, max_size: int = MAX_VIDEO_SIZE) -> str:
+    """
+    Validate video file and save to temp location
+    Returns: temp file path
+    """
+    # Check file size
+    file_content = await file.read()
+    if len(file_content) > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File size exceeds {max_size / (1024*1024)}MB limit"
+        )
+    
+    # Validate video format
+    if not file.content_type or not file.content_type.startswith('video/'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only video files are allowed"
+        )
+    
+    # Save to temp file
+    file_ext = os.path.splitext(file.filename)[1] or '.mp4'
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_ext)
+    
+    async with aiofiles.open(temp_file.name, 'wb') as f:
+        await f.write(file_content)
+    
+    return temp_file.name
+
+
+# ==================== ADMIN ENDPOINTS ====================
+
+@router.post("/admin/video-templates/upload", response_model=VideoTemplate)
+async def upload_video_template(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    description: str = Form(""),
+    category: str = Form("general"),
+    tags: str = Form(""),
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Upload a video template (Admin only)
+    Step 1: Upload video and generate thumbnail
+    Step 2: Configure overlays in separate endpoint
+    """
+    temp_video_path = None
+    temp_thumb_path = None
+    
+    try:
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Starting upload: {name}")
+        
+        # Validate and save video file
+        temp_video_path = await validate_and_save_video(file)
+        
+        # Validate video using FFmpeg
+        validation_result = await video_service.validate_video(temp_video_path)
+        
+        if not validation_result.get("valid"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=validation_result.get("error", "Invalid video file")
+            )
+        
+        metadata = validation_result["metadata"]
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Video validated: {metadata}")
+        
+        # Generate thumbnail
+        temp_thumb_path = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg').name
+        thumb_result = await video_service.generate_thumbnail(
+            temp_video_path,
+            temp_thumb_path,
+            timestamp=1.0
+        )
+        
+        if not thumb_result.get("success"):
+            logger.warning(f"[VIDEO_TEMPLATE_UPLOAD] Thumbnail generation failed: {thumb_result.get('error')}")
+        
+        # Upload video to Telegram CDN
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Uploading video to Telegram CDN...")
+        video_upload_result = await telegram_service.upload_video(
+            file_path=temp_video_path,
+            caption=f"Template: {name}",
+            wedding_id="video_templates",
+            thumb_path=temp_thumb_path if thumb_result.get("success") else None
+        )
+        
+        if not video_upload_result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to upload video: {video_upload_result.get('error')}"
+            )
+        
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Video uploaded successfully")
+        
+        # Upload thumbnail to Telegram CDN
+        thumbnail_data = None
+        if thumb_result.get("success"):
+            thumb_upload_result = await telegram_service.upload_photo(
+                file_path=temp_thumb_path,
+                caption=f"Thumbnail: {name}",
+                wedding_id="video_templates"
+            )
+            
+            if thumb_upload_result.get("success"):
+                thumbnail_data = PreviewThumbnail(
+                    url=thumb_upload_result["cdn_url"],
+                    telegram_file_id=thumb_upload_result["file_id"]
+                )
+                logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Thumbnail uploaded successfully")
+        
+        # Parse tags
+        tags_list = [tag.strip() for tag in tags.split(",") if tag.strip()]
+        
+        # Create template document
+        template_id = str(uuid.uuid4())
+        
+        video_data = VideoData(
+            original_url=video_upload_result["cdn_url"],
+            telegram_file_id=video_upload_result["file_id"],
+            duration_seconds=metadata["duration"],
+            width=metadata["width"],
+            height=metadata["height"],
+            format=metadata["format"],
+            file_size_mb=metadata["file_size_mb"]
+        )
+        
+        template_metadata = TemplateMetadata(
+            created_by=current_user["user_id"],
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        
+        template = VideoTemplate(
+            id=template_id,
+            name=name,
+            description=description,
+            category=category,
+            tags=tags_list,
+            video_data=video_data,
+            preview_thumbnail=thumbnail_data,
+            text_overlays=[],
+            metadata=template_metadata
+        )
+        
+        # Save to database
+        await db.video_templates.insert_one(template.dict())
+        
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Template created successfully: {template_id}")
+        return template
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[VIDEO_TEMPLATE_UPLOAD] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload template: {str(e)}"
+        )
+    finally:
+        # Cleanup temp files
+        if temp_video_path and os.path.exists(temp_video_path):
+            os.unlink(temp_video_path)
+        if temp_thumb_path and os.path.exists(temp_thumb_path):
+            os.unlink(temp_thumb_path)
+
+
+@router.post("/admin/video-templates/{template_id}/overlays", response_model=VideoTemplate)
+async def add_text_overlay(
+    template_id: str,
+    overlay: TextOverlayCreate,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Add text overlay to video template
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Create overlay with unique ID
+        overlay_id = str(uuid.uuid4())
+        new_overlay = TextOverlay(
+            id=overlay_id,
+            **overlay.dict()
+        )
+        
+        # Add to template
+        overlays = template.get("text_overlays", [])
+        overlays.append(new_overlay.dict())
+        
+        # Update template
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    "text_overlays": overlays,
+                    "metadata.updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Return updated template
+        updated_template = await db.video_templates.find_one({"id": template_id})
+        return VideoTemplate(**updated_template)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[ADD_OVERLAY] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to add overlay: {str(e)}"
+        )
+
+
+@router.get("/admin/video-templates", response_model=List[VideoTemplate])
+async def list_video_templates_admin(
+    current_user: dict = Depends(get_current_admin),
+    skip: int = 0,
+    limit: int = 50,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    db = Depends(get_db_dependency)
+):
+    """
+    List all video templates (Admin only)
+    """
+    try:
+        # Build query
+        query = {}
+        
+        if category:
+            query["category"] = category
+        
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"description": {"$regex": search, "$options": "i"}},
+                {"tags": {"$regex": search, "$options": "i"}}
+            ]
+        
+        # Get templates
+        cursor = db.video_templates.find(query).sort("metadata.created_at", -1).skip(skip).limit(limit)
+        templates = await cursor.to_list(length=limit)
+        
+        return [VideoTemplate(**template) for template in templates]
+        
+    except Exception as e:
+        logger.error(f"[LIST_TEMPLATES_ADMIN] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list templates"
+        )
+
+
+@router.put("/admin/video-templates/{template_id}", response_model=VideoTemplate)
+async def update_video_template(
+    template_id: str,
+    update_data: VideoTemplateUpdate,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Update video template metadata
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Build update document
+        update_doc = {"metadata.updated_at": datetime.utcnow()}
+        
+        if update_data.name is not None:
+            update_doc["name"] = update_data.name
+        if update_data.description is not None:
+            update_doc["description"] = update_data.description
+        if update_data.category is not None:
+            update_doc["category"] = update_data.category
+        if update_data.tags is not None:
+            update_doc["tags"] = update_data.tags
+        if update_data.is_featured is not None:
+            update_doc["metadata.is_featured"] = update_data.is_featured
+        if update_data.is_active is not None:
+            update_doc["metadata.is_active"] = update_data.is_active
+        
+        # Update template
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {"$set": update_doc}
+        )
+        
+        # Return updated template
+        updated_template = await db.video_templates.find_one({"id": template_id})
+        return VideoTemplate(**updated_template)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[UPDATE_TEMPLATE] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update template"
+        )
+
+
+@router.delete("/admin/video-templates/{template_id}")
+async def delete_video_template(
+    template_id: str,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Delete video template
+    """
+    try:
+        result = await db.video_templates.delete_one({"id": template_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Also delete any assignments
+        await db.wedding_template_assignments.delete_many({"template_id": template_id})
+        
+        return {"success": True, "message": "Template deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[DELETE_TEMPLATE] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete template"
+        )
+
+
+@router.put("/admin/video-templates/{template_id}/overlays/{overlay_id}", response_model=VideoTemplate)
+async def update_text_overlay(
+    template_id: str,
+    overlay_id: str,
+    update_data: TextOverlayUpdate,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Update specific text overlay
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Find and update overlay
+        overlays = template.get("text_overlays", [])
+        overlay_found = False
+        
+        for i, overlay in enumerate(overlays):
+            if overlay.get("id") == overlay_id:
+                overlay_found = True
+                # Update fields
+                update_dict = update_data.dict(exclude_unset=True)
+                overlays[i].update(update_dict)
+                break
+        
+        if not overlay_found:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Overlay not found"
+            )
+        
+        # Update template
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    "text_overlays": overlays,
+                    "metadata.updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Return updated template
+        updated_template = await db.video_templates.find_one({"id": template_id})
+        return VideoTemplate(**updated_template)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[UPDATE_OVERLAY] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update overlay"
+        )
+
+
+@router.delete("/admin/video-templates/{template_id}/overlays/{overlay_id}", response_model=VideoTemplate)
+async def delete_text_overlay(
+    template_id: str,
+    overlay_id: str,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Delete specific text overlay
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Remove overlay
+        overlays = template.get("text_overlays", [])
+        overlays = [o for o in overlays if o.get("id") != overlay_id]
+        
+        # Update template
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    "text_overlays": overlays,
+                    "metadata.updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Return updated template
+        updated_template = await db.video_templates.find_one({"id": template_id})
+        return VideoTemplate(**updated_template)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[DELETE_OVERLAY] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete overlay"
+        )
+
+
+@router.put("/admin/video-templates/{template_id}/overlays/reorder")
+async def reorder_overlays(
+    template_id: str,
+    overlay_ids: List[str],
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Reorder text overlays
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Create ordered overlay list
+        overlays = template.get("text_overlays", [])
+        overlay_map = {o["id"]: o for o in overlays}
+        
+        reordered_overlays = []
+        for idx, overlay_id in enumerate(overlay_ids):
+            if overlay_id in overlay_map:
+                overlay = overlay_map[overlay_id]
+                overlay["layer_index"] = idx
+                reordered_overlays.append(overlay)
+        
+        # Update template
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    "text_overlays": reordered_overlays,
+                    "metadata.updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {"success": True, "message": "Overlays reordered successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[REORDER_OVERLAYS] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reorder overlays"
+        )
+
+
+# ==================== USER ENDPOINTS ====================
+
+@router.get("/video-templates", response_model=List[VideoTemplate])
+async def list_video_templates(
+    skip: int = 0,
+    limit: int = 50,
+    category: Optional[str] = None,
+    featured: Optional[bool] = None,
+    db = Depends(get_db_dependency)
+):
+    """
+    List available video templates (Public access)
+    """
+    try:
+        # Build query - only show active templates
+        query = {"metadata.is_active": True}
+        
+        if category:
+            query["category"] = category
+        
+        if featured is not None:
+            query["metadata.is_featured"] = featured
+        
+        # Get templates
+        cursor = db.video_templates.find(query).sort("metadata.created_at", -1).skip(skip).limit(limit)
+        templates = await cursor.to_list(length=limit)
+        
+        return [VideoTemplate(**template) for template in templates]
+        
+    except Exception as e:
+        logger.error(f"[LIST_TEMPLATES] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list templates"
+        )
+
+
+@router.get("/video-templates/{template_id}", response_model=VideoTemplate)
+async def get_video_template(
+    template_id: str,
+    db = Depends(get_db_dependency)
+):
+    """
+    Get video template details (Public access)
+    """
+    try:
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        return VideoTemplate(**template)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[GET_TEMPLATE] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get template"
+        )
+
+
+@router.post("/weddings/{wedding_id}/assign-template")
+async def assign_template_to_wedding(
+    wedding_id: str,
+    assignment: TemplateAssignmentCreate,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Assign video template to wedding
+    """
+    try:
+        # Verify wedding exists and user owns it
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        if wedding.get("creator_id") != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Verify template exists
+        template = await db.video_templates.find_one({"id": assignment.template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Check if assignment already exists
+        existing = await db.wedding_template_assignments.find_one({
+            "wedding_id": wedding_id,
+            "slot": assignment.slot
+        })
+        
+        if existing:
+            # Update existing assignment
+            await db.wedding_template_assignments.update_one(
+                {"id": existing["id"]},
+                {
+                    "$set": {
+                        "template_id": assignment.template_id,
+                        "customizations": assignment.customizations,
+                        "assigned_at": datetime.utcnow()
+                    }
+                }
+            )
+            assignment_id = existing["id"]
+        else:
+            # Create new assignment
+            assignment_id = str(uuid.uuid4())
+            assignment_doc = WeddingTemplateAssignment(
+                id=assignment_id,
+                wedding_id=wedding_id,
+                template_id=assignment.template_id,
+                slot=assignment.slot,
+                customizations=assignment.customizations,
+                assigned_at=datetime.utcnow()
+            )
+            await db.wedding_template_assignments.insert_one(assignment_doc.dict())
+        
+        # Increment template usage count
+        await db.video_templates.update_one(
+            {"id": assignment.template_id},
+            {"$inc": {"metadata.usage_count": 1}}
+        )
+        
+        return {
+            "success": True,
+            "assignment_id": assignment_id,
+            "message": "Template assigned successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[ASSIGN_TEMPLATE] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to assign template"
+        )
+
+
+@router.get("/weddings/{wedding_id}/template-assignment")
+async def get_wedding_template_assignment(
+    wedding_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Get template assignment for wedding with populated data
+    """
+    try:
+        # Get assignment
+        assignment = await db.wedding_template_assignments.find_one({"wedding_id": wedding_id})
+        if not assignment:
+            return {"assignment": None, "populated_overlays": []}
+        
+        # Get template
+        template = await db.video_templates.find_one({"id": assignment["template_id"]})
+        if not template:
+            return {"assignment": None, "populated_overlays": []}
+        
+        # Get wedding data
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Map wedding data
+        wedding_data = wedding_mapper.map_wedding_data(wedding)
+        
+        # Populate overlays
+        populated_overlays = []
+        for overlay in template.get("text_overlays", []):
+            text_value = wedding_mapper.populate_overlay_text(overlay, wedding_data)
+            populated_overlays.append({
+                **overlay,
+                "text_value": text_value
+            })
+        
+        return {
+            "assignment_id": assignment["id"],
+            "template": VideoTemplate(**template),
+            "populated_overlays": populated_overlays,
+            "customizations": assignment.get("customizations", {})
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[GET_ASSIGNMENT] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get assignment"
+        )
+
+
+@router.post("/video-templates/{template_id}/preview")
+async def preview_template_with_wedding_data(
+    template_id: str,
+    preview_request: TemplatePreviewRequest,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Preview template with wedding data populated
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Get wedding data
+        wedding = await db.weddings.find_one({"id": preview_request.wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Map wedding data
+        wedding_data = wedding_mapper.map_wedding_data(wedding)
+        
+        # Populate overlays
+        populated_overlays = []
+        for overlay in template.get("text_overlays", []):
+            text_value = wedding_mapper.populate_overlay_text(overlay, wedding_data)
+            populated_overlays.append({
+                **overlay,
+                "text": text_value
+            })
+        
+        return {
+            "preview_data": {
+                "video_url": template["video_data"]["original_url"],
+                "duration": template["video_data"]["duration_seconds"],
+                "overlays": populated_overlays
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[PREVIEW_TEMPLATE] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to preview template"
+        )
+
+
+@router.delete("/weddings/{wedding_id}/template-assignment")
+async def remove_template_from_wedding(
+    wedding_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Remove template assignment from wedding
+    """
+    try:
+        # Verify wedding ownership
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        if wedding.get("creator_id") != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Delete assignment
+        result = await db.wedding_template_assignments.delete_one({"wedding_id": wedding_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No template assignment found"
+            )
+        
+        return {"success": True, "message": "Template removed successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[REMOVE_TEMPLATE] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to remove template"
+        )
+
+
+# ==================== UTILITY ENDPOINTS ====================
+
+@router.get("/video-templates/endpoints/list")
+async def list_available_endpoints():
+    """
+    Get list of available wedding data endpoints
+    Used for template editor UI
+    """
+    return {
+        "endpoints": wedding_mapper.get_available_endpoints()
+    }
