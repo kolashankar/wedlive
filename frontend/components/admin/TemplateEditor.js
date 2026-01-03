@@ -414,6 +414,44 @@ export default function TemplateEditor({ template, onSave }) {
             <div className="text-sm text-gray-600">
               <strong>{overlays.length}</strong> overlays configured
             </div>
+            {selectedOverlay && (
+              <div className="flex items-center gap-2 ml-4 pl-4 border-l">
+                <span className="text-sm text-gray-600">Selected:</span>
+                <Badge variant="secondary">{selectedOverlay.label || selectedOverlay.endpoint_key}</Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleLockOverlay}
+                  data-testid="toggle-lock-btn"
+                >
+                  {lockedOverlays.has(selectedOverlay.id) ? (
+                    <Lock className="w-4 h-4 mr-1" />
+                  ) : (
+                    <Unlock className="w-4 h-4 mr-1" />
+                  )}
+                  {lockedOverlays.has(selectedOverlay.id) ? 'Unlock' : 'Lock'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDuplicateOverlay}
+                  data-testid="duplicate-overlay-btn"
+                >
+                  <Copy className="w-4 h-4 mr-1" />
+                  Duplicate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteSelected}
+                  className="text-red-600 hover:text-red-700"
+                  data-testid="delete-selected-btn"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete
+                </Button>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
