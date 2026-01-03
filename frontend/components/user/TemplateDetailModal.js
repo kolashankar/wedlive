@@ -342,30 +342,3 @@ export default function TemplateDetailModal({ template, weddingId, onClose, onAp
     </Dialog>
   );
 }
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleApply}
-                  disabled={applying}
-                  data-testid="apply-template-btn"
-                >
-                  {applying ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Applying...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Apply Template
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </ScrollArea>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
