@@ -190,6 +190,14 @@ export default function AdminDashboard() {
             <ImageIcon className="w-4 h-4 mr-2" />
             Manage Borders & Masks
           </Button>
+          <Button
+            onClick={() => router.push('/admin/video-templates')}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+            data-testid="video-templates-btn"
+          >
+            <Video className="w-4 h-4 mr-2" />
+            Video Templates
+          </Button>
         </div>
 
         {/* Stats Cards */}
