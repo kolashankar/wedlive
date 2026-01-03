@@ -38,11 +38,35 @@ export default function TemplateEditor({ template, onSave }) {
   }, [template]);
 
   const handleAddOverlay = async () => {
+    // Get endpoint details based on selected type
+    const endpointOptions = {
+      'bride_name': { label: "Bride's Name", placeholder: 'Sarah' },
+      'groom_name': { label: "Groom's Name", placeholder: 'Michael' },
+      'bride_first_name': { label: "Bride's First Name", placeholder: 'Sarah' },
+      'groom_first_name': { label: "Groom's First Name", placeholder: 'Michael' },
+      'couple_names': { label: 'Couple Names', placeholder: 'John & Jane' },
+      'event_date': { label: 'Event Date', placeholder: 'June 15, 2025' },
+      'event_time': { label: 'Event Time', placeholder: '3:00 PM' },
+      'venue': { label: 'Venue', placeholder: 'Grand Hotel' },
+      'venue_address': { label: 'Venue Address', placeholder: '123 Main St' },
+      'city': { label: 'City', placeholder: 'New York' },
+      'welcome_message': { label: 'Welcome Message', placeholder: 'Welcome to Our Wedding' },
+      'description': { label: 'Description', placeholder: 'Join us for our special day' },
+      'countdown_days': { label: 'Countdown Days', placeholder: '30 Days' },
+      'custom_text_1': { label: 'Custom Text 1', placeholder: 'Custom Text' },
+      'custom_text_2': { label: 'Custom Text 2', placeholder: 'Custom Text' },
+      'custom_text_3': { label: 'Custom Text 3', placeholder: 'Custom Text' },
+      'custom_text_4': { label: 'Custom Text 4', placeholder: 'Custom Text' },
+      'custom_text_5': { label: 'Custom Text 5', placeholder: 'Custom Text' }
+    };
+
+    const selectedEndpoint = endpointOptions[newOverlayType] || endpointOptions['couple_names'];
+
     // Create new overlay with proper structure matching TextOverlayCreate model
     const newOverlay = {
-      endpoint_key: 'couple_names',
-      label: 'Couple Names',
-      placeholder_text: 'John & Jane',
+      endpoint_key: newOverlayType,
+      label: selectedEndpoint.label,
+      placeholder_text: selectedEndpoint.placeholder,
       position: { 
         x: 960, 
         y: 540, 
@@ -92,7 +116,6 @@ export default function TemplateEditor({ template, onSave }) {
 
     try {
       const token = localStorage.getItem('token');
-      // FIXED: Send the overlay object directly, not wrapped in { overlays: [...] }
       const response = await axios.post(
         `${API_URL}/api/admin/video-templates/${template.id}/overlays`,
         newOverlay,
@@ -102,7 +125,7 @@ export default function TemplateEditor({ template, onSave }) {
       setOverlays(response.data.text_overlays);
       toast({
         title: 'Success',
-        description: 'Overlay added successfully'
+        description: `${selectedEndpoint.label} overlay added successfully`
       });
     } catch (error) {
       console.error('Failed to add overlay:', error);
