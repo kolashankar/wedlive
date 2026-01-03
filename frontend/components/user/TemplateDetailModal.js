@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
-import { Check, X, Loader2, Play, Clock, Tag } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Check, X, Loader2, Play, Clock, Tag, Settings, Video } from 'lucide-react';
 import VideoPlayerWithOverlays from './VideoPlayerWithOverlays';
+import TemplateCustomization from './TemplateCustomization';
+import RenderJobStatus from './RenderJobStatus';
 import { useToast } from '@/hooks/use-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
@@ -16,8 +19,12 @@ export default function TemplateDetailModal({ template, weddingId, onClose, onAp
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [rendering, setRendering] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [weddingData, setWeddingData] = useState(null);
+  const [customizations, setCustomizations] = useState({});
+  const [renderJobId, setRenderJobId] = useState(null);
+  const [activeTab, setActiveTab] = useState('preview');
 
   useEffect(() => {
     if (template && weddingId) {
