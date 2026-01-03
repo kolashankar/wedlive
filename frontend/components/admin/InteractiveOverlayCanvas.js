@@ -105,13 +105,21 @@ export default function InteractiveOverlayCanvas({
       const fontSize = styling.font_size || 48;
       const fontWeight = styling.font_weight || 'normal';
       const fontFamily = styling.font_family || 'Arial';
+      const letterSpacing = styling.letter_spacing || 0;
+      const lineHeight = styling.line_height || 1.2;
       
       ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       const metrics = ctx.measureText(text);
       
+      // Calculate width with letter spacing
+      let width = metrics.width;
+      if (letterSpacing > 0) {
+        width += letterSpacing * (text.length - 1);
+      }
+      
       dimensions[overlay.id] = {
-        width: metrics.width,
-        height: fontSize * 1.2, // Approximate height
+        width: width,
+        height: fontSize * lineHeight,
         baseline: fontSize
       };
     });
