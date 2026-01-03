@@ -451,13 +451,21 @@ export default function TemplateEditor({ template, onSave }) {
                 ref={playerRef}
                 url={template?.video_data?.original_url}
                 playing={playing}
-                controls
+                controls={false}
                 width="100%"
                 height="100%"
                 onProgress={({ playedSeconds }) => setCurrentTime(playedSeconds)}
                 onDuration={setDuration}
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
+                config={{
+                  file: {
+                    attributes: {
+                      controlsList: 'nodownload',
+                      disablePictureInPicture: true
+                    }
+                  }
+                }}
               />
               <InteractiveOverlayCanvas
                 overlays={overlays}
