@@ -6,8 +6,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import OverlayConfigurator from './OverlayConfigurator';
-import { Plus, Play, Pause, Save, Trash2, Eye, EyeOff, MoveUp, MoveDown } from 'lucide-react';
+import TimelineEditor from './TimelineEditor';
+import { Plus, Play, Pause, Save, Trash2, Eye, EyeOff, Layers } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
@@ -23,6 +25,7 @@ export default function TemplateEditor({ template, onSave }) {
   const [selectedOverlay, setSelectedOverlay] = useState(null);
   const [showOverlays, setShowOverlays] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editorMode, setEditorMode] = useState('timeline'); // 'timeline' or 'list'
 
   useEffect(() => {
     // Update overlays when template changes
@@ -50,6 +53,9 @@ export default function TemplateEditor({ template, onSave }) {
       return currentTime >= startTime && currentTime <= endTime;
     });
 
+    // Sort by layer index
+    visibleOverlays.sort((a, b) => (a.layer_index || 0) - (b.layer_index || 0));
+
     // Render each visible overlay
     visibleOverlays.forEach(overlay => {
       const text = overlay.placeholder_text || overlay.endpoint_key || 'Sample Text';
@@ -57,9 +63,23 @@ export default function TemplateEditor({ template, onSave }) {
       const styling = overlay.styling || {};
 
       // Set font
-      ctx.font = `${styling.font_weight || 'normal'} ${styling.font_size || 48}px ${styling.font_family || 'Arial'}`;
+      const fontSize = styling.font_size || 48;
+      const fontWeight = styling.font_weight || 'normal';
+      const fontFamily = styling.font_family || 'Arial';
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       ctx.fillStyle = styling.color || '#ffffff';
       ctx.textAlign = styling.text_align || 'center';
+
+      // Calculate animation progress
+      const progress = calculateAnimationProgress(overlay, currentTime);
+      ctx.globalAlpha = progress;
+
+      // Apply stroke if enabled
+      if (styling.stroke?.enabled) {
+        ctx.strokeStyle = styling.stroke.color || '#000000';
+        ctx.lineWidth = styling.stroke.width || 2;
+        ctx.strokeText(text, position.x, position.y);
+      }
 
       // Add text shadow
       if (styling.text_shadow) {
@@ -68,10 +88,6 @@ export default function TemplateEditor({ template, onSave }) {
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 2;
       }
-
-      // Calculate animation progress
-      const progress = calculateAnimationProgress(overlay, currentTime);
-      ctx.globalAlpha = progress;
 
       // Render text
       ctx.fillText(text, position.x, position.y);
@@ -89,44 +105,76 @@ export default function TemplateEditor({ template, onSave }) {
 
     // Entrance animation
     if (time < startTime + animDuration) {
-      return (time - startTime) / animDuration;
+      return Math.min(1, (time - startTime) / animDuration);
     }
 
     // Exit animation
     if (time > endTime - animDuration) {
-      return 1 - ((time - (endTime - animDuration)) / animDuration);
+      return Math.max(0, 1 - ((time - (endTime - animDuration)) / animDuration));
     }
 
     return 1; // Fully visible
   };
 
   const handleAddOverlay = async () => {
+    // Create new overlay with proper structure matching TextOverlayCreate model
     const newOverlay = {
       endpoint_key: 'couple_names',
       label: 'Couple Names',
       placeholder_text: 'John & Jane',
-      position: { x: 960, y: 540, alignment: 'center', anchor_point: 'center' },
-      timing: { start_time: 0, end_time: duration || 10 },
+      position: { 
+        x: 960, 
+        y: 540, 
+        alignment: 'center', 
+        anchor_point: 'center' 
+      },
+      timing: { 
+        start_time: 0, 
+        end_time: duration || 10 
+      },
       styling: {
-        font_family: 'Arial',
-        font_size: 48,
+        font_family: 'Playfair Display',
+        font_size: 72,
         font_weight: 'bold',
         color: '#ffffff',
-        text_align: 'center'
+        text_align: 'center',
+        letter_spacing: 2,
+        line_height: 1.2,
+        text_shadow: '0 2px 4px rgba(0,0,0,0.3)',
+        stroke: {
+          enabled: false,
+          color: '#000000',
+          width: 2
+        }
       },
       animation: {
-        type: 'fade',
+        type: 'fade-in',
         duration: 1.0,
-        easing: 'ease-in-out'
+        easing: 'ease-in-out',
+        entrance: {
+          type: 'fade-in',
+          duration: 1.0,
+          easing: 'ease-in-out'
+        },
+        exit: {
+          type: 'fade-out',
+          duration: 1.0,
+          easing: 'ease-in-out'
+        }
+      },
+      responsive: {
+        mobile_font_size: 48,
+        mobile_position: { x: 50, y: 30, unit: 'percent' }
       },
       layer_index: overlays.length
     };
 
     try {
       const token = localStorage.getItem('token');
+      // FIXED: Send the overlay object directly, not wrapped in { overlays: [...] }
       const response = await axios.post(
         `${API_URL}/api/admin/video-templates/${template.id}/overlays`,
-        { overlays: [newOverlay] },
+        newOverlay,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -139,7 +187,7 @@ export default function TemplateEditor({ template, onSave }) {
       console.error('Failed to add overlay:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add overlay',
+        description: error.response?.data?.detail || 'Failed to add overlay',
         variant: 'destructive'
       });
     }
@@ -154,11 +202,7 @@ export default function TemplateEditor({ template, onSave }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Update local state
-      setOverlays(prevOverlays =>
-        prevOverlays.map(o => (o.id === overlayId ? response.data : o))
-      );
-
+      setOverlays(response.data.text_overlays);
       toast({
         title: 'Success',
         description: 'Overlay updated'
@@ -178,12 +222,12 @@ export default function TemplateEditor({ template, onSave }) {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(
+      const response = await axios.delete(
         `${API_URL}/api/admin/video-templates/${template.id}/overlays/${overlayId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setOverlays(prevOverlays => prevOverlays.filter(o => o.id !== overlayId));
+      setOverlays(response.data.text_overlays);
       setSelectedOverlay(null);
 
       toast({
@@ -200,10 +244,26 @@ export default function TemplateEditor({ template, onSave }) {
     }
   };
 
+  const handleReorderOverlays = async (newOrder) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/api/admin/video-templates/${template.id}/overlays/reorder`,
+        newOrder,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Update local state
+      const reordered = newOrder.map(id => overlays.find(o => o.id === id)).filter(Boolean);
+      setOverlays(reordered);
+    } catch (error) {
+      console.error('Failed to reorder overlays:', error);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Trigger save callback
       if (onSave) {
         await onSave();
       }
@@ -223,166 +283,213 @@ export default function TemplateEditor({ template, onSave }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Video Player Section */}
-      <div className="lg:col-span-2 space-y-4">
-        <Card className="p-4">
-          {/* Player Controls */}
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Video Preview</h3>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowOverlays(!showOverlays)}
-                data-testid="toggle-overlays-btn"
-              >
-                {showOverlays ? <Eye className="w-4 h-4 mr-1" /> : <EyeOff className="w-4 h-4 mr-1" />}
-                {showOverlays ? 'Hide' : 'Show'} Overlays
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setPlaying(!playing)}
-                data-testid="play-pause-btn"
-              >
-                {playing ? <Pause className="w-4 h-4 mr-1" /> : <Play className="w-4 h-4 mr-1" />}
-                {playing ? 'Pause' : 'Play'}
-              </Button>
+    <div className="space-y-6">
+      {/* Status Bar */}
+      <Card className="p-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div>
+              <span className="text-sm text-gray-600">Status:</span>
+              <Badge className="ml-2" variant="default">In Progress</Badge>
+            </div>
+            <div className="text-sm text-gray-600">
+              <strong>{overlays.length}</strong> overlays configured
             </div>
           </div>
-
-          {/* Video with Canvas Overlay */}
-          <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-            <ReactPlayer
-              ref={playerRef}
-              url={template?.video_data?.original_url}
-              playing={playing}
-              controls
-              width="100%"
-              height="100%"
-              onProgress={({ playedSeconds }) => setCurrentTime(playedSeconds)}
-              onDuration={setDuration}
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-            />
-            <canvas
-              ref={canvasRef}
-              width={1920}
-              height={1080}
-              className="absolute top-0 left-0 w-full h-full pointer-events-none"
-              style={{ display: showOverlays ? 'block' : 'none' }}
-            />
-          </div>
-
-          {/* Timeline */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={duration || 100}
-              value={currentTime}
-              onChange={(e) => {
-                const time = parseFloat(e.target.value);
-                setCurrentTime(time);
-                if (playerRef.current) {
-                  playerRef.current.seekTo(time);
-                }
-              }}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              data-testid="timeline-slider"
-            />
-          </div>
-        </Card>
-
-        {/* Overlays List */}
-        <Card className="p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Text Overlays ({overlays.length})</h3>
-            <Button size="sm" onClick={handleAddOverlay} data-testid="add-overlay-btn">
-              <Plus className="w-4 h-4 mr-1" />
-              Add Overlay
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditorMode(editorMode === 'timeline' ? 'list' : 'timeline')}
+              data-testid="toggle-editor-mode-btn"
+            >
+              <Layers className="w-4 h-4 mr-2" />
+              {editorMode === 'timeline' ? 'List View' : 'Timeline View'}
             </Button>
           </div>
+        </div>
+      </Card>
 
-          <ScrollArea className="h-64">
-            {overlays.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No overlays added yet</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Video Player Section */}
+        <div className="lg:col-span-2 space-y-4">
+          <Card className="p-4">
+            {/* Player Controls */}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold">Video Preview</h3>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowOverlays(!showOverlays)}
+                  data-testid="toggle-overlays-btn"
+                >
+                  {showOverlays ? <Eye className="w-4 h-4 mr-1" /> : <EyeOff className="w-4 h-4 mr-1" />}
+                  {showOverlays ? 'Hide' : 'Show'} Overlays
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setPlaying(!playing)}
+                  data-testid="play-pause-btn"
+                >
+                  {playing ? <Pause className="w-4 h-4 mr-1" /> : <Play className="w-4 h-4 mr-1" />}
+                  {playing ? 'Pause' : 'Play'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Video with Canvas Overlay */}
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+              <ReactPlayer
+                ref={playerRef}
+                url={template?.video_data?.original_url}
+                playing={playing}
+                controls
+                width="100%"
+                height="100%"
+                onProgress={({ playedSeconds }) => setCurrentTime(playedSeconds)}
+                onDuration={setDuration}
+                onPlay={() => setPlaying(true)}
+                onPause={() => setPlaying(false)}
+              />
+              <canvas
+                ref={canvasRef}
+                width={1920}
+                height={1080}
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                style={{ display: showOverlays ? 'block' : 'none' }}
+              />
+            </div>
+
+            {/* Timeline */}
+            <div className="mt-4">
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={duration || 100}
+                value={currentTime}
+                onChange={(e) => {
+                  const time = parseFloat(e.target.value);
+                  setCurrentTime(time);
+                  if (playerRef.current) {
+                    playerRef.current.seekTo(time);
+                  }
+                }}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                data-testid="timeline-slider"
+              />
+            </div>
+          </Card>
+
+          {/* Timeline or List View */}
+          <Card className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold">
+                Text Overlays ({overlays.length})
+              </h3>
+              <Button size="sm" onClick={handleAddOverlay} data-testid="add-overlay-btn">
+                <Plus className="w-4 h-4 mr-1" />
+                Add Overlay
+              </Button>
+            </div>
+
+            {editorMode === 'timeline' ? (
+              <TimelineEditor
+                overlays={overlays}
+                duration={duration}
+                currentTime={currentTime}
+                selectedOverlay={selectedOverlay}
+                onSelectOverlay={setSelectedOverlay}
+                onUpdateOverlay={handleUpdateOverlay}
+                onDeleteOverlay={handleDeleteOverlay}
+                onReorder={handleReorderOverlays}
+                onSeek={(time) => {
+                  setCurrentTime(time);
+                  if (playerRef.current) {
+                    playerRef.current.seekTo(time);
+                  }
+                }}
+              />
             ) : (
-              <div className="space-y-2">
-                {overlays.map((overlay, index) => (
-                  <div
-                    key={overlay.id || index}
-                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                      selectedOverlay?.id === overlay.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => setSelectedOverlay(overlay)}
-                    data-testid={`overlay-item-${index}`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{overlay.label || overlay.endpoint_key}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatTime(overlay.timing?.start_time || 0)} - {formatTime(overlay.timing?.end_time || 0)}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteOverlay(overlay.id);
-                        }}
-                        className="text-red-600 hover:text-red-700"
+              <ScrollArea className="h-64">
+                {overlays.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No overlays added yet</p>
+                ) : (
+                  <div className="space-y-2">
+                    {overlays.map((overlay, index) => (
+                      <div
+                        key={overlay.id || index}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedOverlay?.id === overlay.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedOverlay(overlay)}
+                        data-testid={`overlay-item-${index}`}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{overlay.label || overlay.endpoint_key}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {formatTime(overlay.timing?.start_time || 0)} - {formatTime(overlay.timing?.end_time || 0)}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteOverlay(overlay.id);
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </ScrollArea>
+            )}
+          </Card>
+        </div>
+
+        {/* Overlay Configurator Sidebar */}
+        <div className="lg:col-span-1">
+          <Card className="p-4 sticky top-6">
+            {selectedOverlay ? (
+              <OverlayConfigurator
+                overlay={selectedOverlay}
+                duration={duration}
+                currentTime={currentTime}
+                onUpdate={(updates) => handleUpdateOverlay(selectedOverlay.id, updates)}
+                onSeek={(time) => {
+                  setCurrentTime(time);
+                  if (playerRef.current) {
+                    playerRef.current.seekTo(time);
+                  }
+                }}
+              />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Select an overlay to configure</p>
               </div>
             )}
-          </ScrollArea>
-        </Card>
-      </div>
-
-      {/* Overlay Configurator Sidebar */}
-      <div className="lg:col-span-1">
-        <Card className="p-4 sticky top-6">
-          {selectedOverlay ? (
-            <OverlayConfigurator
-              overlay={selectedOverlay}
-              duration={duration}
-              currentTime={currentTime}
-              onUpdate={(updates) => handleUpdateOverlay(selectedOverlay.id, updates)}
-              onSeek={(time) => {
-                setCurrentTime(time);
-                if (playerRef.current) {
-                  playerRef.current.seekTo(time);
-                }
-              }}
-            />
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Select an overlay to configure</p>
-            </div>
-          )}
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {/* Save Button */}
-      <div className="lg:col-span-3">
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} size="lg" data-testid="save-template-btn">
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Saving...' : 'Save Template'}
-          </Button>
-        </div>
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={saving} size="lg" data-testid="save-template-btn">
+          <Save className="w-4 h-4 mr-2" />
+          {saving ? 'Saving...' : 'Save Template'}
+        </Button>
       </div>
     </div>
   );
