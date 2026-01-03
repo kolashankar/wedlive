@@ -748,20 +748,6 @@ export default function InteractiveOverlayCanvas({
     setResizeHandle(null);
   };
 
-  const handleUndo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      // Implement undo logic
-    }
-  };
-
-  const handleRedo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      // Implement redo logic
-    }
-  };
-
   return (
     <canvas
       ref={canvasRef}
