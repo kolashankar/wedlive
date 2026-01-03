@@ -30,6 +30,7 @@ export default function TemplateEditor({ template, onSave }) {
   const [editorMode, setEditorMode] = useState('timeline'); // 'timeline' or 'list'
   const [lockedOverlays, setLockedOverlays] = useState(new Set());
   const [gridSnap, setGridSnap] = useState(false);
+  const [newOverlayType, setNewOverlayType] = useState('couple_names');
 
   useEffect(() => {
     // Update overlays when template changes
