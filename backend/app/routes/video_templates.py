@@ -15,7 +15,7 @@ from app.services.telegram_service import TelegramCDNService
 from app.services.video_processing_service import VideoProcessingService
 from app.services.wedding_data_mapper import WeddingDataMapper
 from app.services.render_service import VideoRenderService
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
 import uuid
 import os
