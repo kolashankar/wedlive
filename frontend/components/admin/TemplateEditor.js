@@ -19,6 +19,7 @@ export default function TemplateEditor({ template, onSave }) {
   const { toast } = useToast();
   const playerRef = useRef(null);
   const canvasRef = useRef(null);
+  const videoContainerRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -27,6 +28,8 @@ export default function TemplateEditor({ template, onSave }) {
   const [showOverlays, setShowOverlays] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editorMode, setEditorMode] = useState('timeline'); // 'timeline' or 'list'
+  const [lockedOverlays, setLockedOverlays] = useState(new Set());
+  const [gridSnap, setGridSnap] = useState(false);
 
   useEffect(() => {
     // Update overlays when template changes
