@@ -14,6 +14,7 @@ from app.database import get_db, get_db_dependency
 from app.services.telegram_service import TelegramCDNService
 from app.services.video_processing_service import VideoProcessingService
 from app.services.wedding_data_mapper import WeddingDataMapper
+from app.services.render_service import VideoRenderService
 from typing import List, Optional
 from datetime import datetime
 import uuid
@@ -22,12 +23,14 @@ import logging
 import tempfile
 import aiofiles
 import json
+import asyncio
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 telegram_service = TelegramCDNService()
 video_service = VideoProcessingService()
 wedding_mapper = WeddingDataMapper()
+render_service = VideoRenderService()
 
 # Maximum file size: 50MB
 MAX_VIDEO_SIZE = 50 * 1024 * 1024
