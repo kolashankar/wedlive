@@ -29,6 +29,21 @@ export default function InteractiveOverlayCanvas({
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
+  // Undo/Redo handlers
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      // Implement undo logic
+    }
+  }, [historyIndex]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      // Implement redo logic
+    }
+  }, [historyIndex, history.length]);
+
   // Keyboard event handlers
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -88,7 +103,7 @@ export default function InteractiveOverlayCanvas({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [selectedOverlay, shiftPressed, history, historyIndex]);
+  }, [selectedOverlay, shiftPressed, onUpdateOverlay, handleUndo, handleRedo]);
 
   // Measure text dimensions for each overlay
   useEffect(() => {
