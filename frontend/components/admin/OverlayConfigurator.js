@@ -183,7 +183,17 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
         </Button>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-200px)]">
+      {/* Interactive Tips */}
+      <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+        <p className="text-xs font-semibold text-blue-900 mb-1">💡 Interactive Controls</p>
+        <ul className="text-xs text-blue-800 space-y-1">
+          <li>• <strong>Drag</strong> the overlay on the video to reposition</li>
+          <li>• <strong>Resize</strong> using the corner/edge handles</li>
+          <li>• Hold <strong>Shift</strong> while resizing for proportional scaling</li>
+        </ul>
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-280px)]">
         <Tabs defaultValue="content" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="content">Content</TabsTrigger>
