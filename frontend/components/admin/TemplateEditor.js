@@ -198,6 +198,16 @@ export default function TemplateEditor({ template, onSave }) {
   };
 
   const handleUpdateOverlay = async (overlayId, updates) => {
+    // Check if overlay is locked
+    if (lockedOverlays.has(overlayId)) {
+      toast({
+        title: 'Overlay Locked',
+        description: 'Unlock the overlay to make changes',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
@@ -207,10 +217,20 @@ export default function TemplateEditor({ template, onSave }) {
       );
 
       setOverlays(response.data.text_overlays);
-      toast({
-        title: 'Success',
-        description: 'Overlay updated'
-      });
+      
+      // Update selected overlay if it's the one being updated
+      if (selectedOverlay?.id === overlayId) {
+        const updatedOverlay = response.data.text_overlays.find(o => o.id === overlayId);
+        setSelectedOverlay(updatedOverlay);
+      }
+      
+      // Only show toast for manual updates (not drag/resize which happens frequently)
+      if (!updates.position || Object.keys(updates).length > 1) {
+        toast({
+          title: 'Success',
+          description: 'Overlay updated'
+        });
+      }
     } catch (error) {
       console.error('Failed to update overlay:', error);
       toast({
