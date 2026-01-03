@@ -36,6 +36,31 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
     renderOverlays();
   }, [currentTime, overlays, fontsLoaded, isMobile]);
 
+  const loadCustomFonts = async () => {
+    try {
+      // Extract unique font families from overlays
+      const fontFamilies = [...new Set(
+        overlays
+          .filter(o => o.styling?.font_family)
+          .map(o => o.styling.font_family)
+      )];
+
+      // Load fonts using Web Font Loader
+      if (fontFamilies.length > 0 && typeof document !== 'undefined') {
+        const fontPromises = fontFamilies.map(font => {
+          return document.fonts.load(`16px "${font}"`);
+        });
+        await Promise.all(fontPromises);
+        setFontsLoaded(true);
+      } else {
+        setFontsLoaded(true);
+      }
+    } catch (error) {
+      console.error('Error loading fonts:', error);
+      setFontsLoaded(true); // Continue anyway
+    }
+  };
+
   const renderOverlays = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
