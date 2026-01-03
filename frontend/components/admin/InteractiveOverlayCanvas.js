@@ -442,7 +442,7 @@ export default function InteractiveOverlayCanvas({
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText(`(${Math.round(position.x)}, ${Math.round(position.y)})`, boxX + 5, boxY - 23);
-  }, [overlayDimensions]);
+  }, [overlayDimensions, getResizeHandles]);
 
   const renderHoverEffect = useCallback((ctx, overlay) => {
     const dims = overlayDimensions[overlay.id];
