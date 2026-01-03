@@ -142,46 +142,178 @@ export default function InteractiveOverlayCanvas({
     setOverlayDimensions(dimensions);
   }, [overlays]);
 
-  // Render canvas
-  useEffect(() => {
-    if (!showOverlays) return;
-    renderCanvas();
-  }, [currentTime, overlays, showOverlays, selectedOverlay, hoveredOverlay, overlayDimensions]);
-
-  const renderCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Filter visible overlays at current time
-    const visibleOverlays = overlays.filter(overlay => {
-      const startTime = overlay.timing?.start_time || 0;
-      const endTime = overlay.timing?.end_time || duration;
-      return currentTime >= startTime && currentTime <= endTime;
+  // Helper functions for rendering
+  const renderTextWithLetterSpacing = useCallback((ctx, text, x, y, spacing, isStroke) => {
+    const chars = text.split('');
+    let currentX = x;
+    
+    // Calculate total width for alignment
+    const totalWidth = chars.reduce((width, char) => {
+      return width + ctx.measureText(char).width + spacing;
+    }, -spacing);
+    
+    // Adjust starting position based on text align
+    if (ctx.textAlign === 'center') {
+      currentX = x - totalWidth / 2;
+    } else if (ctx.textAlign === 'right') {
+      currentX = x - totalWidth;
+    }
+    
+    // Render each character
+    chars.forEach((char) => {
+      if (isStroke) {
+        ctx.strokeText(char, currentX, y);
+      } else {
+        ctx.fillText(char, currentX, y);
+      }
+      currentX += ctx.measureText(char).width + spacing;
     });
+  }, []);
 
-    // Sort by layer index
-    visibleOverlays.sort((a, b) => (a.layer_index || 0) - (b.layer_index || 0));
+  const applyEasing = useCallback((t, easing) => {
+    switch (easing) {
+      case 'linear':
+        return t;
+      case 'ease-in':
+        return t * t;
+      case 'ease-out':
+        return t * (2 - t);
+      case 'ease-in-out':
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      case 'cubic-bezier(0.68, -0.55, 0.265, 1.55)': // Bounce
+        const c1 = 0.68;
+        const c2 = -0.55;
+        const c3 = 0.265;
+        const c4 = 1.55;
+        return (1 - t) * (1 - t) * (1 - t) * 0 + 3 * (1 - t) * (1 - t) * t * c2 + 3 * (1 - t) * t * t * c4 + t * t * t * 1;
+      default:
+        return t;
+    }
+  }, []);
 
-    // Render each overlay
-    visibleOverlays.forEach(overlay => {
-      renderOverlay(ctx, overlay);
-    });
+  const applyAnimationType = useCallback((type, progress, isEntrance) => {
+    const state = { opacity: 1, scale: 1, rotation: 0, translateX: 0, translateY: 0 };
+    const inverseProgress = 1 - progress;
+    const p = isEntrance ? progress : inverseProgress;
 
-    // Render selection box and handles for selected overlay
-    if (selectedOverlay && overlayDimensions[selectedOverlay.id]) {
-      renderSelectionBox(ctx, selectedOverlay);
+    switch (type) {
+      case 'fade-in':
+      case 'fade-out':
+        state.opacity = p;
+        break;
+      
+      case 'slide-up':
+        state.opacity = p;
+        state.translateY = isEntrance ? -(100 * inverseProgress) : (100 * progress);
+        break;
+      
+      case 'slide-down':
+        state.opacity = p;
+        state.translateY = isEntrance ? (100 * inverseProgress) : -(100 * progress);
+        break;
+      
+      case 'slide-left':
+        state.opacity = p;
+        state.translateX = isEntrance ? -(100 * inverseProgress) : (100 * progress);
+        break;
+      
+      case 'slide-right':
+        state.opacity = p;
+        state.translateX = isEntrance ? (100 * inverseProgress) : -(100 * progress);
+        break;
+      
+      case 'scale-up':
+        state.opacity = p;
+        state.scale = isEntrance ? (0.5 + 0.5 * progress) : (0.5 + 0.5 * inverseProgress);
+        break;
+      
+      case 'scale-down':
+        state.opacity = p;
+        state.scale = isEntrance ? (1.5 - 0.5 * progress) : (1.5 - 0.5 * inverseProgress);
+        break;
+      
+      case 'zoom-in':
+        state.opacity = p;
+        state.scale = isEntrance ? progress : inverseProgress;
+        break;
+      
+      case 'bounce-in':
+      case 'bounce-out':
+        state.opacity = p;
+        const bounceProgress = isEntrance ? progress : inverseProgress;
+        state.scale = 1 + Math.sin(bounceProgress * Math.PI * 3) * 0.1 * (1 - bounceProgress);
+        break;
+      
+      case 'rotate-in':
+        state.opacity = p;
+        state.rotation = isEntrance ? (Math.PI * 2 * inverseProgress) : (Math.PI * 2 * progress);
+        state.scale = p;
+        break;
+      
+      case 'spin':
+        state.opacity = p;
+        state.rotation = isEntrance ? (Math.PI * 4 * inverseProgress) : (Math.PI * 4 * progress);
+        break;
+      
+      case 'blur-in':
+      case 'blur-out':
+        state.opacity = p;
+        state.scale = 1 - (inverseProgress * 0.05);
+        break;
+      
+      case 'fade-slide-up':
+        state.opacity = p;
+        state.translateY = isEntrance ? -(50 * inverseProgress) : (50 * progress);
+        break;
+      
+      case 'scale-fade':
+        state.opacity = p;
+        state.scale = isEntrance ? (0.8 + 0.2 * progress) : (0.8 + 0.2 * inverseProgress);
+        break;
+      
+      case 'typewriter':
+        state.opacity = 1;
+        // Typewriter effect would need special handling in text rendering
+        break;
+      
+      default:
+        state.opacity = p;
     }
 
-    // Render hover effect
-    if (hoveredOverlay && hoveredOverlay.id !== selectedOverlay?.id && overlayDimensions[hoveredOverlay.id]) {
-      renderHoverEffect(ctx, hoveredOverlay);
-    }
-  };
+    return state;
+  }, []);
 
-  const renderOverlay = (ctx, overlay) => {
+  const calculateAnimationState = useCallback((overlay, time) => {
+    const startTime = overlay.timing?.start_time || 0;
+    const endTime = overlay.timing?.end_time || duration;
+    const entranceAnim = overlay.animation?.entrance || { type: 'fade-in', duration: 1, easing: 'ease-in-out' };
+    const exitAnim = overlay.animation?.exit || { type: 'fade-out', duration: 1, easing: 'ease-in-out' };
+    
+    let state = {
+      opacity: 1,
+      scale: 1,
+      rotation: 0,
+      translateX: 0,
+      translateY: 0
+    };
+
+    // Entrance animation
+    if (time < startTime + entranceAnim.duration) {
+      const progress = Math.min(1, (time - startTime) / entranceAnim.duration);
+      const easedProgress = applyEasing(progress, entranceAnim.easing);
+      state = applyAnimationType(entranceAnim.type, easedProgress, true);
+    }
+    // Exit animation
+    else if (time > endTime - exitAnim.duration) {
+      const progress = Math.min(1, (time - (endTime - exitAnim.duration)) / exitAnim.duration);
+      const easedProgress = applyEasing(progress, exitAnim.easing);
+      state = applyAnimationType(exitAnim.type, easedProgress, false);
+    }
+
+    return state;
+  }, [duration, applyEasing, applyAnimationType]);
+
+  const renderOverlay = useCallback((ctx, overlay) => {
     const text = overlay.placeholder_text || overlay.endpoint_key || 'Sample Text';
     const position = overlay.position || { x: 960, y: 540 };
     const styling = overlay.styling || {};
@@ -241,36 +373,9 @@ export default function InteractiveOverlayCanvas({
 
     // Reset
     ctx.restore();
-  };
+  }, [currentTime, calculateAnimationState, renderTextWithLetterSpacing]);
 
-  const renderTextWithLetterSpacing = (ctx, text, x, y, spacing, isStroke) => {
-    const chars = text.split('');
-    let currentX = x;
-    
-    // Calculate total width for alignment
-    const totalWidth = chars.reduce((width, char) => {
-      return width + ctx.measureText(char).width + spacing;
-    }, -spacing);
-    
-    // Adjust starting position based on text align
-    if (ctx.textAlign === 'center') {
-      currentX = x - totalWidth / 2;
-    } else if (ctx.textAlign === 'right') {
-      currentX = x - totalWidth;
-    }
-    
-    // Render each character
-    chars.forEach((char) => {
-      if (isStroke) {
-        ctx.strokeText(char, currentX, y);
-      } else {
-        ctx.fillText(char, currentX, y);
-      }
-      currentX += ctx.measureText(char).width + spacing;
-    });
-  };
-
-  const renderSelectionBox = (ctx, overlay) => {
+  const renderSelectionBox = useCallback((ctx, overlay) => {
     const dims = overlayDimensions[overlay.id];
     if (!dims) return;
 
@@ -323,9 +428,9 @@ export default function InteractiveOverlayCanvas({
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText(`(${Math.round(position.x)}, ${Math.round(position.y)})`, boxX + 5, boxY - 23);
-  };
+  }, [overlayDimensions]);
 
-  const renderHoverEffect = (ctx, overlay) => {
+  const renderHoverEffect = useCallback((ctx, overlay) => {
     const dims = overlayDimensions[overlay.id];
     if (!dims) return;
 
@@ -356,7 +461,46 @@ export default function InteractiveOverlayCanvas({
     ctx.setLineDash([3, 3]);
     ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
     ctx.setLineDash([]);
-  };
+  }, [overlayDimensions]);
+
+  // Render canvas
+  const renderCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Filter visible overlays at current time
+    const visibleOverlays = overlays.filter(overlay => {
+      const startTime = overlay.timing?.start_time || 0;
+      const endTime = overlay.timing?.end_time || duration;
+      return currentTime >= startTime && currentTime <= endTime;
+    });
+
+    // Sort by layer index
+    visibleOverlays.sort((a, b) => (a.layer_index || 0) - (b.layer_index || 0));
+
+    // Render each overlay
+    visibleOverlays.forEach(overlay => {
+      renderOverlay(ctx, overlay);
+    });
+
+    // Render selection box and handles for selected overlay
+    if (selectedOverlay && overlayDimensions[selectedOverlay.id]) {
+      renderSelectionBox(ctx, selectedOverlay);
+    }
+
+    // Render hover effect
+    if (hoveredOverlay && hoveredOverlay.id !== selectedOverlay?.id && overlayDimensions[hoveredOverlay.id]) {
+      renderHoverEffect(ctx, hoveredOverlay);
+    }
+  }, [currentTime, overlays, duration, selectedOverlay, hoveredOverlay, overlayDimensions, renderOverlay, renderSelectionBox, renderHoverEffect]);
+
+  useEffect(() => {
+    if (!showOverlays) return;
+    renderCanvas();
+  }, [showOverlays, renderCanvas]);
 
   const getResizeHandles = (x, y, width, height) => {
     return [
