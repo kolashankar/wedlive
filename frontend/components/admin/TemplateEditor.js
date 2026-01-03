@@ -570,7 +570,18 @@ export default function TemplateEditor({ template, onSave }) {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <Card className="p-4 flex-1 mr-4">
+          <h4 className="font-semibold text-sm mb-2">Keyboard Shortcuts</h4>
+          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+            <div><kbd className="px-2 py-1 bg-gray-100 rounded">Delete</kbd> - Delete selected overlay</div>
+            <div><kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl/Cmd + D</kbd> - Duplicate overlay</div>
+            <div><kbd className="px-2 py-1 bg-gray-100 rounded">Arrow Keys</kbd> - Move overlay (1px)</div>
+            <div><kbd className="px-2 py-1 bg-gray-100 rounded">Shift + Arrow</kbd> - Move overlay (10px)</div>
+            <div><kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl/Cmd + L</kbd> - Lock/Unlock overlay</div>
+            <div><kbd className="px-2 py-1 bg-gray-100 rounded">Shift + Drag</kbd> - Proportional resize</div>
+          </div>
+        </Card>
         <Button onClick={handleSave} disabled={saving} size="lg" data-testid="save-template-btn">
           <Save className="w-4 h-4 mr-2" />
           {saving ? 'Saving...' : 'Save Template'}
