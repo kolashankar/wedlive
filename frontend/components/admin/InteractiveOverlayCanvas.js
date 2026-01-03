@@ -29,6 +29,20 @@ export default function InteractiveOverlayCanvas({
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
+  // Helper function for resize handles
+  const getResizeHandles = useCallback((x, y, width, height) => {
+    return [
+      { x: x, y: y, cursor: 'nw-resize', position: 'nw' },
+      { x: x + width / 2, y: y, cursor: 'n-resize', position: 'n' },
+      { x: x + width, y: y, cursor: 'ne-resize', position: 'ne' },
+      { x: x + width, y: y + height / 2, cursor: 'e-resize', position: 'e' },
+      { x: x + width, y: y + height, cursor: 'se-resize', position: 'se' },
+      { x: x + width / 2, y: y + height, cursor: 's-resize', position: 's' },
+      { x: x, y: y + height, cursor: 'sw-resize', position: 'sw' },
+      { x: x, y: y + height / 2, cursor: 'w-resize', position: 'w' }
+    ];
+  }, []);
+
   // Undo/Redo handlers
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
