@@ -505,14 +505,41 @@ export default function TemplateEditor({ template, onSave }) {
 
           {/* Timeline or List View */}
           <Card className="p-4">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <h3 className="font-semibold">
                 Text Overlays ({overlays.length})
               </h3>
-              <Button size="sm" onClick={handleAddOverlay} data-testid="add-overlay-btn">
-                <Plus className="w-4 h-4 mr-1" />
-                Add Overlay
-              </Button>
+              <div className="flex gap-2 items-center">
+                <Select value={newOverlayType} onValueChange={setNewOverlayType}>
+                  <SelectTrigger className="w-[180px]" data-testid="overlay-type-select">
+                    <SelectValue placeholder="Select overlay type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bride_name">Bride's Name</SelectItem>
+                    <SelectItem value="groom_name">Groom's Name</SelectItem>
+                    <SelectItem value="bride_first_name">Bride's First Name</SelectItem>
+                    <SelectItem value="groom_first_name">Groom's First Name</SelectItem>
+                    <SelectItem value="couple_names">Couple Names</SelectItem>
+                    <SelectItem value="event_date">Event Date</SelectItem>
+                    <SelectItem value="event_time">Event Time</SelectItem>
+                    <SelectItem value="venue">Venue</SelectItem>
+                    <SelectItem value="venue_address">Venue Address</SelectItem>
+                    <SelectItem value="city">City</SelectItem>
+                    <SelectItem value="welcome_message">Welcome Message</SelectItem>
+                    <SelectItem value="description">Description</SelectItem>
+                    <SelectItem value="countdown_days">Countdown Days</SelectItem>
+                    <SelectItem value="custom_text_1">Custom Text 1</SelectItem>
+                    <SelectItem value="custom_text_2">Custom Text 2</SelectItem>
+                    <SelectItem value="custom_text_3">Custom Text 3</SelectItem>
+                    <SelectItem value="custom_text_4">Custom Text 4</SelectItem>
+                    <SelectItem value="custom_text_5">Custom Text 5</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button size="sm" onClick={handleAddOverlay} data-testid="add-overlay-btn">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Overlay
+                </Button>
+              </div>
             </div>
 
             {editorMode === 'timeline' ? (
