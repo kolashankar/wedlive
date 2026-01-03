@@ -9,7 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import OverlayConfigurator from './OverlayConfigurator';
 import TimelineEditor from './TimelineEditor';
-import { Plus, Play, Pause, Save, Trash2, Eye, EyeOff, Layers } from 'lucide-react';
+import InteractiveOverlayCanvas from './InteractiveOverlayCanvas';
+import { Plus, Play, Pause, Save, Trash2, Eye, EyeOff, Layers, Lock, Unlock, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
