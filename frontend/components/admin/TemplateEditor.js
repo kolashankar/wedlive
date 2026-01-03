@@ -306,6 +306,101 @@ export default function TemplateEditor({ template, onSave }) {
     }
   };
 
+  const handleDuplicateOverlay = async () => {
+    if (!selectedOverlay) return;
+
+    const duplicateData = {
+      ...selectedOverlay,
+      position: {
+        ...selectedOverlay.position,
+        x: selectedOverlay.position.x + 50,
+        y: selectedOverlay.position.y + 50
+      },
+      label: `${selectedOverlay.label} (Copy)`,
+      layer_index: overlays.length
+    };
+
+    // Remove id to create a new overlay
+    delete duplicateData.id;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/api/admin/video-templates/${template.id}/overlays`,
+        duplicateData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setOverlays(response.data.text_overlays);
+      toast({
+        title: 'Success',
+        description: 'Overlay duplicated successfully'
+      });
+    } catch (error) {
+      console.error('Failed to duplicate overlay:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to duplicate overlay',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const toggleLockOverlay = () => {
+    if (!selectedOverlay) return;
+
+    setLockedOverlays(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(selectedOverlay.id)) {
+        newSet.delete(selectedOverlay.id);
+        toast({
+          title: 'Overlay Unlocked',
+          description: 'You can now edit this overlay'
+        });
+      } else {
+        newSet.add(selectedOverlay.id);
+        toast({
+          title: 'Overlay Locked',
+          description: 'This overlay is now protected from changes'
+        });
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedOverlay) {
+      handleDeleteOverlay(selectedOverlay.id);
+    }
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Delete selected overlay
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedOverlay) {
+        e.preventDefault();
+        handleDeleteSelected();
+      }
+
+      // Duplicate with Ctrl+D or Cmd+D
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedOverlay) {
+        e.preventDefault();
+        handleDuplicateOverlay();
+      }
+
+      // Toggle lock with Ctrl+L or Cmd+L
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l' && selectedOverlay) {
+        e.preventDefault();
+        toggleLockOverlay();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedOverlay]);
+
+
   return (
     <div className="space-y-6">
       {/* Status Bar */}
