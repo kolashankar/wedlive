@@ -182,7 +182,12 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
 
     switch (type) {
       case 'fade':
+      case 'fade-in':
         ctx.globalAlpha = progress;
+        break;
+
+      case 'fade-out':
+        ctx.globalAlpha = 1 - progress;
         break;
 
       case 'slide-up':
@@ -206,7 +211,9 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
         break;
 
       case 'scale':
+      case 'scale-up':
       case 'zoom':
+      case 'zoom-in':
         ctx.globalAlpha = progress;
         const scale = 0.5 + (progress * 0.5);
         ctx.translate(position.x, position.y);
@@ -214,18 +221,71 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
         ctx.translate(-position.x, -position.y);
         break;
 
+      case 'scale-down':
+        ctx.globalAlpha = progress;
+        const scaleDown = 1.5 - (progress * 0.5);
+        ctx.translate(position.x, position.y);
+        ctx.scale(scaleDown, scaleDown);
+        ctx.translate(-position.x, -position.y);
+        break;
+
       case 'bounce':
+      case 'bounce-in':
         ctx.globalAlpha = progress;
         const bounce = Math.abs(Math.sin(progress * Math.PI * 2)) * (1 - progress) * 20;
         ctx.translate(0, -bounce);
         break;
 
+      case 'bounce-out':
+        ctx.globalAlpha = progress;
+        const bounceOut = Math.abs(Math.sin((1 - progress) * Math.PI * 2)) * progress * 20;
+        ctx.translate(0, bounceOut);
+        break;
+
       case 'rotate':
+      case 'rotate-in':
         ctx.globalAlpha = progress;
         const rotation = (1 - progress) * Math.PI * 2;
         ctx.translate(position.x, position.y);
         ctx.rotate(rotation);
         ctx.translate(-position.x, -position.y);
+        break;
+
+      case 'spin':
+        ctx.globalAlpha = progress;
+        const spinRotation = progress * Math.PI * 4;
+        ctx.translate(position.x, position.y);
+        ctx.rotate(spinRotation);
+        ctx.translate(-position.x, -position.y);
+        break;
+
+      case 'blur-in':
+        ctx.globalAlpha = progress;
+        // Canvas doesn't support blur directly on text, simulate with reduced opacity
+        ctx.globalAlpha = progress * 0.9 + 0.1;
+        break;
+
+      case 'blur-out':
+        ctx.globalAlpha = progress;
+        ctx.globalAlpha = (1 - progress) * 0.9 + 0.1;
+        break;
+
+      case 'fade-slide-up':
+        ctx.globalAlpha = progress;
+        ctx.translate(0, (1 - progress) * 80);
+        break;
+
+      case 'scale-fade':
+        const scaleFade = 0.3 + (progress * 0.7);
+        ctx.globalAlpha = progress;
+        ctx.translate(position.x, position.y);
+        ctx.scale(scaleFade, scaleFade);
+        ctx.translate(-position.x, -position.y);
+        break;
+
+      case 'typewriter':
+        // For typewriter, we'll handle it in the render function
+        ctx.globalAlpha = 1;
         break;
 
       default:
