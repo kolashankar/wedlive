@@ -82,7 +82,8 @@ export default function TemplateDetailModal({ template, weddingId, onClose, onAp
         `${API_URL}/api/weddings/${weddingId}/assign-template`,
         {
           template_id: template.id,
-          slot: 1
+          slot: 1,
+          customizations: customizations
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -104,6 +105,52 @@ export default function TemplateDetailModal({ template, weddingId, onClose, onAp
       });
     } finally {
       setApplying(false);
+    }
+  };
+
+  const handleSaveCustomizations = (newCustomizations) => {
+    setCustomizations(newCustomizations);
+    toast({
+      title: 'Success',
+      description: 'Customizations saved!'
+    });
+  };
+
+  const handleRenderVideo = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast({
+        title: 'Error',
+        description: 'Please login first',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setRendering(true);
+      const response = await axios.post(
+        `${API_URL}/api/weddings/${weddingId}/render-template-video`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setRenderJobId(response.data.render_job_id);
+      setActiveTab('render');
+      
+      toast({
+        title: 'Render Started',
+        description: 'Your video is being rendered. This may take a few minutes.'
+      });
+    } catch (error) {
+      console.error('Failed to start render:', error);
+      toast({
+        title: 'Error',
+        description: error.response?.data?.detail || 'Failed to start rendering',
+        variant: 'destructive'
+      });
+    } finally {
+      setRendering(false);
     }
   };
 
