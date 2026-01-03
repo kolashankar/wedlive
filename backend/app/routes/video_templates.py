@@ -873,3 +873,261 @@ async def list_available_endpoints():
     return {
         "endpoints": wedding_mapper.get_available_endpoints()
     }
+
+
+# ==================== VIDEO RENDERING ENDPOINTS ====================
+
+@router.post("/weddings/{wedding_id}/render-template-video")
+async def render_template_video(
+    wedding_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Start rendering video with burned-in overlays
+    Returns render job ID for status tracking
+    """
+    try:
+        # Get wedding
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        if wedding.get("creator_id") != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Get template assignment
+        assignment = await db.wedding_template_assignments.find_one({"wedding_id": wedding_id})
+        if not assignment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No template assigned to this wedding"
+            )
+        
+        # Get template
+        template = await db.video_templates.find_one({"id": assignment["template_id"]})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        # Map wedding data to overlays
+        wedding_data = wedding_mapper.map_wedding_data(wedding)
+        
+        # Populate overlays with wedding data
+        populated_overlays = []
+        for overlay in template.get("text_overlays", []):
+            text_value = wedding_mapper.populate_overlay_text(overlay, wedding_data)
+            populated_overlays.append({
+                **overlay,
+                "text": text_value
+            })
+        
+        # Create render job
+        quality = 'hd'  # Default to HD
+        job = render_service.create_render_job(wedding_id, template["id"], quality)
+        
+        # Start rendering in background
+        video_url = template["video_data"]["original_url"]
+        output_path = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4').name
+        
+        # Run render async in background
+        asyncio.create_task(
+            _process_render_job(
+                job.job_id,
+                video_url,
+                populated_overlays,
+                output_path,
+                quality,
+                wedding_id,
+                db
+            )
+        )
+        
+        return {
+            "success": True,
+            "render_job_id": job.job_id,
+            "status": "queued",
+            "estimated_time": 120,
+            "message": "Render job started"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[RENDER_VIDEO] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start render job: {str(e)}"
+        )
+
+
+async def _process_render_job(
+    job_id: str,
+    video_url: str,
+    overlays: List[Dict],
+    output_path: str,
+    quality: str,
+    wedding_id: str,
+    db
+):
+    """Process render job in background"""
+    try:
+        # Render video
+        result = await render_service.render_video_async(
+            job_id,
+            video_url,
+            overlays,
+            output_path,
+            quality
+        )
+        
+        if result['success']:
+            # Upload rendered video to Telegram CDN
+            upload_result = await telegram_service.upload_video(
+                file_path=output_path,
+                caption=f"Rendered video for wedding {wedding_id}",
+                wedding_id=wedding_id
+            )
+            
+            if upload_result.get('success'):
+                job = render_service.get_render_job(job_id)
+                job.rendered_video_url = upload_result['cdn_url']
+                job.rendered_file_id = upload_result['file_id']
+                
+                # Update assignment with rendered video
+                await db.wedding_template_assignments.update_one(
+                    {"wedding_id": wedding_id},
+                    {
+                        "$set": {
+                            "rendered_video": {
+                                "url": upload_result['cdn_url'],
+                                "file_id": upload_result['file_id'],
+                                "rendered_at": datetime.utcnow().isoformat(),
+                                "status": "completed"
+                            }
+                        }
+                    }
+                )
+                logger.info(f"[RENDER_JOB] Uploaded rendered video for job {job_id}")
+        
+        # Cleanup temp file
+        if os.path.exists(output_path):
+            os.unlink(output_path)
+            
+    except Exception as e:
+        logger.error(f"[RENDER_JOB_BACKGROUND] Error: {str(e)}")
+
+
+@router.get("/weddings/{wedding_id}/render-jobs/{job_id}")
+async def get_render_job_status(
+    wedding_id: str,
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Get render job status
+    """
+    try:
+        # Verify wedding ownership
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        if wedding.get("creator_id") != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Get job status
+        job_status = render_service.get_job_status(job_id)
+        if not job_status:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Render job not found"
+            )
+        
+        return job_status
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[GET_RENDER_STATUS] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get render status"
+        )
+
+
+@router.get("/weddings/{wedding_id}/render-jobs/{job_id}/download")
+async def download_rendered_video(
+    wedding_id: str,
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db_dependency)
+):
+    """
+    Get download URL for rendered video
+    """
+    try:
+        # Verify wedding ownership
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        if wedding.get("creator_id") != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Get job
+        job = render_service.get_render_job(job_id)
+        if not job:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Render job not found"
+            )
+        
+        if job.status != 'completed':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Video not ready. Status: {job.status}"
+            )
+        
+        if not job.rendered_video_url:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Rendered video URL not available"
+            )
+        
+        return {
+            "success": True,
+            "download_url": job.rendered_video_url,
+            "file_id": job.rendered_file_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[DOWNLOAD_RENDER] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get download URL"
+        )
+
