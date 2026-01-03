@@ -165,7 +165,26 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
       current[keys[keys.length - 1]] = value;
       return updated;
     });
+
+    // Auto-save after a short delay for real-time updates
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      handleSave();
+    }, 500);
   };
+
+  const autoSaveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSave = () => {
     onUpdate(formData);
