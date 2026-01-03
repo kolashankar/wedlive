@@ -244,7 +244,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
             </div>
 
             <div>
-              <Label>Position</Label>
+              <Label>Position (Drag on video or use inputs)</Label>
               <div className="grid grid-cols-2 gap-2 mt-1">
                 <div>
                   <Label className="text-xs">X (px)</Label>
