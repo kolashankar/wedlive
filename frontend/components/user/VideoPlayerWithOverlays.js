@@ -63,13 +63,16 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
 
   const renderOverlays = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !fontsLoaded) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Calculate scale for mobile
+    const scale = isMobile ? 0.5 : 1;
 
     // Filter overlays visible at current time
     const visibleOverlays = overlays.filter(overlay => {
@@ -86,15 +89,32 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
       const text = overlay.text || overlay.placeholder_text || 'Sample Text';
       const position = overlay.position || { x: 960, y: 540 };
       const styling = overlay.styling || {};
+      const responsive = overlay.responsive || {};
 
       // Save context state
       ctx.save();
 
+      // Use mobile settings if on mobile
+      const fontSize = isMobile 
+        ? (responsive.mobile_font_size || styling.font_size * 0.6) 
+        : (styling.font_size || 48);
+      
+      const posX = isMobile && responsive.mobile_position 
+        ? (responsive.mobile_position.unit === 'percent' 
+          ? canvas.width * responsive.mobile_position.x / 100 
+          : responsive.mobile_position.x)
+        : position.x;
+      
+      const posY = isMobile && responsive.mobile_position
+        ? (responsive.mobile_position.unit === 'percent'
+          ? canvas.height * responsive.mobile_position.y / 100
+          : responsive.mobile_position.y)
+        : position.y;
+
       // Set font
-      const fontSize = styling.font_size || 48;
       const fontWeight = styling.font_weight || 'normal';
       const fontFamily = styling.font_family || 'Arial';
-      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+      ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
       
       // Set color
       ctx.fillStyle = styling.color || '#ffffff';
@@ -109,14 +129,23 @@ export default function VideoPlayerWithOverlays({ videoUrl, overlays, weddingDat
         ctx.shadowOffsetY = 2;
       }
 
+      // Add text stroke if enabled
+      if (styling.stroke?.enabled) {
+        ctx.strokeStyle = styling.stroke.color || '#000000';
+        ctx.lineWidth = styling.stroke.width || 2;
+      }
+
       // Calculate animation progress
       const progress = calculateAnimationProgress(overlay, currentTime);
       
       // Apply animation effects
-      applyAnimation(ctx, overlay.animation, progress, position, fontSize);
+      applyAnimation(ctx, overlay.animation, progress, { x: posX, y: posY }, fontSize);
 
-      // Render text
-      ctx.fillText(text, position.x, position.y);
+      // Render text with stroke if enabled
+      if (styling.stroke?.enabled) {
+        ctx.strokeText(text, posX, posY);
+      }
+      ctx.fillText(text, posX, posY);
 
       // Restore context state
       ctx.restore();
