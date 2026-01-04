@@ -211,33 +211,6 @@ export default function Layout1({
              </section>
            )}
 
-           {/* Video Template Section - NEW */}
-           {hasTemplateVideo && templateVideoWeddingId && (
-             <section className="bg-gradient-to-br from-rose-50 to-purple-50 p-12 md:p-24">
-                <div className="mb-12 text-center">
-                   <span className="text-xs font-bold uppercase tracking-widest bg-rose-500 text-white px-3 py-1 rounded">
-                      Our Invitation
-                   </span>
-                   <h3 className="text-4xl md:text-5xl font-bold mt-6 mb-4" style={{ color: primaryColor }}>
-                      Watch Our Video Invitation
-                   </h3>
-                   <p className="text-gray-600 max-w-2xl mx-auto">
-                      A special message from us to you
-                   </p>
-                </div>
-
-                {/* Template Video Player Container */}
-                <div className="max-w-4xl mx-auto">
-                   <div className="aspect-video w-full rounded-lg overflow-hidden shadow-2xl">
-                      <TemplateVideoPlayer 
-                        weddingId={templateVideoWeddingId}
-                        className="w-full h-full"
-                      />
-                   </div>
-                </div>
-             </section>
-           )}
-
            {/* Video / Live Stream */}
            {(preWeddingVideo || playback_url || recording_url || onEnter) && (
              <section className="bg-black text-white p-12 md:p-24">
