@@ -13,6 +13,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED: Video template integration fix working correctly. API endpoint /api/viewer/wedding/{wedding_id}/all returns complete video template data with all required fields: id, name, video_url (valid Telegram CDN URL), thumbnail_url, duration (8.5 seconds), and resolution. Fixed field mapping from video_templates collection is working properly - original_url, preview_thumbnail, and duration_seconds are correctly extracted and returned. Tested with wedding ID b75e23c9-ca5e-4d10-bf20-065169d1a01e. Minor fix applied: installed missing setuptools package to resolve pkg_resources import error."
+  
+  - task: "Add text overlay data to viewer API endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/app/routes/viewer_access.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IMPLEMENTED: Added WeddingDataMapper service to viewer_access.py and updated /api/viewer/wedding/{wedding_id}/all endpoint to include text_overlays array with populated wedding data. Each overlay now includes text_value field with actual data (bride_name, groom_name, venue, etc.) replacing placeholder text. This enables overlays to display correctly in the frontend player."
 
 frontend:
   - task: "Fix video template display in all 8 layouts in ADMIN wedding editor page"
