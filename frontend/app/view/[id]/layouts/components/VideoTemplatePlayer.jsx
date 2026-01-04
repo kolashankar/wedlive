@@ -64,6 +64,24 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     (a.layer_index || 0) - (b.layer_index || 0)
   );
 
+  // Convert pixel position to percentage
+  // Video standard canvas is 1920x1080
+  const convertPositionToPercentage = (position) => {
+    const CANVAS_WIDTH = 1920;
+    const CANVAS_HEIGHT = 1080;
+    
+    // If position values are already percentages (< 100), return as is
+    if (position.x <= 100 && position.y <= 100) {
+      return { x: position.x, y: position.y };
+    }
+    
+    // Convert pixels to percentage
+    return {
+      x: (position.x / CANVAS_WIDTH) * 100,
+      y: (position.y / CANVAS_HEIGHT) * 100
+    };
+  };
+
   // Calculate animation progress
   const getAnimationStyle = (overlay) => {
     const startTime = overlay.timing?.start_time || 0;
