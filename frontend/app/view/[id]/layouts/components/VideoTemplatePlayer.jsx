@@ -177,23 +177,23 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     return { opacity, transform };
   };
 
-  // Calculate responsive font size using viewport-relative units
-  // Font size scales with container width to maintain proportions across all devices
-  const getResponsiveFontSize = (baseFontSize) => {
-    if (!containerRef.current) return `${baseFontSize}px`;
+  // Calculate scale factor for responsive overlay sizing
+  // This ensures overlays scale proportionally with video container
+  const getOverlayScale = () => {
+    if (!containerRef.current) return 1;
     
     const container = containerRef.current;
     const containerWidth = container.clientWidth;
     const referenceWidth = referenceResolution.width;
     
-    // Calculate vw unit relative to container width
-    // This ensures font scales proportionally with video size
-    const vwValue = (baseFontSize / referenceWidth) * 100;
+    // Calculate scale factor based on container width vs reference width
+    const scale = containerWidth / referenceWidth;
     
-    // Use clamp to prevent fonts from becoming too small or too large
-    // min: 12px, preferred: calculated vw, max: baseFontSize
-    return `clamp(12px, ${vwValue}vw, ${baseFontSize}px)`;
+    // Ensure minimum scale for readability
+    return Math.max(0.3, scale);
   };
+  
+  const overlayScale = getOverlayScale();
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
