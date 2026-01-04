@@ -69,10 +69,11 @@ export default function TemplateEditor({ template, onSave }) {
       label: selectedEndpoint.label,
       placeholder_text: selectedEndpoint.placeholder,
       position: { 
-        x: 960, 
-        y: 540, 
+        x: 50,  // Center X as percentage
+        y: 50,  // Center Y as percentage
         alignment: 'center', 
-        anchor_point: 'center' 
+        anchor_point: 'center',
+        unit: 'percent'
       },
       timing: { 
         start_time: 0, 
