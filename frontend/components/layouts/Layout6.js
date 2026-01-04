@@ -100,89 +100,103 @@ export default function Layout6({
       {/* --- CONTENT LAYER --- */}
       <div className="relative z-10 w-full">
         
-        {/* HERO SECTION */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
+        {/* HERO SECTION - Section 1 */}
+        <section className="min-h-screen flex flex-col items-center justify-center px-4 text-center relative">
             
-            {/* Decorative Floating Orbs */}
-            <motion.div 
-              className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-[100px] opacity-30"
-              style={{ background: primaryColor }}
-              animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-              transition={{ duration: 10, repeat: Infinity }}
-            />
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1 }}
-              className="relative z-20"
-            >
-              <h2 
-                className="text-xl sm:text-2xl md:text-3xl tracking-[0.3em] uppercase text-white/80 mb-6 font-light"
-                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
-              >
-                {welcomeMessage}
-              </h2>
-
-              <div className="flex flex-col items-center justify-center">
-                <motion.h1 
-                  className="text-6xl sm:text-7xl md:text-9xl text-white drop-shadow-2xl"
-                  style={{ fontFamily: font, color: primaryColor }}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.8 }}
-                >
-                  {bride_names}
-                </motion.h1>
-                
-                <motion.span 
-                  className="text-4xl text-white/90 my-2"
-                  style={{ fontFamily: font }}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  &
-                </motion.span>
-
-                <motion.h1 
-                  className="text-6xl sm:text-7xl md:text-9xl text-white drop-shadow-2xl"
-                  style={{ fontFamily: font, color: primaryColor }}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.8 }}
-                >
-                  {groom_names}
-                </motion.h1>
+            {/* Video Template in Hero Section */}
+            {hasTemplateVideo && templateVideoWeddingId ? (
+              <div className="absolute inset-0 flex items-center justify-center z-30">
+                <div className="w-full max-w-4xl mx-auto aspect-video">
+                  <TemplateVideoPlayer 
+                    weddingId={templateVideoWeddingId}
+                    className="w-full h-full"
+                  />
+                </div>
               </div>
+            ) : (
+              <>
+                {/* Decorative Floating Orbs */}
+                <motion.div 
+                  className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-[100px] opacity-30"
+                  style={{ background: primaryColor }}
+                  animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
+                  transition={{ duration: 10, repeat: Infinity }}
+                />
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1 }}
+                  className="relative z-20"
+                >
+                  <h2 
+                    className="text-xl sm:text-2xl md:text-3xl tracking-[0.3em] uppercase text-white/80 mb-6 font-light"
+                    style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+                  >
+                    {welcomeMessage}
+                  </h2>
 
-              {/* Date Badge */}
-              {isMounted && event_date && (() => {
-                try {
-                  const parsedDate = parseISO(event_date);
-                  if (!isValid(parsedDate)) return null;
-                  return (
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1 }}
-                      className="mt-12 inline-block"
+                  <div className="flex flex-col items-center justify-center">
+                    <motion.h1 
+                      className="text-6xl sm:text-7xl md:text-9xl text-white drop-shadow-2xl"
+                      style={{ fontFamily: font, color: primaryColor }}
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
                     >
-                      <div 
-                        className="px-8 py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur-md shadow-lg"
-                      >
-                        <span className="text-xl sm:text-2xl text-white font-light tracking-wide">
-                          {format(parsedDate, 'MMMM do, yyyy')}
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                } catch (e) {
-                  console.error('Invalid date:', event_date, e);
-                  return null;
-                }
-              })()}
-            </motion.div>
+                      {bride_names}
+                    </motion.h1>
+                    
+                    <motion.span 
+                      className="text-4xl text-white/90 my-2"
+                      style={{ fontFamily: font }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      &
+                    </motion.span>
+
+                    <motion.h1 
+                      className="text-6xl sm:text-7xl md:text-9xl text-white drop-shadow-2xl"
+                      style={{ fontFamily: font, color: primaryColor }}
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                    >
+                      {groom_names}
+                    </motion.h1>
+                  </div>
+
+                  {/* Date Badge */}
+                  {isMounted && event_date && (() => {
+                    try {
+                      const parsedDate = parseISO(event_date);
+                      if (!isValid(parsedDate)) return null;
+                      return (
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1 }}
+                          className="mt-12 inline-block"
+                        >
+                          <div 
+                            className="px-8 py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur-md shadow-lg"
+                          >
+                            <span className="text-xl sm:text-2xl text-white font-light tracking-wide">
+                              {format(parsedDate, 'MMMM do, yyyy')}
+                            </span>
+                          </div>
+                        </motion.div>
+                      );
+                    } catch (e) {
+                      console.error('Invalid date:', event_date, e);
+                      return null;
+                    }
+                  })()}
+                </motion.div>
+              </>
+            )}
 
             {/* Scroll Indicator */}
             <motion.div 
