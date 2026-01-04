@@ -480,25 +480,26 @@ export default function InteractiveOverlayCanvas({
     const dims = overlayDimensions[overlay.id];
     if (!dims) return;
 
-    const position = overlay.position || { x: 960, y: 540 };
+    const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
+    const pixelPos = percentToPixels(position);
     const padding = 10;
     const textAlign = overlay.styling?.text_align || 'center';
     
     let boxX;
     switch (textAlign) {
       case 'left':
-        boxX = position.x - padding;
+        boxX = pixelPos.x - padding;
         break;
       case 'right':
-        boxX = position.x - dims.width - padding;
+        boxX = pixelPos.x - dims.width - padding;
         break;
       case 'center':
       default:
-        boxX = position.x - dims.width / 2 - padding;
+        boxX = pixelPos.x - dims.width / 2 - padding;
         break;
     }
     
-    const boxY = position.y - dims.height / 2 - padding;
+    const boxY = pixelPos.y - dims.height / 2 - padding;
     const boxWidth = dims.width + padding * 2;
     const boxHeight = dims.height + padding * 2;
 
@@ -507,7 +508,7 @@ export default function InteractiveOverlayCanvas({
     ctx.setLineDash([3, 3]);
     ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
     ctx.setLineDash([]);
-  }, [overlayDimensions]);
+  }, [overlayDimensions, percentToPixels]);
 
   // Render canvas
   const renderCanvas = useCallback(() => {
