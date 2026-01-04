@@ -269,6 +269,21 @@ function WeddingViewPageContent({ params, searchParams }) {
       setWedding(weddingData);
       setViewerCount(weddingData.viewers_count || 0);
       
+      // Fetch video template if assigned
+      try {
+        const viewerResponse = await api.get(`/api/viewer/wedding/${weddingId}/all`);
+        if (viewerResponse.data?.video_template) {
+          setVideoTemplate(viewerResponse.data.video_template);
+          console.log('Video template loaded:', viewerResponse.data.video_template);
+        } else {
+          setVideoTemplate(null);
+          console.log('No video template assigned to this wedding');
+        }
+      } catch (error) {
+        console.error('Error loading video template:', error);
+        setVideoTemplate(null);
+      }
+      
       // Determine if we should show theme based on live parameter
       // FIX 2: Properly check theme settings and subscription before showing layout
       const hasThemeSettings = weddingData.theme_settings && 
