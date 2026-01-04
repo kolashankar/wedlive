@@ -63,6 +63,29 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
     return null;
   }
 
+  // Convert pixel position to percentage
+  // Video standard canvas is 1920x1080
+  const convertPositionToPercentage = (position) => {
+    if (!position) return { x: 50, y: 50 };
+    
+    const CANVAS_WIDTH = 1920;
+    const CANVAS_HEIGHT = 1080;
+    
+    // If EITHER position value is greater than 100, treat as pixels and convert
+    // This handles the case where coordinates are stored in pixels (e.g., x: 960, y: 336)
+    if (position.x > 100 || position.y > 100) {
+      const converted = {
+        x: (position.x / CANVAS_WIDTH) * 100,
+        y: (position.y / CANVAS_HEIGHT) * 100
+      };
+      console.log('[TemplateVideoPlayer] Converted position from pixels to percentage:', position, '->', converted);
+      return converted;
+    }
+    
+    // Already in percentage format
+    return { x: position.x, y: position.y };
+  };
+
   return (
     <div className={`relative ${className}`}>
       {/* Video Player - Auto-play, Loop, No Controls */}
@@ -85,27 +108,33 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
       {/* Dynamic Overlays - Always Visible */}
       {overlays.length > 0 && (
         <div className="absolute inset-0 pointer-events-none">
-          {overlays.map((overlay, index) => (
-            <div
-              key={overlay.id || index}
-              className="absolute whitespace-nowrap"
-              style={{
-                left: `${overlay.position?.x || 50}%`,
-                top: `${overlay.position?.y || 50}%`,
-                transform: 'translate(-50%, -50%)',
-                fontSize: `${overlay.style?.font_size || 24}px`,
-                fontFamily: overlay.style?.font_family || 'Arial',
-                color: overlay.style?.color || '#FFFFFF',
-                fontWeight: overlay.style?.font_weight || 'normal',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                textAlign: 'center',
-                maxWidth: '80%',
-                animation: overlay.animation?.type ? `${overlay.animation.type} ${overlay.animation.duration}s ${overlay.animation.delay}s` : 'none'
-              }}
-            >
-              {overlay.text_value || overlay.text}
-            </div>
-          ))}
+          {overlays.map((overlay, index) => {
+            const position = overlay.position || { x: 50, y: 50 };
+            const percentagePos = convertPositionToPercentage(position);
+            const styling = overlay.styling || overlay.style || {};
+            
+            return (
+              <div
+                key={overlay.id || index}
+                className="absolute whitespace-nowrap"
+                style={{
+                  left: `${percentagePos.x}%`,
+                  top: `${percentagePos.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: `${styling.font_size || 24}px`,
+                  fontFamily: styling.font_family || 'Arial',
+                  color: styling.color || '#FFFFFF',
+                  fontWeight: styling.font_weight || 'normal',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                  textAlign: 'center',
+                  maxWidth: '80%',
+                  zIndex: overlay.layer_index || 1,
+                }}
+              >
+                {overlay.text_value || overlay.text || overlay.placeholder_text || 'Sample Text'}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
