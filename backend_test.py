@@ -306,46 +306,76 @@ def test_wedding_without_template():
 
 def main():
     """Run all backend tests"""
-    log_test("=" * 60)
-    log_test("BACKEND API TESTING - VIDEO TEMPLATE INTEGRATION FIX")
-    log_test("=" * 60)
+    log_test("=" * 80)
+    log_test("BACKEND API TESTING - VIDEO TEMPLATE OVERLAY RENDERING FIX")
+    log_test("=" * 80)
     log_test(f"Backend URL: {BACKEND_URL}")
     log_test(f"Test Wedding ID: {TEST_WEDDING_ID}")
     log_test("")
+    log_test("TESTING REQUIREMENTS FROM REVIEW REQUEST:")
+    log_test("1. /api/weddings/{wedding_id}/template-assignment endpoint")
+    log_test("   - Should return populated_overlays with text_value, position, styling, timing")
+    log_test("2. /api/video-templates/{template_id}/preview endpoint with wedding_id")
+    log_test("   - Should return overlays array with text field (different from assignment)")
+    log_test("")
     
-    # Test 1: Main wedding viewer endpoint
-    log_test("TEST 1: Wedding viewer endpoint with video template data")
-    test1_result = test_wedding_viewer_endpoint()
+    # Test 1: Template assignment endpoint
+    log_test("TEST 1: Wedding template assignment endpoint")
+    test1_result = test_template_assignment_endpoint()
     
     log_test("")
     
-    # Test 2: Wedding without template (optional)
-    log_test("TEST 2: Wedding without template (null handling)")
-    test2_result = test_wedding_without_template()
+    # Test 2: Template preview endpoint
+    log_test("TEST 2: Video template preview endpoint with wedding data")
+    test2_result = test_template_preview_endpoint()
     
     log_test("")
-    log_test("=" * 60)
+    
+    # Test 3: Edge case testing
+    log_test("TEST 3: Edge case - wedding without template")
+    test3_result = test_wedding_without_template()
+    
+    log_test("")
+    log_test("=" * 80)
     log_test("TEST SUMMARY")
-    log_test("=" * 60)
+    log_test("=" * 80)
     
     if test1_result:
-        log_test("✅ Main test PASSED: Video template data is returned correctly")
+        log_test("✅ Template assignment endpoint PASSED")
     else:
-        log_test("❌ Main test FAILED: Video template data has issues")
+        log_test("❌ Template assignment endpoint FAILED")
         
     if test2_result:
-        log_test("✅ Null handling test PASSED")
+        log_test("✅ Template preview endpoint PASSED")
     else:
-        log_test("⚠️ Null handling test had issues (non-critical)")
+        log_test("❌ Template preview endpoint FAILED")
         
-    overall_success = test1_result
+    if test3_result:
+        log_test("✅ Edge case testing PASSED")
+    else:
+        log_test("⚠️ Edge case testing had issues (non-critical)")
+        
+    overall_success = test1_result and test2_result
     
     if overall_success:
         log_test("🎉 OVERALL RESULT: TESTS PASSED")
-        log_test("Video template integration fix is working correctly")
+        log_test("Video template overlay rendering fix endpoints are working correctly")
+        log_test("")
+        log_test("KEY FINDINGS:")
+        log_test("- Template assignment endpoint returns populated_overlays with text_value field")
+        log_test("- Template preview endpoint returns overlays with text field")
+        log_test("- Both endpoints provide pixel position coordinates (e.g., x:960, y:336)")
+        log_test("- Position conversion logic in frontend should convert pixels to percentages")
+        log_test("- Overlays should be visible in correct positions on video")
     else:
         log_test("💥 OVERALL RESULT: TESTS FAILED")
-        log_test("Video template integration fix needs attention")
+        log_test("Video template overlay rendering fix needs attention")
+        log_test("")
+        log_test("ISSUES FOUND:")
+        if not test1_result:
+            log_test("- Template assignment endpoint has issues")
+        if not test2_result:
+            log_test("- Template preview endpoint has issues")
         
     return overall_success
 
