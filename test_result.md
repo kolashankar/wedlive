@@ -32,11 +32,11 @@ backend:
 frontend:
   - task: "Fix video template display in all 8 layouts in ADMIN wedding editor page"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/app/weddings/[id]/page.js, /app/frontend/components/LayoutRenderer.js, /app/frontend/components/layouts/*"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -44,6 +44,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: Updated /app/weddings/[id]/page.js to: 1) Add videoTemplate state, 2) Fetch video template data from /api/viewer/wedding/{id}/all endpoint, 3) Pass videoTemplate prop to LayoutRenderer component. The LayoutRenderer already had logic to use videoTemplate prop (line 441: hasTemplateVideo: !!videoTemplate?.id), but the prop wasn't being passed. All 8 layouts in /components/layouts/ already have TemplateVideoPlayer component implemented and will automatically fetch and display video template when hasTemplateVideo flag is true."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: React error #310 prevents page rendering on both /weddings/[id] and /view/[id] pages. While API correctly returns video template data with overlays (verified: text_value='Radha & Rajagopal', position={x:960, y:336}), the frontend crashes with 'Minified React error #310' before VideoTemplatePlayer can render. This is a useEffect hook order violation in production build. The LayoutRenderer component correctly passes videoTemplate prop to layout components (ModernScrapbook uses VideoTemplatePlayer), but React error prevents execution. Admin template page (/admin/video-templates/[id]) shows 404 error."
   
   - task: "Fix missing template overlays in layout rendering"
     implemented: true
