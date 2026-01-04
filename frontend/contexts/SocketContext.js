@@ -213,10 +213,8 @@ export function SocketProvider({ children, weddingId }) {
 
 export function useSocket() {
   const context = useContext(SocketContext);
-  if (context === undefined) {
-    throw new Error('useSocket must be used within a SocketProvider');
-  }
-  // Return empty functions if context is null (prevents React error #130)
+  
+  // Return empty functions if context is null (prevents issues when provider is not available)
   if (!context) {
     return {
       socket: null,
@@ -233,5 +231,6 @@ export function useSocket() {
       updateQuality: () => {}
     };
   }
+  
   return context;
 }
