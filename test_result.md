@@ -29,6 +29,21 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: Updated /app/weddings/[id]/page.js to: 1) Add videoTemplate state, 2) Fetch video template data from /api/viewer/wedding/{id}/all endpoint, 3) Pass videoTemplate prop to LayoutRenderer component. The LayoutRenderer already had logic to use videoTemplate prop (line 441: hasTemplateVideo: !!videoTemplate?.id), but the prop wasn't being passed. All 8 layouts in /components/layouts/ already have TemplateVideoPlayer component implemented and will automatically fetch and display video template when hasTemplateVideo flag is true."
+  
+  - task: "Fix missing template overlays in layout rendering"
+    implemented: true
+    working: true
+    file: "/app/backend/app/routes/viewer_access.py, /app/frontend/app/view/[id]/layouts/components/VideoTemplatePlayer.jsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "ISSUE: Text overlays configured in the admin template editor (couple names, wedding details, dates, etc.) are not rendering when templates are used in layouts. The video plays but overlays are missing."
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: 1) Backend - Updated /api/viewer/wedding/{wedding_id}/all endpoint to include populated text_overlays with wedding data (bride_name, groom_name, etc.). Added WeddingDataMapper import and logic to populate overlay text values. 2) Frontend - Completely rewrote VideoTemplatePlayer.jsx component to render overlays with: time-based visibility (start_time/end_time), entrance/exit animations (fade-in, slide-up, zoom, bounce, etc.), proper z-index layering, positioning (x/y %), font styling (family, size, weight, color), text shadows and strokes, letter spacing and line height. Overlays now render on top of video with proper z-index=10 and layer_index sorting."
 
 metadata:
   created_by: "testing_agent"
