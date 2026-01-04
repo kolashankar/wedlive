@@ -8,6 +8,8 @@ export default function ClassicSplitHero({ wedding, themeSettings, media, videoT
   const secondaryColor = themeSettings?.secondary_color || '#8b0000'; 
   
   const studioLogo = themeSettings?.studio_details?.logo_url || wedding?.branding?.logo_url;
+  
+  console.log('ClassicSplitHero - videoTemplate:', videoTemplate);
 
   return (
     <div className="w-full bg-[#fffcf5] text-gray-800 overflow-hidden relative">
