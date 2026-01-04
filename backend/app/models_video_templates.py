@@ -69,13 +69,11 @@ class OverlayPosition(BaseModel):
     anchor_point: AnchorPoint = Field(default=AnchorPoint.CENTER)
     unit: str = Field(default="percent", description="Coordinate unit system (percent or pixel)")
     
-    @validator('x', 'y')
-    def validate_percentage(cls, v, values, field):
-        # If unit is percent, ensure values are 0-100
-        # If unit is pixel, allow any positive value
-        unit = values.get('unit', 'percent')
-        if unit == 'percent' and (v < 0 or v > 100):
-            raise ValueError(f'{field.name} must be between 0 and 100 for percentage-based positioning')
+    @validator('x', 'y', allow_reuse=True)
+    def validate_percentage(cls, v):
+        # Allow any positive value - validation will depend on unit
+        if v < 0:
+            raise ValueError('Coordinate values must be positive')
         return v
 
 
