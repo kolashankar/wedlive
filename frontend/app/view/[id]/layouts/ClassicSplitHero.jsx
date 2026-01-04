@@ -67,38 +67,7 @@ export default function ClassicSplitHero({ wedding, themeSettings, media, videoT
             </div>
         </motion.div>
 
-        {/* Central Overlay Card */}
-        <motion.div 
-            initial={{ scale: 0.8, opacity: 0, y: 50 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8, type: 'spring' }}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-[90%] md:w-[500px] p-2 rounded-xl"
-        >
-             {/* Couple Photo Container with Border */}
-             <div className="relative bg-white/95 backdrop-blur-md p-6 rounded-lg shadow-2xl text-center border border-gray-100">
-                {themeSettings?.couple_border_url && (
-                     <div className="absolute -inset-4 z-40 pointer-events-none">
-                         <img src={themeSettings.couple_border_url} className="w-full h-full object-contain" alt="frame" />
-                     </div>
-                )}
-                
-                <h1 className="text-4xl md:text-5xl font-serif mb-4" style={{ color: secondaryColor }}>
-                    {wedding.bride_name} <br/> <span className="text-2xl text-gray-400">&</span> <br/> {wedding.groom_name}
-                </h1>
-                
-                <div className="flex items-center justify-center gap-2 text-gray-700 font-medium mb-6 text-sm">
-                     <Calendar className="w-4 h-4" style={{ color: primaryColor }} />
-                     <span>{format(new Date(wedding.scheduled_date), 'MMMM d, yyyy')}</span>
-                     <span className="mx-2">•</span>
-                     <MapPin className="w-4 h-4" style={{ color: primaryColor }} />
-                     <span>{wedding.location || 'Wedding Venue'}</span>
-                </div>
-
-                <div className="my-6">
-                    <Countdown targetDate={wedding.scheduled_date} color={secondaryColor} />
-                </div>
-             </div>
-        </motion.div>
+        {/* Removed Central Overlay Card - info is in template video */}
       </div>
 
       {/* Precious Moments */}
