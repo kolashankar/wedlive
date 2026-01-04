@@ -2,6 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-Responsive Video Overlay Fixes */
+/* Ensure overlays remain locked to video dimensions across all screen sizes */
+@layer components {
+  /* Video template player - prevent any layout shifts */
+  .video-template-container {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure video container respects aspect ratio on all devices */
+  .video-template-container > div {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Lock overlays to video frame - no flex/grid interference */
+  .video-overlay-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  /* Individual overlay positioning */
+  .video-overlay-text {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  /* Prevent Tailwind responsive classes from affecting overlays */
+  @media (max-width: 640px) {
+    .video-overlay-text {
+      /* Override any sm: classes that might interfere */
+      position: absolute !important;
+      display: block !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .video-overlay-text {
+      /* Override any md: classes that might interfere */
+      position: absolute !important;
+      display: block !important;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .video-overlay-text {
+      /* Override any lg: classes that might interfere */
+      position: absolute !important;
+      display: block !important;
+    }
+  }
+}
+
 body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
