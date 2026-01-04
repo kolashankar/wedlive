@@ -251,25 +251,6 @@ export default function Layout3({
                    </div>
                 ))}
 
-                {/* 4. VIDEO TEMPLATE CARD (Desktop) */}
-                {hasTemplateVideo && templateVideoWeddingId && (
-                   <div className="w-[50vw] shrink-0 bg-gradient-to-br from-rose-50 to-purple-50 p-12 rounded-[3rem] shadow-2xl relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-64 h-64 bg-pink-500 rounded-full blur-[100px] opacity-20" />
-                      
-                      <div className="relative z-10">
-                         <div className="text-pink-600 uppercase tracking-widest text-sm mb-2">Our Invitation</div>
-                         <h3 className="text-4xl font-bold mb-8" style={{ color: primaryColor }}>Watch Our Video</h3>
-                         
-                         <div className="aspect-video w-full rounded-xl overflow-hidden shadow-2xl bg-white">
-                            <TemplateVideoPlayer 
-                              weddingId={templateVideoWeddingId}
-                              className="w-full h-full"
-                            />
-                         </div>
-                      </div>
-                   </div>
-                )}
-
                 {/* 5. EVENT DETAILS CARD */}
                 <div className="w-[50vw] shrink-0 flex items-center gap-12">
                    <div className="w-full bg-slate-900 text-white p-16 rounded-[3rem] shadow-2xl relative overflow-hidden">
