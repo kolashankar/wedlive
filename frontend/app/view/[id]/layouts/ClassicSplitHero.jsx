@@ -1,11 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Heart } from 'lucide-react';
-import { format } from 'date-fns';
-import Countdown from './Countdown';
 import BorderedPhoto from './components/BorderedPhoto';
+import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 
-export default function ClassicSplitHero({ wedding, themeSettings, media }) {
+export default function ClassicSplitHero({ wedding, themeSettings, media, videoTemplate }) {
   const primaryColor = themeSettings?.primary_color || '#d4af37'; 
   const secondaryColor = themeSettings?.secondary_color || '#8b0000'; 
   
@@ -18,6 +16,13 @@ export default function ClassicSplitHero({ wedding, themeSettings, media }) {
             <div className="absolute inset-0 z-0 opacity-20" 
                  style={{ backgroundImage: `url('${themeSettings.layout_page_background_url}')`, backgroundSize: 'cover' }} />
         )}
+
+      {/* Video Template Section */}
+      {videoTemplate && (
+        <div className="container mx-auto px-4 py-8">
+          <VideoTemplatePlayer videoTemplate={videoTemplate} />
+        </div>
+      )}
 
       {/* Hero Section */}
       <div className="relative min-h-screen flex flex-col md:flex-row items-stretch">
