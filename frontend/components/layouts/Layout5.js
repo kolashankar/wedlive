@@ -266,27 +266,6 @@ export default function Layout5({
             </motion.div>
           )}
 
-          {/* Video Template Card */}
-          {hasTemplateVideo && templateVideoWeddingId && (
-            <motion.div
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="bg-white p-4 shadow-xl"
-            >
-              <div className="mb-4 px-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Our Invitation</h3>
-              </div>
-              <div className="aspect-video w-full bg-gray-100 relative">
-                <TemplateVideoPlayer 
-                  weddingId={templateVideoWeddingId}
-                  className="w-full h-full"
-                />
-              </div>
-            </motion.div>
-          )}
-
           {/* Live Stream Ticket */}
           {(playback_url || recording_url || onEnter) && (
             <motion.div
