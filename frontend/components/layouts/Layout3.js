@@ -54,6 +54,8 @@ export default function Layout3({
     preWeddingVideo = null,
     borders = {},
     borderMasks = {},
+    templateVideoWeddingId = null,
+    hasTemplateVideo = false,
   } = layoutConfig;
 
   if (!isMounted) return null;
