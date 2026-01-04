@@ -152,7 +152,37 @@ export default function InteractiveOverlayCanvas({
     };
   }, [selectedOverlay, shiftPressed, onUpdateOverlay, handleUndo, handleRedo]);
 
-  // Measure text dimensions for each overlay
+  // Helper function to wrap text into multiple lines based on max width
+  const wrapText = useCallback((ctx, text, maxWidth, letterSpacing = 0) => {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+      let testWidth = ctx.measureText(testLine).width;
+      
+      // Add letter spacing to width calculation
+      if (letterSpacing > 0) {
+        testWidth += letterSpacing * (testLine.length - 1);
+      }
+
+      if (testWidth > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = words[i];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    return lines.length > 0 ? lines : [text];
+  }, []);
+
+  // Measure text dimensions for each overlay with word wrapping support
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -163,6 +193,7 @@ export default function InteractiveOverlayCanvas({
     overlays.forEach(overlay => {
       const text = overlay.placeholder_text || overlay.endpoint_key || 'Sample Text';
       const styling = overlay.styling || {};
+      const dimensions_data = overlay.dimensions || {};
       
       const fontSize = styling.font_size || 48;
       const fontWeight = styling.font_weight || 'normal';
@@ -170,24 +201,41 @@ export default function InteractiveOverlayCanvas({
       const letterSpacing = styling.letter_spacing || 0;
       const lineHeight = styling.line_height || 1.2;
       
-      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-      const metrics = ctx.measureText(text);
+      // Get text box width - default to auto-width if not set
+      const boxWidthPercent = dimensions_data.width || null;
+      const boxWidth = boxWidthPercent ? (boxWidthPercent / 100) * CANVAS_WIDTH : null;
       
-      // Calculate width with letter spacing
-      let width = metrics.width;
-      if (letterSpacing > 0) {
-        width += letterSpacing * (text.length - 1);
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+      
+      let width, height;
+      let wrappedLines = [text]; // Default to single line
+      
+      if (boxWidth) {
+        // Word wrap text within the box width
+        wrappedLines = wrapText(ctx, text, boxWidth, letterSpacing);
+        width = boxWidth;
+        height = wrappedLines.length * fontSize * lineHeight;
+      } else {
+        // Auto-width: single line
+        const metrics = ctx.measureText(text);
+        width = metrics.width;
+        if (letterSpacing > 0) {
+          width += letterSpacing * (text.length - 1);
+        }
+        height = fontSize * lineHeight;
       }
       
       dimensions[overlay.id] = {
         width: width,
-        height: fontSize * lineHeight,
-        baseline: fontSize
+        height: height,
+        baseline: fontSize,
+        lines: wrappedLines,
+        lineHeight: fontSize * lineHeight
       };
     });
 
     setOverlayDimensions(dimensions);
-  }, [overlays]);
+  }, [overlays, wrapText]);
 
   // Helper functions for rendering
   const renderTextWithLetterSpacing = useCallback((ctx, text, x, y, spacing, isStroke) => {
