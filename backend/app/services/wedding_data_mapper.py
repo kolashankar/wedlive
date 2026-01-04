@@ -30,12 +30,20 @@ class WeddingDataMapper:
             # Format couple names
             couple_names = f"{bride_name} & {groom_name}" if bride_name and groom_name else ""
             
-            # Format date
-            event_date = wedding.get('event_date', '')
-            formatted_date = WeddingDataMapper.format_date(event_date)
+            # Get scheduled_date from wedding (this is the actual field in wedding document)
+            scheduled_date = wedding.get('scheduled_date', wedding.get('event_date', ''))
+            
+            # Format full date
+            formatted_date = WeddingDataMapper.format_date(scheduled_date)
+            
+            # Extract individual date components
+            date_components = WeddingDataMapper.extract_date_components(scheduled_date)
             
             # Calculate countdown
-            countdown_days = WeddingDataMapper.calculate_countdown(event_date)
+            countdown_days = WeddingDataMapper.calculate_countdown(scheduled_date)
+            
+            # Get location (venue) - wedding document uses 'location' field
+            location = wedding.get('location', '')
             
             # Theme settings
             theme_settings = wedding.get('theme_settings', {})
@@ -46,11 +54,15 @@ class WeddingDataMapper:
                 'bride_first_name': bride_first,
                 'groom_first_name': groom_first,
                 'couple_names': couple_names,
-                'event_date': formatted_date,
-                'event_date_raw': event_date,
+                'event_date': date_components.get('date', ''),  # Day number (e.g., "15")
+                'event_date_full': formatted_date,  # Full formatted date (e.g., "January 15, 2025")
+                'event_month': date_components.get('month', ''),  # Month name (e.g., "January")
+                'event_year': date_components.get('year', ''),  # Year (e.g., "2025")
+                'event_day': date_components.get('day_name', ''),  # Day name (e.g., "Monday")
+                'event_date_raw': scheduled_date,
                 'event_time': wedding.get('event_time', ''),
-                'venue': wedding.get('venue', ''),
-                'venue_address': wedding.get('venue_address', ''),
+                'venue': location,  # Map location to venue
+                'venue_address': location,  # Use location as venue_address fallback
                 'city': wedding.get('city', ''),
                 'state': wedding.get('state', ''),
                 'country': wedding.get('country', ''),
