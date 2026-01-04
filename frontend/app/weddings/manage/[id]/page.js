@@ -45,6 +45,7 @@ import CategoryPhotoUpload from '@/components/CategoryPhotoUpload';
 import BorderStyleCustomizer from '@/components/BorderStyleCustomizer';
 import YouTubeBroadcastControls from '@/components/YouTubeBroadcastControls';
 import YouTubeBroadcastsList from '@/components/YouTubeBroadcastsList';
+import TemplateSelector from '@/components/TemplateSelector';
 
 function ManagePageContent({ params }) {
   const { user, loading: authLoading } = useAuth();
