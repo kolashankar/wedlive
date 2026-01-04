@@ -53,11 +53,11 @@ frontend:
   
   - task: "Fix missing template overlays in layout rendering"
     implemented: true
-    working: false
+    working: "pending_test"
     file: "/app/backend/app/routes/viewer_access.py, /app/frontend/app/view/[id]/layouts/components/VideoTemplatePlayer.jsx"
-    stuck_count: 1
+    stuck_count: 0
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "main"
@@ -68,6 +68,25 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ BLOCKED BY REACT ERROR: VideoTemplatePlayer.jsx component has correct overlay rendering logic with position conversion from pixels to percentages, but React error #310 prevents component execution. API provides correct overlay data: {text_value: 'Radha & Rajagopal', position: {x: 960, y: 336}, timing: {start_time: 0, end_time: 8.5}}. The component would convert position to percentages (960/1920=50%, 336/1080=31.1%) and render overlays with proper styling, but useEffect hook order violation crashes the page before rendering occurs."
+      - working: "pending_test"
+        agent: "main"
+        comment: "🔧 FIXED OVERLAY POSITION CONVERSION: Improved pixel-to-percentage conversion logic in VideoTemplatePlayer.jsx. Changed condition from 'both x AND y <= 100' to 'either x OR y > 100' for better detection of pixel coordinates. Now correctly identifies position {x:960, y:336} as pixels and converts to {x:50%, y:31.1%}. This fix, combined with the React error #310 fix, should now allow overlays to render correctly in both preview and layout pages. Needs testing to verify overlays appear with correct positioning."
+  
+  - task: "Fix admin template editor page 404 error"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/app/admin/video-templates/[id]/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ ISSUE: Admin template page (/admin/video-templates/[id]) shows 404 error when attempting to access template editor."
+      - working: "pending_test"
+        agent: "main"
+        comment: "🔧 FIXED: Replaced hardcoded API_URL with centralized api module from @/lib/api. This ensures consistent API routing and uses the proper REACT_APP_BACKEND_URL environment variable. Also removed unused axios import. The page now uses the same API configuration as other parts of the application, which should resolve the 404 error. Needs testing to verify admin template editor page loads correctly."
+
 
 metadata:
   created_by: "testing_agent"
