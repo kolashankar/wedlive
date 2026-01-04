@@ -6,7 +6,9 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
   const videoRef = useRef(null);
+  const containerRef = useRef(null);
   
   console.log('VideoTemplatePlayer - videoTemplate:', videoTemplate);
   console.log('VideoTemplatePlayer - video_url:', videoTemplate?.video_url);
@@ -18,6 +20,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   }
 
   const overlays = videoTemplate.text_overlays || [];
+  const referenceResolution = videoTemplate.reference_resolution || { width: 1920, height: 1080 };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -29,14 +32,23 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
+      setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+    };
+
+    const handleResize = () => {
+      if (video && video.videoWidth && video.videoHeight) {
+        setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+      }
     };
 
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('resize', handleResize);
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -64,43 +76,22 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     (a.layer_index || 0) - (b.layer_index || 0)
   );
 
-  // Convert pixel position to percentage
-  // Video standard canvas is 1920x1080
-  const convertPositionToPercentage = (position) => {
-    const CANVAS_WIDTH = 1920;
-    const CANVAS_HEIGHT = 1080;
-    
-    // If EITHER position value is greater than 100, treat as pixels and convert
-    // This handles the case where coordinates are stored in pixels (e.g., x: 960, y: 336)
-    if (position.x > 100 || position.y > 100) {
-      const converted = {
-        x: (position.x / CANVAS_WIDTH) * 100,
-        y: (position.y / CANVAS_HEIGHT) * 100
-      };
-      console.log('Converted position from pixels to percentage:', position, '->', converted);
-      return converted;
-    }
-    
-    // Already in percentage format
-    console.log('Position already in percentage:', position);
-    return { x: position.x, y: position.y };
-  };
-
   console.log('VideoTemplatePlayer - sortedOverlays:', sortedOverlays);
 
-  // Calculate animation progress
+  // Calculate animation progress based on video time
   const getAnimationStyle = (overlay) => {
     const startTime = overlay.timing?.start_time || 0;
     const endTime = overlay.timing?.end_time || duration;
-    const animDuration = overlay.animation?.duration || 1;
+    const entranceAnim = overlay.animation?.entrance || { type: 'fade-in', duration: 1, easing: 'ease-in-out' };
+    const exitAnim = overlay.animation?.exit || { type: 'fade-out', duration: 1, easing: 'ease-in-out' };
     
     let opacity = 1;
     let transform = '';
 
-    // Entrance animation
-    if (currentTime < startTime + animDuration) {
-      const progress = Math.max(0, Math.min(1, (currentTime - startTime) / animDuration));
-      const animType = overlay.animation?.entrance?.type || overlay.animation?.type || 'fade-in';
+    // Entrance animation - synced to video time
+    if (currentTime < startTime + entranceAnim.duration) {
+      const progress = Math.max(0, Math.min(1, (currentTime - startTime) / entranceAnim.duration));
+      const animType = entranceAnim.type;
       
       switch (animType) {
         case 'fade-in':
@@ -146,10 +137,10 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           opacity = progress;
       }
     }
-    // Exit animation
-    else if (currentTime > endTime - animDuration) {
-      const progress = 1 - Math.max(0, Math.min(1, (currentTime - (endTime - animDuration)) / animDuration));
-      const animType = overlay.animation?.exit?.type || 'fade-out';
+    // Exit animation - synced to video time
+    else if (currentTime > endTime - exitAnim.duration) {
+      const progress = 1 - Math.max(0, Math.min(1, (currentTime - (endTime - exitAnim.duration)) / exitAnim.duration));
+      const animType = exitAnim.type;
       
       switch (animType) {
         case 'fade-out':
@@ -171,8 +162,21 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     return { opacity, transform };
   };
 
+  // Calculate font size relative to video container height
+  const getScaledFontSize = (baseFontSize) => {
+    if (!containerRef.current) return baseFontSize;
+    
+    const container = containerRef.current;
+    const containerHeight = container.clientHeight;
+    const referenceHeight = referenceResolution.height;
+    
+    // Scale font size proportionally to container height
+    const scaleFactor = containerHeight / referenceHeight;
+    return Math.max(12, Math.round(baseFontSize * scaleFactor));
+  };
+
   return (
-    <div className={`relative w-full ${className}`}>
+    <div className={`relative w-full ${className}`} ref={containerRef}>
       <div className="relative aspect-video overflow-hidden" style={{ backgroundColor: 'transparent' }}>
         {/* Video Element */}
         <video
@@ -187,16 +191,20 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           onPause={() => setIsPlaying(false)}
         />
         
-        {/* Text Overlays */}
+        {/* Text Overlays - Positioned with CSS percentages for proper scaling */}
         {sortedOverlays.length > 0 && (
           <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
             {sortedOverlays.map((overlay, index) => {
-              const position = overlay.position || { x: 50, y: 50 };
-              const percentagePos = convertPositionToPercentage(position);
+              const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
               const styling = overlay.styling || {};
               const animStyle = getAnimationStyle(overlay);
               
-              const fontSize = styling.font_size || 48;
+              // Use percentage-based positioning directly
+              const xPercent = position.x || 50;
+              const yPercent = position.y || 50;
+              
+              const baseFontSize = styling.font_size || 48;
+              const scaledFontSize = getScaledFontSize(baseFontSize);
               const fontFamily = styling.font_family || 'Playfair Display';
               const fontWeight = styling.font_weight || 'bold';
               const color = styling.color || '#ffffff';
@@ -207,19 +215,16 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               
               // Handle stroke
               const stroke = styling.stroke || {};
-              const textStroke = stroke.enabled 
-                ? `-webkit-text-stroke: ${stroke.width || 2}px ${stroke.color || '#000000'};`
-                : '';
               
               return (
                 <div
                   key={overlay.id || index}
                   className="absolute whitespace-pre-wrap"
                   style={{
-                    left: `${percentagePos.x}%`,
-                    top: `${percentagePos.y}%`,
+                    left: `${xPercent}%`,
+                    top: `${yPercent}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    fontSize: `${fontSize}px`,
+                    fontSize: `${scaledFontSize}px`,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
                     color: color,
@@ -230,8 +235,9 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     opacity: animStyle.opacity,
                     maxWidth: '90%',
                     zIndex: overlay.layer_index || 1,
-                    transition: 'opacity 0.1s ease-out',
+                    transition: 'none', // No CSS transitions - animations synced to video time
                     WebkitTextStroke: stroke.enabled ? `${stroke.width || 2}px ${stroke.color || '#000000'}` : 'none',
+                    willChange: 'opacity, transform', // Optimize rendering
                   }}
                 >
                   {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
