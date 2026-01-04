@@ -146,148 +146,242 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
   }
 
   return (
-    <Card data-testid="template-selector-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Video className="w-5 h-5" />
-          Video Template
-        </CardTitle>
-        <CardDescription>
-          Select a video template to use for your wedding layout
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Current Assignment Display */}
-        {currentAssignment && currentAssignment.template && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <p className="font-semibold text-green-900">Template Assigned</p>
+    <>
+      <Card data-testid="template-selector-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Video className="w-5 h-5" />
+            Video Template
+          </CardTitle>
+          <CardDescription>
+            Select a video template to use for your wedding layout
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Current Assignment Display */}
+          {currentAssignment && currentAssignment.template && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <p className="font-semibold text-green-900">Template Assigned</p>
+                  </div>
+                  <p className="text-sm text-green-800">{currentAssignment.template.name}</p>
+                  <p className="text-xs text-green-600 mt-1">{currentAssignment.template.description}</p>
+                  
+                  {currentAssignment.template.tags && currentAssignment.template.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {currentAssignment.template.tags.map(tag => (
+                        <Badge key={tag} variant="outline" className="text-xs bg-white">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-green-800">{currentAssignment.template.name}</p>
-                <p className="text-xs text-green-600 mt-1">{currentAssignment.template.description}</p>
-                
-                {currentAssignment.template.tags && currentAssignment.template.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {currentAssignment.template.tags.map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs bg-white">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePreviewTemplate(currentAssignment.template.id)}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveTemplate}
+                    disabled={assigning}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRemoveTemplate}
-                disabled={assigning}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Template Selector */}
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Select Template
-            </label>
-            <Select
-              value={selectedTemplateId}
-              onValueChange={setSelectedTemplateId}
-              data-testid="template-dropdown"
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a video template..." />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-gray-500">
-                    No templates available
-                  </div>
-                ) : (
-                  templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      <div className="flex items-center justify-between gap-2">
-                        <span>{template.name}</span>
-                        {template.category && (
-                          <Badge variant="secondary" className="text-xs">
-                            {template.category}
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Selected Template Preview */}
-          {selectedTemplateId && (
-            <div className="p-3 bg-gray-50 border rounded-lg">
-              {(() => {
-                const selected = templates.find(t => t.id === selectedTemplateId);
-                return selected ? (
-                  <div>
-                    <p className="text-sm font-medium">{selected.name}</p>
-                    <p className="text-xs text-gray-600 mt-1">{selected.description}</p>
-                    {selected.video_data && (
-                      <div className="text-xs text-gray-500 mt-2">
-                        <p>Duration: {selected.video_data.duration_seconds}s</p>
-                        <p>Resolution: {selected.video_data.width}x{selected.video_data.height}</p>
-                      </div>
-                    )}
-                    {selected.tags && selected.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {selected.tags.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : null;
-              })()}
             </div>
           )}
 
-          {/* Assign Button */}
-          <Button
-            onClick={handleAssignTemplate}
-            disabled={!selectedTemplateId || assigning}
-            className="w-full"
-            data-testid="assign-template-btn"
-          >
-            {assigning ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Assigning...
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                {currentAssignment ? 'Change Template' : 'Assign Template'}
-              </>
-            )}
-          </Button>
-        </div>
+          {/* Template Selector */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Select Template
+              </label>
+              <div className="flex gap-2">
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={setSelectedTemplateId}
+                  data-testid="template-dropdown"
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Choose a video template..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-gray-500">
+                        No templates available. Create templates in Admin panel.
+                      </div>
+                    ) : (
+                      templates.map(template => (
+                        <SelectItem key={template.id} value={template.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="truncate">{template.name}</span>
+                            {template.category && (
+                              <Badge variant="secondary" className="text-xs">
+                                {template.category}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                
+                {/* Preview Button */}
+                {selectedTemplateId && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handlePreviewTemplate(selectedTemplateId)}
+                    title="Preview Template"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
 
-        {/* Help Text */}
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs text-blue-900">
-            <strong>Note:</strong> Video templates will be used to generate personalized videos
-            with your wedding information automatically populated.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+            {/* Selected Template Preview */}
+            {selectedTemplateId && (
+              <div className="p-3 bg-gray-50 border rounded-lg">
+                {(() => {
+                  const selected = templates.find(t => t.id === selectedTemplateId);
+                  return selected ? (
+                    <div>
+                      <p className="text-sm font-medium">{selected.name}</p>
+                      <p className="text-xs text-gray-600 mt-1">{selected.description}</p>
+                      {selected.video_data && (
+                        <div className="text-xs text-gray-500 mt-2 grid grid-cols-2 gap-2">
+                          <p>Duration: {selected.video_data.duration_seconds}s</p>
+                          <p>Resolution: {selected.video_data.width}x{selected.video_data.height}</p>
+                        </div>
+                      )}
+                      {selected.tags && selected.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {selected.tags.map(tag => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+            )}
+
+            {/* Assign Button */}
+            <Button
+              onClick={handleAssignTemplate}
+              disabled={!selectedTemplateId || assigning || templates.length === 0}
+              className="w-full"
+              data-testid="assign-template-btn"
+            >
+              {assigning ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  {currentAssignment ? 'Change Template' : 'Assign Template'}
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Help Text */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-900">
+              <strong>Note:</strong> Video templates will be used to generate personalized videos
+              with your wedding information automatically populated.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Template Preview</DialogTitle>
+            <DialogDescription>
+              {previewTemplate?.name} - {previewTemplate?.description}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {previewTemplate && previewTemplate.video_data && (
+              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                <ReactPlayer
+                  url={previewTemplate.video_data.original_url}
+                  width="100%"
+                  height="100%"
+                  controls
+                  playing={false}
+                  config={{
+                    file: {
+                      attributes: {
+                        controlsList: 'nodownload'
+                      }
+                    }
+                  }}
+                />
+              </div>
+            )}
+            
+            {previewTemplate && (
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Category</p>
+                  <p className="font-medium">{previewTemplate.category || 'General'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Duration</p>
+                  <p className="font-medium">{previewTemplate.video_data?.duration_seconds}s</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Resolution</p>
+                  <p className="font-medium">
+                    {previewTemplate.video_data?.width}x{previewTemplate.video_data?.height}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Text Overlays</p>
+                  <p className="font-medium">{previewTemplate.text_overlays?.length || 0} overlays</p>
+                </div>
+              </div>
+            )}
+            
+            {previewTemplate && previewTemplate.tags && previewTemplate.tags.length > 0 && (
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {previewTemplate.tags.map(tag => (
+                    <Badge key={tag} variant="outline">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
