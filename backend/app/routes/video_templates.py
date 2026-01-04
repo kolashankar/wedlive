@@ -417,6 +417,7 @@ async def update_text_overlay(
 ):
     """
     Update specific text overlay
+    Normalizes position coordinates to percentage-based system
     """
     try:
         # Get template
@@ -427,6 +428,13 @@ async def update_text_overlay(
                 detail="Template not found"
             )
         
+        # Get reference resolution from video_data
+        video_data = template.get("video_data", {})
+        reference_resolution = video_data.get("reference_resolution", {
+            "width": 1920,
+            "height": 1080
+        })
+        
         # Find and update overlay
         overlays = template.get("text_overlays", [])
         overlay_found = False
@@ -436,6 +444,15 @@ async def update_text_overlay(
                 overlay_found = True
                 # Update fields
                 update_dict = update_data.dict(exclude_unset=True)
+                
+                # Normalize position if it's being updated
+                if "position" in update_dict:
+                    update_dict["position"] = OverlayCoordinateSystem.normalize_position_dict(
+                        update_dict["position"],
+                        reference_resolution["width"],
+                        reference_resolution["height"]
+                    )
+                
                 overlays[i].update(update_dict)
                 break
         
