@@ -1,8 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, Play, Heart, Star, Paperclip, Scissors, Sticker, RotateCcw, ArrowDownRight } from 'lucide-react';
+import { Calendar, MapPin, Clock, Play, Heart, Star, Paperclip, Scissors, Sticker, RotateCcw, ArrowDownRight, Film } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PhotoFrame from '@/components/PhotoFrame';
+import TemplateVideoPlayer from '@/components/TemplateVideoPlayer';
 import { format, parseISO, isValid } from 'date-fns';
 
 /**
