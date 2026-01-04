@@ -1,8 +1,9 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Calendar, MapPin, Clock, Play, Heart, ChevronRight, Music, Film, ArrowRight } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import PhotoFrame from '@/components/PhotoFrame';
+import TemplateVideoPlayer from '@/components/TemplateVideoPlayer';
 import { format, parseISO, isValid } from 'date-fns';
 
 /**
