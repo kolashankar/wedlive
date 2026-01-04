@@ -197,14 +197,33 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
-      <div className="relative aspect-video overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+      {/* 
+        Fixed aspect-ratio container locks video dimensions
+        Uses actual video aspect ratio instead of hardcoded 16:9
+        This ensures overlays scale correctly across all devices
+      */}
+      <div 
+        className="relative w-full overflow-hidden" 
+        style={{ 
+          aspectRatio: aspectRatio || `${referenceResolution.width} / ${referenceResolution.height}`,
+          backgroundColor: 'transparent',
+          // Remove any flex/grid interference
+          display: 'block',
+          margin: 0,
+          padding: 0
+        }}
+      >
         {/* Video Element */}
         <video
           ref={videoRef}
           src={videoTemplate.video_url}
           poster={videoTemplate.thumbnail_url}
-          className="w-full h-full object-contain"
-          style={{ backgroundColor: 'transparent' }}
+          className="w-full h-full"
+          style={{ 
+            backgroundColor: 'transparent',
+            objectFit: 'contain',
+            display: 'block'
+          }}
           loop
           playsInline
           onPlay={() => setIsPlaying(true)}
@@ -213,18 +232,39 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
         
         {/* Text Overlays - Positioned with CSS percentages for proper scaling */}
         {sortedOverlays.length > 0 && (
-          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
+          <div 
+            className="absolute inset-0 pointer-events-none" 
+            style={{ 
+              zIndex: 10,
+              // Ensure overlay container matches video exactly
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          >
             {sortedOverlays.map((overlay, index) => {
               const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
               const styling = overlay.styling || {};
               const animStyle = getAnimationStyle(overlay);
               
-              // Use percentage-based positioning directly
-              const xPercent = position.x || 50;
-              const yPercent = position.y || 50;
+              // Convert pixel positions to percentages if needed
+              let xPercent, yPercent;
+              
+              // Check if position is in pixels (values > 100 or explicit unit)
+              if (position.unit === 'pixels' || position.x > 100 || position.y > 100) {
+                // Convert from pixels to percentage using reference resolution
+                xPercent = (position.x / referenceResolution.width) * 100;
+                yPercent = (position.y / referenceResolution.height) * 100;
+              } else {
+                // Already in percentage
+                xPercent = position.x || 50;
+                yPercent = position.y || 50;
+              }
               
               const baseFontSize = styling.font_size || 48;
-              const scaledFontSize = getScaledFontSize(baseFontSize);
+              const responsiveFontSize = getResponsiveFontSize(baseFontSize);
               const fontFamily = styling.font_family || 'Playfair Display';
               const fontWeight = styling.font_weight || 'bold';
               const color = styling.color || '#ffffff';
@@ -244,7 +284,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     left: `${xPercent}%`,
                     top: `${yPercent}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    fontSize: `${scaledFontSize}px`,
+                    fontSize: responsiveFontSize,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
                     color: color,
@@ -258,6 +298,9 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     transition: 'none', // No CSS transitions - animations synced to video time
                     WebkitTextStroke: stroke.enabled ? `${stroke.width || 2}px ${stroke.color || '#000000'}` : 'none',
                     willChange: 'opacity, transform', // Optimize rendering
+                    // Ensure no padding/margin interference
+                    margin: 0,
+                    padding: 0
                   }}
                 >
                   {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
