@@ -1,11 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Heart } from 'lucide-react';
-import { format } from 'date-fns';
-import Countdown from './Countdown';
 import BorderedPhoto from './components/BorderedPhoto';
+import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 
-export default function CenterFocus({ wedding, themeSettings, media }) {
+export default function CenterFocus({ wedding, themeSettings, media, videoTemplate }) {
   const primaryColor = themeSettings?.primary_color || '#d4af37'; 
   const secondaryColor = themeSettings?.secondary_color || '#1a1a1a'; 
   const studioLogo = themeSettings?.studio_details?.logo_url || wedding?.branding?.logo_url;
@@ -17,74 +15,30 @@ export default function CenterFocus({ wedding, themeSettings, media }) {
                  style={{ backgroundImage: `url('${themeSettings.layout_page_background_url}')`, backgroundSize: 'cover' }} />
         )}
 
-        {/* Hero */}
+        {/* Video Template Section */}
+        {videoTemplate && (
+          <div className="container mx-auto px-4 py-8">
+            <VideoTemplatePlayer videoTemplate={videoTemplate} />
+          </div>
+        )}
+
+        {/* Hero - Removed names, date, location since template has them */}
         <div className="container mx-auto px-4 py-12 md:py-20 relative z-10">
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-12"
-            >
-                <h1 className="text-5xl md:text-7xl font-serif mb-4" style={{ color: secondaryColor }}>
-                    {wedding.bride_name} & {wedding.groom_name}
-                </h1>
-                <p className="text-xl md:text-2xl font-light tracking-wider uppercase text-gray-500">
-                    Are Getting Married
-                </p>
-            </motion.div>
-
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Left Info */}
-                <div className="lg:col-span-3 text-center lg:text-right space-y-8 order-2 lg:order-1">
+                {/* Left Side - Bride Photo */}
+                <div className="lg:col-span-6 order-1">
                     <motion.div 
                         initial={{ x: -50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
                     >
-                         <div className="flex flex-col items-center lg:items-end">
-                            <Calendar className="w-8 h-8 mb-2" style={{ color: primaryColor }} />
-                            <h3 className="text-xl font-bold">{format(new Date(wedding.scheduled_date), 'MMMM d')}</h3>
-                            <p className="text-gray-500">{format(new Date(wedding.scheduled_date), 'yyyy')}</p>
-                         </div>
-                    </motion.div>
-                    
-                    <motion.div 
-                        initial={{ x: -50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                    >
-                         <div className="flex flex-col items-center lg:items-end">
-                            <MapPin className="w-8 h-8 mb-2" style={{ color: primaryColor }} />
-                            <h3 className="text-xl font-bold">The Venue</h3>
-                            <p className="text-gray-500">{wedding.location}</p>
-                         </div>
-                    </motion.div>
-                </div>
-
-                {/* Center Hero Image */}
-                <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.8 }}
-                    className="lg:col-span-6 order-1 lg:order-2"
-                >
-                    <BorderedPhoto 
-                        src={wedding.cover_image}
-                        borderUrl={themeSettings?.couple_border_url}
-                        alt="Couple"
-                        className="w-full shadow-2xl rounded-lg"
-                        aspectRatio="aspect-[4/5]"
-                    />
-                </motion.div>
-
-                {/* Right Info (Countdown) */}
-                <div className="lg:col-span-3 text-center lg:text-left order-3">
-                     <motion.div 
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <h3 className="text-xl font-bold mb-4">Countdown</h3>
-                        <Countdown targetDate={wedding.scheduled_date} color={secondaryColor} />
+                        <BorderedPhoto 
+                            src={wedding.bride_photo || wedding.cover_image}
+                            borderUrl={themeSettings?.bride_border_url}
+                            alt="Bride"
+                            className="w-full shadow-2xl rounded-lg"
+                            aspectRatio="aspect-[4/5]"
+                        />
                     </motion.div>
                 </div>
             </div>
