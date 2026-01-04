@@ -103,6 +103,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
       label: overlay?.label ?? 'Couple Names',
       placeholder_text: overlay?.placeholder_text ?? 'Sample Text',
       position: overlay?.position ?? { x: 50, y: 50, alignment: 'center', anchor_point: 'center', unit: 'percent' },
+      dimensions: overlay?.dimensions ?? { width: 50, unit: 'percent' },
       timing: overlay?.timing ?? { start_time: 0, end_time: duration || 10 },
       styling: {
         font_family: overlay?.styling?.font_family ?? 'Playfair Display',
