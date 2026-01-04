@@ -1,8 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
 import BorderedPhoto from './components/BorderedPhoto';
+import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 
-export default function EditorialGrid({ wedding, themeSettings, media }) {
+export default function EditorialGrid({ wedding, themeSettings, media, videoTemplate }) {
     const primaryColor = themeSettings?.primary_color || '#000';
     const bgUrl = themeSettings?.layout_page_background_url;
 
@@ -12,17 +13,20 @@ export default function EditorialGrid({ wedding, themeSettings, media }) {
                 <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" 
                      style={{ backgroundImage: `url('${bgUrl}')`, backgroundSize: 'cover' }} />
             )}
+
+            {/* Video Template Section */}
+            {videoTemplate && (
+              <div className="max-w-7xl mx-auto mb-12 relative z-10">
+                <VideoTemplatePlayer videoTemplate={videoTemplate} />
+              </div>
+            )}
             
             <div className="max-w-7xl mx-auto relative z-10">
-                {/* Header Typography */}
-                <div className="mb-12 md:mb-24 flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-black pb-8">
+                {/* Header Typography - Removed names/date/location since in template */}
+                <div className="mb-12 md:mb-24 border-b-2 border-black pb-8">
                      <h1 className="text-6xl md:text-8xl font-serif leading-none">
-                         {wedding.bride_name} <br/> <span className="italic text-gray-400">&</span> {wedding.groom_name}
+                         Editorial
                      </h1>
-                     <div className="text-right mt-8 md:mt-0">
-                         <p className="text-xl font-bold uppercase tracking-widest">{wedding.location}</p>
-                         <p className="text-gray-500 font-mono">{new Date(wedding.scheduled_date).toDateString()}</p>
-                     </div>
                 </div>
 
                 {/* Asymmetric Grid */}
@@ -52,14 +56,14 @@ export default function EditorialGrid({ wedding, themeSettings, media }) {
                         <div className="grid grid-cols-2 gap-4">
                              <div>
                                  <BorderedPhoto 
-                                    src={wedding.bride_photo || "/placeholder.jpg"}
+                                    src={wedding.bride_photo || wedding.cover_image}
                                     borderUrl={themeSettings?.bride_border_url || themeSettings?.bride_groom_border}
                                     aspectRatio="aspect-[3/4]"
                                  />
                              </div>
                              <div className="mt-8">
                                  <BorderedPhoto 
-                                    src={wedding.groom_photo || "/placeholder.jpg"}
+                                    src={wedding.groom_photo || wedding.cover_image}
                                     borderUrl={themeSettings?.groom_border_url || themeSettings?.bride_groom_border}
                                     aspectRatio="aspect-[3/4]"
                                  />

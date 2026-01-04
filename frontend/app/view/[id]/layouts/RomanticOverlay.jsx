@@ -2,8 +2,9 @@
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import BorderedPhoto from './components/BorderedPhoto';
+import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 
-export default function RomanticOverlay({ wedding, themeSettings, media }) {
+export default function RomanticOverlay({ wedding, themeSettings, media, videoTemplate }) {
     const primaryColor = themeSettings?.primary_color || '#e91e63';
     
     // Background handling - use video if provided, else cover image
@@ -21,7 +22,14 @@ export default function RomanticOverlay({ wedding, themeSettings, media }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             </div>
 
-            {/* Content Container */}
+            {/* Video Template Section */}
+            {videoTemplate && (
+              <div className="relative z-10 container mx-auto px-4 py-8">
+                <VideoTemplatePlayer videoTemplate={videoTemplate} />
+              </div>
+            )}
+
+            {/* Content Container - Removed names/date since in template */}
             <div className="relative z-10 container mx-auto px-4 h-screen flex flex-col justify-center items-center text-center text-white">
                 
                 {/* Bride & Groom Floating Bubbles */}
@@ -29,7 +37,7 @@ export default function RomanticOverlay({ wedding, themeSettings, media }) {
                      <motion.div animate={{ y: [0, -20, 0] }} transition={{ repeat: Infinity, duration: 6 }}>
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-white/30">
                             <BorderedPhoto 
-                                src={wedding.bride_photo || "/placeholder.jpg"} 
+                                src={wedding.bride_photo || wedding.cover_image} 
                                 borderUrl={themeSettings?.bride_border_url} 
                                 className="w-full h-full"
                                 aspectRatio="none"
@@ -39,7 +47,7 @@ export default function RomanticOverlay({ wedding, themeSettings, media }) {
                      <motion.div animate={{ y: [0, -20, 0] }} transition={{ repeat: Infinity, duration: 6, delay: 1 }}>
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-white/30">
                             <BorderedPhoto 
-                                src={wedding.groom_photo || "/placeholder.jpg"} 
+                                src={wedding.groom_photo || wedding.cover_image} 
                                 borderUrl={themeSettings?.groom_border_url} 
                                 className="w-full h-full"
                                 aspectRatio="none"
@@ -56,16 +64,6 @@ export default function RomanticOverlay({ wedding, themeSettings, media }) {
                     <div className="mb-6 flex justify-center">
                         <Heart className="w-12 h-12 animate-pulse" style={{ fill: primaryColor, stroke: 'none' }} />
                     </div>
-                    
-                    <h1 className="text-6xl md:text-8xl font-serif font-light mb-4 tracking-wide drop-shadow-lg">
-                        {wedding.bride_name} <br/> <span className="text-4xl italic text-gray-300">&</span> <br/> {wedding.groom_name}
-                    </h1>
-
-                    <div className="w-24 h-1 bg-white mx-auto my-8 opacity-50" />
-
-                    <p className="text-xl md:text-2xl font-light tracking-[0.2em] uppercase mb-8">
-                        {new Date(wedding.scheduled_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
                 </motion.div>
 
                 {/* Floating Cards (Gallery Preview) */}

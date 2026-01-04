@@ -1,8 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
 import BorderedPhoto from './components/BorderedPhoto';
+import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 
-export default function ZenMinimalist({ wedding, themeSettings, media }) {
+export default function ZenMinimalist({ wedding, themeSettings, media, videoTemplate }) {
     const primaryColor = themeSettings?.primary_color || '#6b7280';
     const bgUrl = themeSettings?.layout_page_background_url;
 
@@ -13,30 +14,41 @@ export default function ZenMinimalist({ wedding, themeSettings, media }) {
                      style={{ backgroundImage: `url('${bgUrl}')`, backgroundSize: 'cover' }} />
             )}
 
+            {/* Video Template Section */}
+            {videoTemplate && (
+              <div className="max-w-3xl mx-auto px-6 pt-12 relative z-10">
+                <VideoTemplatePlayer videoTemplate={videoTemplate} />
+              </div>
+            )}
+
             <div className="max-w-3xl mx-auto px-6 py-24 relative z-10 text-center">
                 
-                {/* Vertical Flow Header */}
+                {/* Vertical Flow Header - Removed names/date/location since in template */}
                 <div className="flex flex-col items-center gap-8 mb-24">
                      <span className="h-24 w-[1px] bg-gray-300 block"></span>
                      <p className="text-xs uppercase tracking-[0.4em] text-gray-400">Union</p>
-                     
-                     <h1 className="text-4xl md:text-6xl font-serif tracking-wide leading-tight text-gray-800">
-                         {wedding.bride_name} <br/>
-                         <span className="text-2xl text-gray-300 block my-4">+</span>
-                         {wedding.groom_name}
-                     </h1>
-
-                     <p className="text-sm font-mono text-gray-500 uppercase tracking-widest mt-8">
-                         {new Date(wedding.scheduled_date).toDateString()} — {wedding.location}
-                     </p>
                 </div>
 
-                {/* Central Focus Image */}
-                <div className="mb-24">
+                {/* Photo Grid - Bride, Couple, Groom */}
+                <div className="mb-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <BorderedPhoto 
+                        src={wedding.bride_photo || wedding.cover_image}
+                        borderUrl={themeSettings?.bride_border_url}
+                        alt="Bride"
+                        className="w-full shadow-sm"
+                        aspectRatio="aspect-[3/4]"
+                    />
                     <BorderedPhoto 
                         src={wedding.cover_image}
                         borderUrl={themeSettings?.couple_border_url}
                         alt="Couple"
+                        className="w-full shadow-sm"
+                        aspectRatio="aspect-[3/4]"
+                    />
+                    <BorderedPhoto 
+                        src={wedding.groom_photo || wedding.cover_image}
+                        borderUrl={themeSettings?.groom_border_url}
+                        alt="Groom"
                         className="w-full shadow-sm"
                         aspectRatio="aspect-[3/4]"
                     />
