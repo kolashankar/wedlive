@@ -5,7 +5,11 @@ import { Play, Pause } from 'lucide-react';
 export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   const [isPlaying, setIsPlaying] = useState(false);
   
+  console.log('VideoTemplatePlayer - videoTemplate:', videoTemplate);
+  console.log('VideoTemplatePlayer - video_url:', videoTemplate?.video_url);
+  
   if (!videoTemplate || !videoTemplate.video_url) {
+    console.log('VideoTemplatePlayer - returning null (no video template or URL)');
     return null;
   }
 
