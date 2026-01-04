@@ -186,6 +186,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
             {sortedOverlays.map((overlay, index) => {
               const position = overlay.position || { x: 50, y: 50 };
+              const percentagePos = convertPositionToPercentage(position);
               const styling = overlay.styling || {};
               const animStyle = getAnimationStyle(overlay);
               
@@ -209,8 +210,8 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                   key={overlay.id || index}
                   className="absolute whitespace-pre-wrap"
                   style={{
-                    left: `${position.x || 50}%`,
-                    top: `${position.y || 50}%`,
+                    left: `${percentagePos.x}%`,
+                    top: `${percentagePos.y}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
                     fontSize: `${fontSize}px`,
                     fontFamily: fontFamily,
