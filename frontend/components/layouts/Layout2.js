@@ -206,14 +206,21 @@ export default function Layout2({
             {welcomeMessage}
           </motion.p>
 
-          {/* Main Photo - The "Center Focus" */}
+          {/* Main Photo - The "Center Focus" OR Video Template */}
           <motion.div 
             variants={itemVariants}
             className="relative w-full max-w-sm sm:max-w-md md:max-w-xl aspect-[4/5] mx-auto z-20"
             whileHover={{ scale: 1.02, rotate: 0.5 }}
             transition={{ duration: 0.5 }}
           >
-            {couplePhoto?.url ? (
+            {hasTemplateVideo && templateVideoWeddingId ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                <TemplateVideoPlayer 
+                  weddingId={templateVideoWeddingId}
+                  className="w-full h-full"
+                />
+              </div>
+            ) : couplePhoto?.url ? (
               <div className="relative w-full h-full drop-shadow-2xl">
                 <PhotoFrame
                   src={couplePhoto.url}
