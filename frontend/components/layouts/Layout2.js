@@ -389,47 +389,6 @@ export default function Layout2({
         </section>
       )}
 
-      {/* --- VIDEO TEMPLATE SECTION --- */}
-      {hasTemplateVideo && templateVideoWeddingId && (
-        <section className="py-24 px-4 relative overflow-hidden"
-          style={{ 
-            background: `linear-gradient(135deg, ${primaryLight}, ${secondaryLight})` 
-          }}>
-          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-          <div className="max-w-5xl mx-auto relative z-10">
-            <div className="text-center mb-16">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-md rounded-full text-sm uppercase tracking-[0.3em] mb-4" style={{ color: primaryColor }}>
-                  Our Invitation
-                </span>
-                <h2 className="text-4xl sm:text-6xl font-bold mt-4" style={{ color: primaryColor }}>
-                  Watch Our Video Invitation
-                </h2>
-                <p className="text-lg mt-4 text-gray-600">A special message from us to you</p>
-              </motion.div>
-            </div>
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="aspect-video w-full rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/50 backdrop-blur-xl p-2"
-            >
-              <div className="w-full h-full rounded-2xl overflow-hidden">
-                <TemplateVideoPlayer 
-                  weddingId={templateVideoWeddingId}
-                  className="w-full h-full"
-                />
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
-
       {/* --- LOVE STORY VIDEO --- */}
       {preWeddingVideo && (
         <section className="py-24 px-4 bg-[#111] text-white relative">
