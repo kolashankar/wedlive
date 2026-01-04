@@ -32,11 +32,11 @@ backend:
 frontend:
   - task: "Fix video template display in all 8 layouts in ADMIN wedding editor page"
     implemented: true
-    working: "pending_test"
+    working: false
     file: "/app/frontend/app/weddings/[id]/page.js, /app/frontend/components/LayoutRenderer.js, /app/frontend/components/layouts/*"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -50,6 +50,9 @@ frontend:
       - working: "pending_test"
         agent: "main"
         comment: "🔧 FIXED REACT ERROR #310: Resolved useEffect hook order violations in /app/frontend/app/weddings/[id]/page.js by: 1) Wrapping loadWedding and updateViewerCount functions in useCallback with proper dependencies, 2) Fixed all useEffect dependency arrays to include all used variables (weddingId, loadWedding, updateViewerCount, showTheme, wedding, etc.), 3) Ensured all useEffect hooks are called unconditionally at the top level with early returns inside the effect. Also fixed /app/frontend/app/view/[id]/page.js with same pattern. These changes prevent stale closures and hook order violations that were causing production build crashes. Needs testing to verify pages now render correctly."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL FAILURE: React error #310 STILL OCCURRING on admin wedding page (/weddings/[id]). Despite main agent's fixes, the page crashes with 'Minified React error #310' and shows error boundary. Console shows useEffect hook order violation at line 13031 in page component. The fix was not effective - the admin wedding page remains completely broken and unusable. Public view page (/view/[id]) works correctly and shows couple names 'Radha & Rajagopal', indicating the React fix worked partially but not for the admin page."
   
   - task: "Fix missing template overlays in layout rendering"
     implemented: true
