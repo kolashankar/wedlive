@@ -169,7 +169,8 @@ function ViewerContent({ weddingId }) {
       <LayoutRenderer 
         wedding={wedding} 
         themeSettings={weddingData.theme_settings} 
-        media={media} 
+        media={media}
+        videoTemplate={weddingData.video_template}
       />
 
       {/* Wedding Header */}
