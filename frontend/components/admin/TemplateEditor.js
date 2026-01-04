@@ -529,7 +529,11 @@ export default function TemplateEditor({ template, onSave }) {
                     <SelectItem value="bride_first_name">Bride's First Name</SelectItem>
                     <SelectItem value="groom_first_name">Groom's First Name</SelectItem>
                     <SelectItem value="couple_names">Couple Names</SelectItem>
-                    <SelectItem value="event_date">Event Date</SelectItem>
+                    <SelectItem value="event_date">Event Date (Day)</SelectItem>
+                    <SelectItem value="event_date_full">Event Date (Full)</SelectItem>
+                    <SelectItem value="event_month">Event Month</SelectItem>
+                    <SelectItem value="event_year">Event Year</SelectItem>
+                    <SelectItem value="event_day">Event Day</SelectItem>
                     <SelectItem value="event_time">Event Time</SelectItem>
                     <SelectItem value="venue">Venue</SelectItem>
                     <SelectItem value="venue_address">Venue Address</SelectItem>
