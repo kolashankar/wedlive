@@ -734,6 +734,9 @@ export default function InteractiveOverlayCanvas({
         newFontSize = Math.max(12, overlayStart.fontSize * scale);
       }
 
+      // Convert pixel position back to percentage
+      const newPercentPos = pixelsToPercent({ x: newX, y: newY });
+
       onUpdateOverlay(selectedOverlay.id, {
         styling: {
           ...selectedOverlay.styling,
@@ -741,8 +744,7 @@ export default function InteractiveOverlayCanvas({
         },
         position: {
           ...selectedOverlay.position,
-          x: Math.round(newX),
-          y: Math.round(newY)
+          ...newPercentPos
         }
       });
 
@@ -758,11 +760,13 @@ export default function InteractiveOverlayCanvas({
       const newX = Math.max(0, Math.min(CANVAS_WIDTH, overlayStart.x + dx));
       const newY = Math.max(0, Math.min(CANVAS_HEIGHT, overlayStart.y + dy));
 
+      // Convert pixel position back to percentage
+      const newPercentPos = pixelsToPercent({ x: newX, y: newY });
+
       onUpdateOverlay(selectedOverlay.id, {
         position: {
           ...selectedOverlay.position,
-          x: Math.round(newX),
-          y: Math.round(newY)
+          ...newPercentPos
         }
       });
 
