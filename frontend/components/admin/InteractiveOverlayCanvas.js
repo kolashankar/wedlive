@@ -412,6 +412,7 @@ export default function InteractiveOverlayCanvas({
     const text = overlay.placeholder_text || overlay.endpoint_key || 'Sample Text';
     const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
     const styling = overlay.styling || {};
+    const dims = overlayDimensions[overlay.id];
 
     // Convert percentage position to canvas pixels
     const pixelPos = percentToPixels(position);
@@ -422,14 +423,20 @@ export default function InteractiveOverlayCanvas({
     const fontFamily = styling.font_family || 'Arial';
     const letterSpacing = styling.letter_spacing || 0;
     const lineHeight = styling.line_height || 1.2;
+    const textAlign = styling.text_align || 'center';
     
     ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
     ctx.fillStyle = styling.color || '#ffffff';
-    ctx.textAlign = styling.text_align || 'center';
+    ctx.textAlign = textAlign;
     ctx.textBaseline = 'middle';
 
     // Calculate animation progress and transformations
     const animState = calculateAnimationState(overlay, currentTime);
+    
+    // Get wrapped lines from dimensions
+    const lines = dims?.lines || [text];
+    const totalHeight = dims?.height || fontSize * lineHeight;
+    const lineHeightPx = fontSize * lineHeight;
     
     // Save context for transformations
     ctx.save();
@@ -441,37 +448,45 @@ export default function InteractiveOverlayCanvas({
     ctx.rotate(animState.rotation);
     ctx.translate(animState.translateX, animState.translateY);
 
-    // Apply stroke if enabled
-    if (styling.stroke?.enabled) {
-      ctx.strokeStyle = styling.stroke.color || '#000000';
-      ctx.lineWidth = styling.stroke.width || 2;
+    // Calculate starting Y position for multi-line text (centered vertically)
+    const startY = -(totalHeight / 2) + (lineHeightPx / 2);
+
+    // Render each line of text
+    lines.forEach((line, index) => {
+      const yPos = startY + (index * lineHeightPx);
       
-      // Apply letter spacing for stroke
-      if (letterSpacing > 0) {
-        renderTextWithLetterSpacing(ctx, text, 0, 0, letterSpacing, true);
-      } else {
-        ctx.strokeText(text, 0, 0);
+      // Apply stroke if enabled
+      if (styling.stroke?.enabled) {
+        ctx.strokeStyle = styling.stroke.color || '#000000';
+        ctx.lineWidth = styling.stroke.width || 2;
+        
+        // Apply letter spacing for stroke
+        if (letterSpacing > 0) {
+          renderTextWithLetterSpacing(ctx, line, 0, yPos, letterSpacing, true);
+        } else {
+          ctx.strokeText(line, 0, yPos);
+        }
       }
-    }
 
-    // Add text shadow
-    if (styling.text_shadow) {
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 2;
-    }
+      // Add text shadow
+      if (styling.text_shadow) {
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+      }
 
-    // Render text with letter spacing
-    if (letterSpacing > 0) {
-      renderTextWithLetterSpacing(ctx, text, 0, 0, letterSpacing, false);
-    } else {
-      ctx.fillText(text, 0, 0);
-    }
+      // Render text with letter spacing
+      if (letterSpacing > 0) {
+        renderTextWithLetterSpacing(ctx, line, 0, yPos, letterSpacing, false);
+      } else {
+        ctx.fillText(line, 0, yPos);
+      }
+    });
 
     // Reset
     ctx.restore();
-  }, [currentTime, calculateAnimationState, renderTextWithLetterSpacing, percentToPixels]);
+  }, [currentTime, calculateAnimationState, renderTextWithLetterSpacing, percentToPixels, overlayDimensions]);
 
   const renderSelectionBox = useCallback((ctx, overlay) => {
     const dims = overlayDimensions[overlay.id];
