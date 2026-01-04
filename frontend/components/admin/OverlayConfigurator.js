@@ -297,6 +297,22 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 Percentage-based positioning (0-100%). Center: (50%, 50%)
               </p>
             </div>
+
+            <div>
+              <Label>Text Box Width: {formData.dimensions?.width || 'Auto'}%</Label>
+              <Slider
+                value={[formData.dimensions?.width || 50]}
+                onValueChange={([value]) => handleUpdate('dimensions.width', value)}
+                min={10}
+                max={100}
+                step={1}
+                className="mt-2"
+                data-testid="textbox-width-slider"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Controls text wrapping width. Text will automatically wrap to new lines when it exceeds this width.
+              </p>
+            </div>
           </TabsContent>
 
           {/* Style Tab */}
