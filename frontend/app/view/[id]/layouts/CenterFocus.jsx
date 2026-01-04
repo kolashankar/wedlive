@@ -41,6 +41,23 @@ export default function CenterFocus({ wedding, themeSettings, media, videoTempla
                         />
                     </motion.div>
                 </div>
+
+                {/* Right Side - Groom Photo */}
+                <div className="lg:col-span-6 order-2">
+                    <motion.div 
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <BorderedPhoto 
+                            src={wedding.groom_photo || wedding.cover_image}
+                            borderUrl={themeSettings?.groom_border_url}
+                            alt="Groom"
+                            className="w-full shadow-2xl rounded-lg"
+                            aspectRatio="aspect-[4/5]"
+                        />
+                    </motion.div>
+                </div>
             </div>
         </div>
 
