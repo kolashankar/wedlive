@@ -424,7 +424,8 @@ export default function InteractiveOverlayCanvas({
     const dims = overlayDimensions[overlay.id];
     if (!dims) return;
 
-    const position = overlay.position || { x: 960, y: 540 };
+    const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
+    const pixelPos = percentToPixels(position);
     const padding = 10;
     
     // Calculate bounding box based on text alignment
@@ -433,18 +434,18 @@ export default function InteractiveOverlayCanvas({
     
     switch (textAlign) {
       case 'left':
-        boxX = position.x - padding;
+        boxX = pixelPos.x - padding;
         break;
       case 'right':
-        boxX = position.x - dims.width - padding;
+        boxX = pixelPos.x - dims.width - padding;
         break;
       case 'center':
       default:
-        boxX = position.x - dims.width / 2 - padding;
+        boxX = pixelPos.x - dims.width / 2 - padding;
         break;
     }
     
-    boxY = position.y - dims.height / 2 - padding;
+    boxY = pixelPos.y - dims.height / 2 - padding;
     const boxWidth = dims.width + padding * 2;
     const boxHeight = dims.height + padding * 2;
 
@@ -465,15 +466,15 @@ export default function InteractiveOverlayCanvas({
       ctx.strokeRect(handle.x - HANDLE_SIZE / 2, handle.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
     });
 
-    // Draw position label
+    // Draw position label with percentage values
     ctx.fillStyle = 'rgba(59, 130, 246, 0.9)';
     ctx.fillRect(boxX, boxY - 25, 120, 20);
     ctx.fillStyle = '#ffffff';
     ctx.font = '12px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(`(${Math.round(position.x)}, ${Math.round(position.y)})`, boxX + 5, boxY - 23);
-  }, [overlayDimensions, getResizeHandles]);
+    ctx.fillText(`(${position.x?.toFixed(1)}%, ${position.y?.toFixed(1)}%)`, boxX + 5, boxY - 23);
+  }, [overlayDimensions, getResizeHandles, percentToPixels]);
 
   const renderHoverEffect = useCallback((ctx, overlay) => {
     const dims = overlayDimensions[overlay.id];
