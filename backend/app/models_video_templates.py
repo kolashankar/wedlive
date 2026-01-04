@@ -62,11 +62,21 @@ class TemplateCategory(str, Enum):
 
 
 class OverlayPosition(BaseModel):
-    """Position configuration for text overlay"""
-    x: float = Field(..., description="X coordinate")
-    y: float = Field(..., description="Y coordinate")
+    """Position configuration for text overlay - stores coordinates as percentages (0-100)"""
+    x: float = Field(..., description="X coordinate as percentage (0-100)")
+    y: float = Field(..., description="Y coordinate as percentage (0-100)")
     alignment: TextAlignment = Field(default=TextAlignment.CENTER)
     anchor_point: AnchorPoint = Field(default=AnchorPoint.CENTER)
+    unit: str = Field(default="percent", description="Coordinate unit system (percent or pixel)")
+    
+    @validator('x', 'y')
+    def validate_percentage(cls, v, values, field):
+        # If unit is percent, ensure values are 0-100
+        # If unit is pixel, allow any positive value
+        unit = values.get('unit', 'percent')
+        if unit == 'percent' and (v < 0 or v > 100):
+            raise ValueError(f'{field.name} must be between 0 and 100 for percentage-based positioning')
+        return v
 
 
 class OverlayTiming(BaseModel):
