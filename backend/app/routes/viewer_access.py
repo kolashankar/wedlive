@@ -228,6 +228,13 @@ async def get_wedding_complete_view(wedding_id: str):
             height = video_data.get("height")
             resolution = f"{width}x{height}" if width and height else None
             
+            # Set reference resolution for overlay positioning
+            # Use actual video dimensions if available, otherwise use common portrait resolution
+            reference_resolution = {
+                "width": width if width else 1080,
+                "height": height if height else 1920
+            }
+            
             # Map wedding data for overlays
             wedding_data_mapped = wedding_mapper.map_wedding_data(wedding)
             
@@ -248,6 +255,7 @@ async def get_wedding_complete_view(wedding_id: str):
                 "thumbnail_url": preview_thumbnail.get("url"),
                 "duration": video_data.get("duration_seconds"),
                 "resolution": resolution,
+                "reference_resolution": reference_resolution,
                 "text_overlays": populated_overlays
             }
     
