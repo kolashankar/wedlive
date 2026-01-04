@@ -70,19 +70,20 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     const CANVAS_WIDTH = 1920;
     const CANVAS_HEIGHT = 1080;
     
-    // If position values are already percentages (< 100), return as is
-    if (position.x <= 100 && position.y <= 100) {
-      console.log('Position already in percentage:', position);
-      return { x: position.x, y: position.y };
+    // If EITHER position value is greater than 100, treat as pixels and convert
+    // This handles the case where coordinates are stored in pixels (e.g., x: 960, y: 336)
+    if (position.x > 100 || position.y > 100) {
+      const converted = {
+        x: (position.x / CANVAS_WIDTH) * 100,
+        y: (position.y / CANVAS_HEIGHT) * 100
+      };
+      console.log('Converted position from pixels to percentage:', position, '->', converted);
+      return converted;
     }
     
-    // Convert pixels to percentage
-    const converted = {
-      x: (position.x / CANVAS_WIDTH) * 100,
-      y: (position.y / CANVAS_HEIGHT) * 100
-    };
-    console.log('Converted position from pixels to percentage:', position, '->', converted);
-    return converted;
+    // Already in percentage format
+    console.log('Position already in percentage:', position);
+    return { x: position.x, y: position.y };
   };
 
   console.log('VideoTemplatePlayer - sortedOverlays:', sortedOverlays);
