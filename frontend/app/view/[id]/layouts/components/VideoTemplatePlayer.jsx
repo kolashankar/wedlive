@@ -216,6 +216,24 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   };
   
   const overlayScale = getOverlayScale();
+  
+  // Calculate responsive font scale to ensure text remains readable on all devices
+  // This prevents text from becoming too small on mobile or too large on desktop
+  const getResponsiveFontScale = () => {
+    // Base scale on actual container width
+    if (!containerSize.width) return 1;
+    
+    // For mobile devices (< 768px), ensure minimum readable size
+    if (containerSize.width < 768) {
+      // Scale proportionally but maintain readability
+      return Math.max(0.6, overlayScale);
+    }
+    
+    // For tablets and desktop, use natural scale
+    return overlayScale;
+  };
+  
+  const fontScale = getResponsiveFontScale();
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
