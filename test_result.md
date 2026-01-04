@@ -50,11 +50,11 @@ frontend:
   
   - task: "Fix missing template overlays in layout rendering"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/app/routes/viewer_access.py, /app/frontend/app/view/[id]/layouts/components/VideoTemplatePlayer.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -62,6 +62,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: 1) Backend - Updated /api/viewer/wedding/{wedding_id}/all endpoint to include populated text_overlays with wedding data (bride_name, groom_name, etc.). Added WeddingDataMapper import and logic to populate overlay text values. 2) Frontend - Completely rewrote VideoTemplatePlayer.jsx component to render overlays with: time-based visibility (start_time/end_time), entrance/exit animations (fade-in, slide-up, zoom, bounce, etc.), proper z-index layering, positioning (x/y %), font styling (family, size, weight, color), text shadows and strokes, letter spacing and line height. Overlays now render on top of video with proper z-index=10 and layer_index sorting."
+      - working: false
+        agent: "testing"
+        comment: "❌ BLOCKED BY REACT ERROR: VideoTemplatePlayer.jsx component has correct overlay rendering logic with position conversion from pixels to percentages, but React error #310 prevents component execution. API provides correct overlay data: {text_value: 'Radha & Rajagopal', position: {x: 960, y: 336}, timing: {start_time: 0, end_time: 8.5}}. The component would convert position to percentages (960/1920=50%, 336/1080=31.1%) and render overlays with proper styling, but useEffect hook order violation crashes the page before rendering occurs."
 
 metadata:
   created_by: "testing_agent"
