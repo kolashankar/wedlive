@@ -655,13 +655,16 @@ export default function InteractiveOverlayCanvas({
     if (selectedOverlay) {
       const handle = getResizeHandleAtPosition(coords.x, coords.y, selectedOverlay);
       if (handle) {
+        const pixelPos = percentToPixels(selectedOverlay.position);
         setIsResizing(true);
         setResizeHandle(handle);
         setDragStart(coords);
         setOverlayStart({
-          x: selectedOverlay.position.x,
-          y: selectedOverlay.position.y,
-          fontSize: selectedOverlay.styling?.font_size || 48
+          x: pixelPos.x,
+          y: pixelPos.y,
+          fontSize: selectedOverlay.styling?.font_size || 48,
+          percentX: selectedOverlay.position.x,
+          percentY: selectedOverlay.position.y
         });
         return;
       }
@@ -672,11 +675,14 @@ export default function InteractiveOverlayCanvas({
     
     if (clickedOverlay) {
       onSelectOverlay(clickedOverlay);
+      const pixelPos = percentToPixels(clickedOverlay.position);
       setIsDragging(true);
       setDragStart(coords);
       setOverlayStart({
-        x: clickedOverlay.position.x,
-        y: clickedOverlay.position.y
+        x: pixelPos.x,
+        y: pixelPos.y,
+        percentX: clickedOverlay.position.x,
+        percentY: clickedOverlay.position.y
       });
     } else {
       onSelectOverlay(null);
