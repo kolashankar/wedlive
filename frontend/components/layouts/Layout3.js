@@ -144,6 +144,24 @@ export default function Layout3({
                 </div>
              </div>
 
+             {/* Video Template Node */}
+             {hasTemplateVideo && templateVideoWeddingId && (
+                <div className="mb-16 relative pl-12">
+                   <div className="absolute left-0 top-2 w-8 h-8 rounded-full bg-purple-600 border-4 border-white shadow flex items-center justify-center">
+                      <Film className="w-4 h-4 text-white" />
+                   </div>
+                   <div className="bg-gradient-to-br from-rose-50 to-purple-50 p-6 rounded-2xl shadow-xl">
+                      <h3 className="text-xl font-bold mb-4" style={{ color: primaryColor }}>Watch Our Video Invitation</h3>
+                      <div className="aspect-video w-full rounded-lg overflow-hidden shadow-lg bg-white">
+                         <TemplateVideoPlayer 
+                           weddingId={templateVideoWeddingId}
+                           className="w-full h-full"
+                         />
+                      </div>
+                   </div>
+                </div>
+             )}
+
              {/* Live/Video Node */}
              {(playback_url || recording_url || onEnter) && (
                 <div className="relative pl-12">
