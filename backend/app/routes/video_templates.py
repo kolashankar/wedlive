@@ -214,6 +214,7 @@ async def add_text_overlay(
 ):
     """
     Add text overlay to video template
+    Normalizes position coordinates to percentage-based system
     """
     try:
         # Get template
@@ -224,11 +225,29 @@ async def add_text_overlay(
                 detail="Template not found"
             )
         
+        # Get reference resolution from video_data
+        video_data = template.get("video_data", {})
+        reference_resolution = video_data.get("reference_resolution", {
+            "width": 1920,
+            "height": 1080
+        })
+        
+        # Convert overlay to dict and normalize position
+        overlay_dict = overlay.dict()
+        
+        # Normalize position to percentage-based coordinates
+        if "position" in overlay_dict:
+            overlay_dict["position"] = OverlayCoordinateSystem.normalize_position_dict(
+                overlay_dict["position"],
+                reference_resolution["width"],
+                reference_resolution["height"]
+            )
+        
         # Create overlay with unique ID
         overlay_id = str(uuid.uuid4())
         new_overlay = TextOverlay(
             id=overlay_id,
-            **overlay.dict()
+            **overlay_dict
         )
         
         # Add to template
