@@ -425,6 +425,10 @@ export default function LayoutRenderer({ wedding, onEnter }) {
     // Video - Converted to embed URL
     preWeddingVideo: embedVideoUrl,
     
+    // Video Template - Pass wedding ID so layout can render the template video
+    templateVideoWeddingId: wedding.id,
+    hasTemplateVideo: !!wedding.template_assignment?.template_id,
+    
     // Borders - Use resolved URLs from backend theme_assets with mask data
     borders: {
       bride: wedding.theme_settings?.theme_assets?.bride_border_url || null,
