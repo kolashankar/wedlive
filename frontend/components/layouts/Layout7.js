@@ -202,6 +202,27 @@ export default function Layout7({
           </div>
 
           {/* 4. Video (Full Width) */}
+          {hasTemplateVideo && templateVideoWeddingId && (
+             <div className="mb-32">
+                <div className="mb-8">
+                   <h3 className="text-2xl font-bold uppercase tracking-widest">Our Video Invitation</h3>
+                   <div className="w-24 h-1 bg-black mt-4" />
+                </div>
+                <div className="w-full aspect-video bg-black p-4 md:p-8">
+                   <div className="w-full h-full">
+                      <TemplateVideoPlayer 
+                        weddingId={templateVideoWeddingId}
+                        className="w-full h-full"
+                      />
+                   </div>
+                </div>
+                <div className="flex justify-between mt-4 font-mono text-xs uppercase">
+                   <span>Video Invitation</span>
+                   <span>Watch Now</span>
+                </div>
+             </div>
+          )}
+
           {preWeddingVideo && (
              <div className="mb-32">
                 <div className="w-full aspect-video bg-black p-4 md:p-8">
