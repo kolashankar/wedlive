@@ -266,28 +266,34 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
               <Label>Position (Drag on video or use inputs)</Label>
               <div className="grid grid-cols-2 gap-2 mt-1">
                 <div>
-                  <Label className="text-xs">X (px)</Label>
+                  <Label className="text-xs">X (%)</Label>
                   <Input
                     type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
                     value={formData.position.x}
-                    onChange={(e) => handleUpdate('position.x', parseInt(e.target.value) || 0)}
+                    onChange={(e) => handleUpdate('position.x', parseFloat(e.target.value) || 0)}
                     className="mt-1"
                     data-testid="position-x-input"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">Y (px)</Label>
+                  <Label className="text-xs">Y (%)</Label>
                   <Input
                     type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
                     value={formData.position.y}
-                    onChange={(e) => handleUpdate('position.y', parseInt(e.target.value) || 0)}
+                    onChange={(e) => handleUpdate('position.y', parseFloat(e.target.value) || 0)}
                     className="mt-1"
                     data-testid="position-y-input"
                   />
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Video size: 1920x1080, Center: (960, 540)
+                Percentage-based positioning (0-100%). Center: (50%, 50%)
               </p>
             </div>
           </TabsContent>
