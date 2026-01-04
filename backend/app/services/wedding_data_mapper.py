@@ -129,6 +129,43 @@ class WeddingDataMapper:
             return ''
     
     @staticmethod
+    def extract_date_components(date_string: str) -> Dict[str, str]:
+        """
+        Extract individual date components from date string
+        Returns dict with: date (day number), month (name), year, day_name (e.g., Monday)
+        """
+        if not date_string:
+            return {
+                'date': '',
+                'month': '',
+                'year': '',
+                'day_name': ''
+            }
+        
+        try:
+            # Parse date
+            if 'T' in date_string or '-' in date_string:
+                date_obj = parser.isoparse(date_string.split('T')[0])
+            else:
+                date_obj = parser.parse(date_string)
+            
+            return {
+                'date': date_obj.strftime('%d'),  # Day number with leading zero (01-31)
+                'month': date_obj.strftime('%B'),  # Full month name (January-December)
+                'year': date_obj.strftime('%Y'),  # 4-digit year (2025)
+                'day_name': date_obj.strftime('%A')  # Full day name (Monday-Sunday)
+            }
+            
+        except Exception as e:
+            logger.error(f"[DATE_COMPONENTS] Error extracting date components from '{date_string}': {str(e)}")
+            return {
+                'date': '',
+                'month': '',
+                'year': '',
+                'day_name': ''
+            }
+    
+    @staticmethod
     def get_available_endpoints() -> Dict[str, str]:
         """
         Get list of all available endpoints with descriptions
