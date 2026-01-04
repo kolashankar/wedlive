@@ -25,15 +25,8 @@ export default function TemplateCard({ template, onClick }) {
           </div>
         )}
         
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button size="lg" className="rounded-full" data-testid="preview-btn">
-              <Play className="w-5 h-5 mr-2" />
-              Preview
-            </Button>
-          </div>
-        </div>
+        {/* Hover Overlay - Removed disturbing play button, just show subtle overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
 
         {/* Badges */}
         <div className="absolute top-2 left-2 flex gap-2">
