@@ -289,57 +289,64 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               const styling = overlay.styling || {};
               const animStyle = getAnimationStyle(overlay);
               
-              // Convert pixel positions to absolute pixels if needed
-              let xPixels, yPixels;
+              // Convert positions to percentages for responsive layout
+              let xPercent, yPercent;
               
               // Check if position is in pixels (values > 100 or explicit unit)
               if (position.unit === 'pixels' || position.x > 100 || position.y > 100) {
-                // Already in pixels
-                xPixels = position.x;
-                yPixels = position.y;
+                // Convert pixels to percentage using reference resolution
+                xPercent = (position.x / referenceResolution.width) * 100;
+                yPercent = (position.y / referenceResolution.height) * 100;
               } else {
-                // Convert percentage to pixels using reference resolution
-                xPixels = (position.x / 100) * referenceResolution.width;
-                yPixels = (position.y / 100) * referenceResolution.height;
+                // Already in percentage
+                xPercent = position.x;
+                yPercent = position.y;
               }
               
+              // Scale font size and spacing responsively
               const baseFontSize = styling.font_size || 48;
+              const scaledFontSize = baseFontSize * fontScale;
               const fontFamily = styling.font_family || 'Playfair Display';
               const fontWeight = styling.font_weight || 'bold';
               const color = styling.color || '#ffffff';
               const textAlign = styling.text_align || 'center';
-              const letterSpacing = styling.letter_spacing || 2;
+              const baseLetterSpacing = styling.letter_spacing || 2;
+              const scaledLetterSpacing = baseLetterSpacing * fontScale;
               const lineHeight = styling.line_height || 1.2;
               const textShadow = styling.text_shadow || '0 2px 4px rgba(0,0,0,0.5)';
               
-              // Handle stroke
+              // Handle stroke with scaled width
               const stroke = styling.stroke || {};
+              const scaledStrokeWidth = stroke.width ? stroke.width * fontScale : 2 * fontScale;
               
               return (
                 <div
                   key={overlay.id || index}
                   className="absolute whitespace-pre-wrap"
                   style={{
-                    left: `${xPixels}px`,
-                    top: `${yPixels}px`,
+                    left: `${xPercent}%`,
+                    top: `${yPercent}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    fontSize: `${baseFontSize}px`,
+                    fontSize: `${scaledFontSize}px`,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
                     color: color,
                     textAlign: textAlign,
-                    letterSpacing: `${letterSpacing}px`,
+                    letterSpacing: `${scaledLetterSpacing}px`,
                     lineHeight: lineHeight,
                     textShadow: textShadow,
                     opacity: animStyle.opacity,
-                    maxWidth: `${referenceResolution.width * 0.9}px`,
+                    maxWidth: '90%',
                     zIndex: overlay.layer_index || 1,
                     transition: 'none', // No CSS transitions - animations synced to video time
-                    WebkitTextStroke: stroke.enabled ? `${stroke.width || 2}px ${stroke.color || '#000000'}` : 'none',
+                    WebkitTextStroke: stroke.enabled ? `${scaledStrokeWidth}px ${stroke.color || '#000000'}` : 'none',
                     willChange: 'opacity, transform', // Optimize rendering
                     // Ensure no padding/margin interference
                     margin: 0,
-                    padding: 0
+                    padding: 0,
+                    // Prevent text overflow on mobile
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word'
                   }}
                 >
                   {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
