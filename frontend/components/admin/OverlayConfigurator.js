@@ -99,42 +99,42 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
 
   function getDefaultFormData() {
     return {
-      endpoint_key: overlay?.endpoint_key || 'couple_names',
-      label: overlay?.label || 'Couple Names',
-      placeholder_text: overlay?.placeholder_text || 'Sample Text',
-      position: overlay?.position || { x: 960, y: 540, alignment: 'center', anchor_point: 'center' },
-      timing: overlay?.timing || { start_time: 0, end_time: duration || 10 },
+      endpoint_key: overlay?.endpoint_key ?? 'couple_names',
+      label: overlay?.label ?? 'Couple Names',
+      placeholder_text: overlay?.placeholder_text ?? 'Sample Text',
+      position: overlay?.position ?? { x: 960, y: 540, alignment: 'center', anchor_point: 'center' },
+      timing: overlay?.timing ?? { start_time: 0, end_time: duration || 10 },
       styling: {
-        font_family: overlay?.styling?.font_family || 'Playfair Display',
-        font_size: overlay?.styling?.font_size || 72,
-        font_weight: overlay?.styling?.font_weight || 'bold',
-        color: overlay?.styling?.color || '#ffffff',
-        text_align: overlay?.styling?.text_align || 'center',
-        letter_spacing: overlay?.styling?.letter_spacing || 2,
-        line_height: overlay?.styling?.line_height || 1.2,
-        text_shadow: overlay?.styling?.text_shadow || '0 2px 4px rgba(0,0,0,0.3)',
-        stroke: overlay?.styling?.stroke || {
+        font_family: overlay?.styling?.font_family ?? 'Playfair Display',
+        font_size: overlay?.styling?.font_size ?? 72,
+        font_weight: overlay?.styling?.font_weight ?? 'bold',
+        color: overlay?.styling?.color ?? '#ffffff',
+        text_align: overlay?.styling?.text_align ?? 'center',
+        letter_spacing: overlay?.styling?.letter_spacing ?? 2,
+        line_height: overlay?.styling?.line_height ?? 1.2,
+        text_shadow: overlay?.styling?.text_shadow ?? '0 2px 4px rgba(0,0,0,0.3)',
+        stroke: overlay?.styling?.stroke ?? {
           enabled: false,
           color: '#000000',
           width: 2
         }
       },
       animation: {
-        type: overlay?.animation?.type || 'fade-in',
-        duration: overlay?.animation?.duration || 1.0,
-        easing: overlay?.animation?.easing || 'ease-in-out',
-        entrance: overlay?.animation?.entrance || {
+        type: overlay?.animation?.type ?? 'fade-in',
+        duration: overlay?.animation?.duration ?? 1.0,
+        easing: overlay?.animation?.easing ?? 'ease-in-out',
+        entrance: overlay?.animation?.entrance ?? {
           type: 'fade-in',
           duration: 1.0,
           easing: 'ease-in-out'
         },
-        exit: overlay?.animation?.exit || {
+        exit: overlay?.animation?.exit ?? {
           type: 'fade-out',
           duration: 1.0,
           easing: 'ease-in-out'
         }
       },
-      responsive: overlay?.responsive || {
+      responsive: overlay?.responsive ?? {
         mobile_font_size: 48,
         mobile_position: { x: 50, y: 30, unit: 'percent' }
       }
