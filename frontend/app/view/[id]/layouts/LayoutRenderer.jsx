@@ -11,6 +11,9 @@ import ZenMinimalist from './ZenMinimalist';
 
 export default function LayoutRenderer({ wedding, themeSettings, media, videoTemplate }) {
   const layoutId = themeSettings?.layout_id || 'layout_1';
+  
+  console.log('LayoutRenderer - videoTemplate prop:', videoTemplate);
+  console.log('LayoutRenderer - layoutId:', layoutId);
 
   // Helper to ensure media has array
   const safeMedia = {
