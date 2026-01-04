@@ -7,6 +7,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
+  const [aspectRatio, setAspectRatio] = useState(null);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   
@@ -20,7 +21,8 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   }
 
   const overlays = videoTemplate.text_overlays || [];
-  const referenceResolution = videoTemplate.reference_resolution || { width: 1920, height: 1080 };
+  // Default to 9:16 for wedding videos (portrait), fallback to 16:9
+  const referenceResolution = videoTemplate.reference_resolution || { width: 1080, height: 1920 };
 
   useEffect(() => {
     const video = videoRef.current;
