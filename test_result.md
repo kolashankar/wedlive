@@ -44,10 +44,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Video template integration fix for wedding viewer page"
-  stuck_tasks: []
+    - "Fix video template display in all 8 layouts"
+  stuck_tasks:
+    - "Fix video template display in all 8 layouts"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
   - agent: "testing"
