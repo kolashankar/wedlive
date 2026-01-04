@@ -1,22 +1,22 @@
 'use client';
 import { useState, useEffect } from 'react';
-import ReactPlayer from 'react-player';
 import { Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 
 /**
  * TemplateVideoPlayer - Renders assigned video template with overlays
  * 
- * This component:
- * 1. Fetches the assigned template for a wedding
- * 2. Loads populated overlays with wedding data
- * 3. Displays the video with text overlays on top
+ * SECTION 1 FIXED TEMPLATE MODE:
+ * - Auto-plays and loops continuously
+ * - No controls, play button, or progress bar
+ * - Transparent background to show layout background
+ * - Overlays always visible with wedding data
+ * - Behaves like an animated design template, not a video player
  */
 export default function TemplateVideoPlayer({ weddingId, className = '' }) {
   const [templateData, setTemplateData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     loadTemplateAssignment();
@@ -45,8 +45,8 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center bg-gray-900 ${className}`}>
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      <div className={`flex items-center justify-center ${className}`}>
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400 opacity-50" />
       </div>
     );
   }
@@ -65,36 +65,25 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
 
   return (
     <div className={`relative ${className}`}>
-      {/* Video Player */}
-      <ReactPlayer
-        url={videoUrl}
-        width="100%"
-        height="100%"
-        playing={isPlaying}
-        controls={true}
-        light={template.preview_thumbnail?.url || false}
-        playIcon={
-          <div 
-            className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-all cursor-pointer"
-            onClick={() => setIsPlaying(true)}
-          >
-            <svg className="w-10 h-10 text-rose-500 ml-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-        }
-        onPlay={() => setIsPlaying(true)}
-        config={{
-          file: {
-            attributes: {
-              controlsList: 'nodownload'
-            }
-          }
+      {/* Video Player - Auto-play, Loop, No Controls */}
+      <video
+        src={videoUrl}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="w-full h-full object-contain"
+        style={{
+          backgroundColor: 'transparent',
+          mixBlendMode: 'normal',
+        }}
+        onError={(e) => {
+          console.error('[TemplateVideoPlayer] Video load error:', e);
         }}
       />
 
-      {/* Dynamic Overlays */}
-      {isPlaying && overlays.length > 0 && (
+      {/* Dynamic Overlays - Always Visible */}
+      {overlays.length > 0 && (
         <div className="absolute inset-0 pointer-events-none">
           {overlays.map((overlay, index) => (
             <div
