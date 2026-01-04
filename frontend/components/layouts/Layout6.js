@@ -290,6 +290,42 @@ export default function Layout6({
           </section>
         )}
 
+        {/* VIDEO TEMPLATE INVITATION */}
+        {hasTemplateVideo && templateVideoWeddingId && (
+          <section className="py-20 px-4">
+            <div className="max-w-5xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center mb-12"
+              >
+                <h2 
+                  className="text-5xl sm:text-6xl mb-6" 
+                  style={{ fontFamily: font, color: primaryColor }}
+                >
+                  Our Video Invitation
+                </h2>
+                <p className="text-white/80 text-lg">Watch our special message</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="aspect-video w-full rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-xl p-3"
+              >
+                <div className="w-full h-full rounded-2xl overflow-hidden">
+                  <TemplateVideoPlayer 
+                    weddingId={templateVideoWeddingId}
+                    className="w-full h-full"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        )}
+
         {/* LIVE STREAM CALL TO ACTION */}
         {(playback_url || recording_url || onEnter) && (
           <section className="py-32 px-4 text-center">
