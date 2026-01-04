@@ -864,6 +864,16 @@ function ManagePageContent({ params }) {
 
               {/* Layout Tab - Enhanced with Wedding Layout Settings */}
               <TabsContent value="layout" className="space-y-6">
+                {/* Video Template Selector */}
+                <TemplateSelector 
+                  weddingId={weddingId} 
+                  currentTemplateId={wedding?.template_assignment?.template_id}
+                  onTemplateAssigned={() => {
+                    toast.success('Template assigned! Your wedding data will be automatically populated.');
+                    loadWedding();
+                  }}
+                />
+
                 {/* Layout Customization */}
                 <Card>
                   <CardHeader>
