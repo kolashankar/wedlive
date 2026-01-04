@@ -53,6 +53,8 @@ export default function Layout4({
     preWeddingVideo = null,
     borders = {},
     borderMasks = {},
+    templateVideoWeddingId = null,
+    hasTemplateVideo = false,
   } = layoutConfig;
 
   // Rotation helpers for that messy scrapbook look
