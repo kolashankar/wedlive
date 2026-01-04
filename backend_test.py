@@ -331,35 +331,41 @@ def test_wedding_data_structure():
         return False
 
 def main():
-    """Run all backend tests"""
+    """Run all backend tests for WeddingDataMapper updates"""
     log_test("=" * 80)
-    log_test("BACKEND API TESTING - VIDEO TEMPLATE OVERLAY RENDERING FIX")
+    log_test("BACKEND API TESTING - WEDDINGDATAMAPPER UPDATES")
     log_test("=" * 80)
     log_test(f"Backend URL: {BACKEND_URL}")
     log_test(f"Test Wedding ID: {TEST_WEDDING_ID}")
+    log_test(f"Expected Location: {EXPECTED_LOCATION}")
     log_test("")
     log_test("TESTING REQUIREMENTS FROM REVIEW REQUEST:")
-    log_test("1. /api/weddings/{wedding_id}/template-assignment endpoint")
-    log_test("   - Should return populated_overlays with text_value, position, styling, timing")
-    log_test("2. /api/video-templates/{template_id}/preview endpoint with wedding_id")
-    log_test("   - Should return overlays array with text field (different from assignment)")
+    log_test("1. Venue Mapping - wedding 'location' field mapped to 'venue' endpoint")
+    log_test("2. Date Components - separated into event_date, event_month, event_year, event_day")
+    log_test("3. Backward Compatibility - old event_date endpoint still works")
     log_test("")
     
-    # Test 1: Template assignment endpoint
-    log_test("TEST 1: Wedding template assignment endpoint")
-    test1_result = test_template_assignment_endpoint()
-    
-    log_test("")
-    
-    # Test 2: Template preview endpoint
-    log_test("TEST 2: Video template preview endpoint with wedding data")
-    test2_result = test_template_preview_endpoint()
+    # Test 1: Wedding data structure
+    log_test("TEST 1: Wedding data structure and required fields")
+    test1_result = test_wedding_data_structure()
     
     log_test("")
     
-    # Test 3: Edge case testing
-    log_test("TEST 3: Edge case - wedding without template")
-    test3_result = test_wedding_without_template()
+    # Test 2: Venue mapping
+    log_test("TEST 2: Venue mapping from location to venue endpoint")
+    test2_result = test_venue_mapping()
+    
+    log_test("")
+    
+    # Test 3: Date components
+    log_test("TEST 3: Date component separation")
+    test3_result = test_date_components()
+    
+    log_test("")
+    
+    # Test 4: Backward compatibility
+    log_test("TEST 4: Backward compatibility for old event_date endpoint")
+    test4_result = test_backward_compatibility()
     
     log_test("")
     log_test("=" * 80)
@@ -367,41 +373,49 @@ def main():
     log_test("=" * 80)
     
     if test1_result:
-        log_test("✅ Template assignment endpoint PASSED")
+        log_test("✅ Wedding data structure PASSED")
     else:
-        log_test("❌ Template assignment endpoint FAILED")
+        log_test("❌ Wedding data structure FAILED")
         
     if test2_result:
-        log_test("✅ Template preview endpoint PASSED")
+        log_test("✅ Venue mapping PASSED")
     else:
-        log_test("❌ Template preview endpoint FAILED")
+        log_test("❌ Venue mapping FAILED")
         
     if test3_result:
-        log_test("✅ Edge case testing PASSED")
+        log_test("✅ Date components PASSED")
     else:
-        log_test("⚠️ Edge case testing had issues (non-critical)")
+        log_test("❌ Date components FAILED")
         
-    overall_success = test1_result and test2_result
+    if test4_result:
+        log_test("✅ Backward compatibility PASSED")
+    else:
+        log_test("❌ Backward compatibility FAILED")
+        
+    overall_success = test1_result and test2_result and test3_result and test4_result
     
     if overall_success:
-        log_test("🎉 OVERALL RESULT: TESTS PASSED")
-        log_test("Video template overlay rendering fix endpoints are working correctly")
+        log_test("🎉 OVERALL RESULT: ALL TESTS PASSED")
+        log_test("WeddingDataMapper updates are working correctly")
         log_test("")
         log_test("KEY FINDINGS:")
-        log_test("- Template assignment endpoint returns populated_overlays with text_value field")
-        log_test("- Template preview endpoint returns overlays with text field")
-        log_test("- Both endpoints provide pixel position coordinates (e.g., x:960, y:336)")
-        log_test("- Position conversion logic in frontend should convert pixels to percentages")
-        log_test("- Overlays should be visible in correct positions on video")
+        log_test("- Wedding location field is correctly mapped to venue endpoint")
+        log_test("- Date components are properly separated and formatted")
+        log_test("- Backward compatibility is maintained for old endpoints")
+        log_test("- All overlay text_values are populated with actual wedding data")
     else:
-        log_test("💥 OVERALL RESULT: TESTS FAILED")
-        log_test("Video template overlay rendering fix needs attention")
+        log_test("💥 OVERALL RESULT: SOME TESTS FAILED")
+        log_test("WeddingDataMapper updates need attention")
         log_test("")
         log_test("ISSUES FOUND:")
         if not test1_result:
-            log_test("- Template assignment endpoint has issues")
+            log_test("- Wedding data structure has issues")
         if not test2_result:
-            log_test("- Template preview endpoint has issues")
+            log_test("- Venue mapping is not working correctly")
+        if not test3_result:
+            log_test("- Date components are not working correctly")
+        if not test4_result:
+            log_test("- Backward compatibility is broken")
         
     return overall_success
 
