@@ -6,8 +6,7 @@ import TemplateEditor from '@/components/admin/TemplateEditor';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+import api from '@/lib/api';
 
 export default function EditVideoTemplate() {
   const router = useRouter();
