@@ -102,25 +102,30 @@ export default function InteractiveOverlayCanvas({
       // Arrow keys for fine adjustment
       if (e.key.startsWith('Arrow')) {
         e.preventDefault();
-        const step = e.shiftKey ? 10 : 1;
+        const step = e.shiftKey ? 10 : 1; // pixels
         const position = { ...selectedOverlay.position };
+        const pixelPos = percentToPixels(position);
         
         switch (e.key) {
           case 'ArrowLeft':
-            position.x -= step;
+            pixelPos.x -= step;
             break;
           case 'ArrowRight':
-            position.x += step;
+            pixelPos.x += step;
             break;
           case 'ArrowUp':
-            position.y -= step;
+            pixelPos.y -= step;
             break;
           case 'ArrowDown':
-            position.y += step;
+            pixelPos.y += step;
             break;
         }
         
-        onUpdateOverlay(selectedOverlay.id, { position });
+        // Convert back to percentage
+        const newPercentPos = pixelsToPercent(pixelPos);
+        onUpdateOverlay(selectedOverlay.id, { 
+          position: { ...position, ...newPercentPos }
+        });
       }
 
       // Undo/Redo
