@@ -8,8 +8,10 @@ from app.database import get_db
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
+from app.services.wedding_data_mapper import WeddingDataMapper
 
 router = APIRouter()
+wedding_mapper = WeddingDataMapper()
 
 class WeddingAccessRequest(BaseModel):
     wedding_code: str  # 6-digit code
