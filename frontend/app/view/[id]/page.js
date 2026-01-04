@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,13 +38,7 @@ function ViewerContent({ weddingId }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('live');
 
-  useEffect(() => {
-    if (weddingId) {
-      loadWeddingData();
-    }
-  }, [weddingId]);
-
-  const loadWeddingData = async () => {
+  const loadWeddingData = useCallback(async () => {
     try {
       const response = await api.get(`/api/viewer/wedding/${weddingId}/all`);
       console.log('API Response:', response.data);
