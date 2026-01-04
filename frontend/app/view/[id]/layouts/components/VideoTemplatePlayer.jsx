@@ -103,11 +103,16 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     }
   };
 
-  // Filter visible overlays based on current time
+  // Filter visible overlays based on current time - strict timing enforcement
   const visibleOverlays = overlays.filter(overlay => {
-    const startTime = overlay.timing?.start_time || 0;
-    const endTime = overlay.timing?.end_time || duration;
-    return currentTime >= startTime && currentTime <= endTime && overlay.is_active !== false;
+    const startTime = overlay.timing?.start_time ?? 0;
+    const endTime = overlay.timing?.end_time ?? duration;
+    
+    // Strict timing check - overlay must be within its time range
+    const isInTimeRange = currentTime >= startTime && currentTime <= endTime;
+    const isActive = overlay.is_active !== false;
+    
+    return isInTimeRange && isActive;
   });
 
   // Sort by layer_index to render in correct order
