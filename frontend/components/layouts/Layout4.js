@@ -218,27 +218,6 @@ export default function Layout4({
          </section>
       )}
 
-      {/* --- VIDEO TAPE --- */}
-      {hasTemplateVideo && templateVideoWeddingId && (
-         <section className="py-20 px-4">
-            <h2 className="text-center text-4xl mb-8" style={{ fontFamily: 'Caveat, cursive' }}>Our Video Invitation</h2>
-            <div className="max-w-4xl mx-auto bg-black p-4 rounded-xl shadow-2xl transform rotate-1">
-               {/* VHS Tape Header */}
-               <div className="bg-gray-800 p-1 mb-2 rounded flex justify-between px-4 text-white font-mono text-xs">
-                  <span className="flex items-center gap-2"><Film className="w-3 h-3" /> INVITATION</span>
-                  <span>00:00:00</span>
-                  <span>BAT [||||]</span>
-               </div>
-               <div className="aspect-video rounded overflow-hidden">
-                  <TemplateVideoPlayer 
-                    weddingId={templateVideoWeddingId}
-                    className="w-full h-full"
-                  />
-               </div>
-            </div>
-         </section>
-      )}
-
       {preWeddingVideo && (
          <section className="py-20 px-4">
             <div className="max-w-4xl mx-auto bg-black p-4 rounded-xl shadow-2xl transform rotate-1">
