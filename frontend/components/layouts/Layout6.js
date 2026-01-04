@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Calendar, MapPin, Clock, Play, Heart, Sparkles, Mail, Phone, Globe, ChevronDown, Music } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import BorderedPhotoGallery from '@/components/BorderedPhotoGallery';
-import PhotoFrame from '@/components/PhotoFrame'; // Using PhotoFrame to support borders now
+import PhotoFrame from '@/components/PhotoFrame';
+import TemplateVideoPlayer from '@/components/TemplateVideoPlayer';
 import { format, parseISO, isValid } from 'date-fns';
 
 /**
