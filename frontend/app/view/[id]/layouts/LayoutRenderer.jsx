@@ -9,7 +9,7 @@ import RomanticOverlay from './RomanticOverlay';
 import EditorialGrid from './EditorialGrid';
 import ZenMinimalist from './ZenMinimalist';
 
-export default function LayoutRenderer({ wedding, themeSettings, media }) {
+export default function LayoutRenderer({ wedding, themeSettings, media, videoTemplate }) {
   const layoutId = themeSettings?.layout_id || 'layout_1';
 
   // Helper to ensure media has array
@@ -21,23 +21,23 @@ export default function LayoutRenderer({ wedding, themeSettings, media }) {
   const renderLayout = () => {
     switch (layoutId) {
       case 'layout_1':
-        return <ClassicSplitHero wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <ClassicSplitHero wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_2':
-        return <CenterFocus wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <CenterFocus wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_3':
-        return <HorizontalTimeline wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <HorizontalTimeline wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_4':
-        return <ModernScrapbook wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <ModernScrapbook wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_5':
-        return <MinimalistCard wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <MinimalistCard wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_6':
-        return <RomanticOverlay wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <RomanticOverlay wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_7':
-        return <EditorialGrid wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <EditorialGrid wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       case 'layout_8':
-        return <ZenMinimalist wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <ZenMinimalist wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
       default:
-        return <ClassicSplitHero wedding={wedding} themeSettings={themeSettings} media={safeMedia} />;
+        return <ClassicSplitHero wedding={wedding} themeSettings={themeSettings} media={safeMedia} videoTemplate={videoTemplate} />;
     }
   };
 
