@@ -72,43 +72,55 @@ export default function Layout7({
           </div>
        </header>
 
-       {/* --- HERO SECTION (Sticky Scroll) --- */}
+       {/* --- HERO SECTION (Sticky Scroll) - Section 1 --- */}
        <section className="relative min-h-[120vh]">
           <div className="sticky top-0 h-screen flex flex-col justify-center items-center overflow-hidden">
              
-             {/* Huge Typography Layer */}
-             <div className="absolute inset-0 flex flex-col justify-between p-12 z-0 opacity-10">
-                <h1 className="text-[15vw] leading-none font-bold text-transparent stroke-black border-text" style={{ WebkitTextStroke: `2px ${primaryColor}` }}>
-                   {bride_names.split(' ')[0]}
-                </h1>
-                <h1 className="text-[15vw] leading-none font-bold text-right text-transparent stroke-black border-text" style={{ WebkitTextStroke: `2px ${primaryColor}` }}>
-                   {groom_names.split(' ')[0]}
-                </h1>
-             </div>
+             {/* Video Template or Traditional Hero */}
+             {hasTemplateVideo && templateVideoWeddingId ? (
+               <div className="relative z-30 w-[80vw] h-[70vh] md:w-[60vw] md:h-[80vh] flex items-center justify-center">
+                 <TemplateVideoPlayer 
+                   weddingId={templateVideoWeddingId}
+                   className="w-full h-full"
+                 />
+               </div>
+             ) : (
+               <>
+                 {/* Huge Typography Layer */}
+                 <div className="absolute inset-0 flex flex-col justify-between p-12 z-0 opacity-10">
+                    <h1 className="text-[15vw] leading-none font-bold text-transparent stroke-black border-text" style={{ WebkitTextStroke: `2px ${primaryColor}` }}>
+                       {bride_names.split(' ')[0]}
+                    </h1>
+                    <h1 className="text-[15vw] leading-none font-bold text-right text-transparent stroke-black border-text" style={{ WebkitTextStroke: `2px ${primaryColor}` }}>
+                       {groom_names.split(' ')[0]}
+                    </h1>
+                 </div>
 
-             {/* Main Image Layer */}
-             {couplePhoto?.url && (
-                <motion.div 
-                  className="relative z-10 w-[80vw] h-[70vh] md:w-[40vw] md:h-[80vh] bg-gray-200 shadow-2xl"
-                  style={{ y: yParallax }}
-                >
-                   <PhotoFrame 
-                     src={couplePhoto.url} 
-                     maskUrl={borders?.couple}
-                     maskData={borderMasks?.couple}
-                     className="w-full h-full object-cover grayscale contrast-125"
-                     aspectRatio="custom"
-                     style={{ height: '100%' }}
-                   />
-                </motion.div>
+                 {/* Main Image Layer */}
+                 {couplePhoto?.url && (
+                    <motion.div 
+                      className="relative z-10 w-[80vw] h-[70vh] md:w-[40vw] md:h-[80vh] bg-gray-200 shadow-2xl"
+                      style={{ y: yParallax }}
+                    >
+                       <PhotoFrame 
+                         src={couplePhoto.url} 
+                         maskUrl={borders?.couple}
+                         maskData={borderMasks?.couple}
+                         className="w-full h-full object-cover grayscale contrast-125"
+                         aspectRatio="custom"
+                         style={{ height: '100%' }}
+                       />
+                    </motion.div>
+                 )}
+
+                 {/* Foreground Text Layer */}
+                 <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center mix-blend-difference text-white">
+                    <h2 className="text-4xl md:text-6xl font-bold mb-4">
+                      {bride_names} <span className="text-2xl font-light italic">&</span> {groom_names}
+                    </h2>
+                 </div>
+               </>
              )}
-
-             {/* Foreground Text Layer */}
-             <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center mix-blend-difference text-white">
-                <h2 className="text-4xl md:text-6xl font-bold mb-4">
-                  {bride_names} <span className="text-2xl font-light italic">&</span> {groom_names}
-                </h2>
-             </div>
           </div>
        </section>
 
