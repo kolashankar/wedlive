@@ -19,9 +19,9 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/app/view/[id]/page.js, /app/frontend/app/view/[id]/layouts/*"
-    stuck_count: 1
+    stuck_count: 2
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -32,6 +32,9 @@ frontend:
       - working: false
         agent: "main"
         comment: "INVESTIGATION: User reports video template still not showing in ANY layout. Verified: 1) All 8 layouts have correct VideoTemplatePlayer implementation, 2) DB has correct template assignment and template data, 3) API endpoint returns video_template correctly, 4) Backend fixed (setuptools installed). Added extensive debug logging to page.js, LayoutRenderer, ClassicSplitHero, and VideoTemplatePlayer to diagnose data flow."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE FOUND: Page crashes with React error #310 before video template can render. Error: 'Minified React error #310; visit https://react.dev/errors/310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.' This is a useEffect hook order violation causing the entire page to crash. None of the expected debug logs (API Response, Video Template Data, LayoutRenderer videoTemplate, ClassicSplitHero videoTemplate, VideoTemplatePlayer) are present because the page crashes before reaching those components. The error occurs in a useEffect hook in the wedding viewer page component. This is a production-only error that prevents any layout rendering."
 
 metadata:
   created_by: "testing_agent"
