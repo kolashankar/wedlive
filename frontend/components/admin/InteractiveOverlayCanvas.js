@@ -496,26 +496,15 @@ export default function InteractiveOverlayCanvas({
     const pixelPos = percentToPixels(position);
     const padding = 10;
     
-    // Calculate bounding box based on text alignment
-    const textAlign = overlay.styling?.text_align || 'center';
-    let boxX, boxY;
-    
-    switch (textAlign) {
-      case 'left':
-        boxX = pixelPos.x - padding;
-        break;
-      case 'right':
-        boxX = pixelPos.x - dims.width - padding;
-        break;
-      case 'center':
-      default:
-        boxX = pixelPos.x - dims.width / 2 - padding;
-        break;
-    }
-    
-    boxY = pixelPos.y - dims.height / 2 - padding;
+    // Calculate bounding box - always centered for multi-line text
+    const boxX = pixelPos.x - dims.width / 2 - padding;
+    const boxY = pixelPos.y - dims.height / 2 - padding;
     const boxWidth = dims.width + padding * 2;
     const boxHeight = dims.height + padding * 2;
+
+    // Draw text box background (semi-transparent)
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
 
     // Draw selection box
     ctx.strokeStyle = '#3b82f6';
@@ -534,14 +523,16 @@ export default function InteractiveOverlayCanvas({
       ctx.strokeRect(handle.x - HANDLE_SIZE / 2, handle.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
     });
 
-    // Draw position label with percentage values
+    // Draw position and size label
+    const dimensions_data = overlay.dimensions || {};
+    const widthPercent = dimensions_data.width ? dimensions_data.width.toFixed(1) : 'auto';
     ctx.fillStyle = 'rgba(59, 130, 246, 0.9)';
-    ctx.fillRect(boxX, boxY - 25, 120, 20);
+    ctx.fillRect(boxX, boxY - 25, 180, 20);
     ctx.fillStyle = '#ffffff';
     ctx.font = '12px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(`(${position.x?.toFixed(1)}%, ${position.y?.toFixed(1)}%)`, boxX + 5, boxY - 23);
+    ctx.fillText(`(${position.x?.toFixed(1)}%, ${position.y?.toFixed(1)}%) W:${widthPercent}%`, boxX + 5, boxY - 23);
   }, [overlayDimensions, getResizeHandles, percentToPixels]);
 
   const renderHoverEffect = useCallback((ctx, overlay) => {
