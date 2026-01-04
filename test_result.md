@@ -78,6 +78,18 @@ frontend:
         agent: "testing"
         comment: "✅ VERIFIED: Overlay rendering working correctly on public view page (/view/[id]). API returns correct overlay data with text_value='Radha & Rajagopal' and position conversion logic is implemented properly. VideoTemplatePlayer.jsx component successfully renders overlays when React error #310 is not present. The position conversion from pixels (x:960, y:336) to percentages (x:50%, y:31.1%) works as expected. However, overlays are only visible on public view page where React error is resolved, not on admin wedding page where React error #310 still occurs."
   
+  - task: "Fix text overlay responsive scaling for mobile devices"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/app/view/[id]/layouts/components/VideoTemplatePlayer.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "🔧 RESPONSIVE FIX APPLIED: Fixed text overlay positioning and scaling issues on mobile devices. Changes made to VideoTemplatePlayer.jsx: 1) Removed fixed-size overlay container with scale transform that caused text blurriness. 2) Changed overlay container to use 100% width/height with percentage-based positioning. 3) Added responsive font scaling function that scales font-size, letter-spacing, and stroke-width proportionally based on container size. 4) For mobile devices (< 768px width), enforces minimum readable scale of 0.6 to prevent text from becoming too small. 5) Converted all pixel positions to percentages using reference resolution for proper responsive layout. 6) Added word-wrap and overflow-wrap to prevent text overflow on small screens. This ensures overlays maintain correct position and readable size across all device sizes from mobile to desktop."
+  
   - task: "Fix admin template editor page 404 error"
     implemented: true
     working: false
