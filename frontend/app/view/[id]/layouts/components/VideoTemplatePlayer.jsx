@@ -34,12 +34,25 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
-      setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      setVideoSize({ width, height });
+      
+      // Calculate and set dynamic aspect ratio
+      if (width && height) {
+        const ratio = width / height;
+        setAspectRatio(ratio);
+        console.log('Video aspect ratio:', ratio, `${width}x${height}`);
+      }
     };
 
     const handleResize = () => {
       if (video && video.videoWidth && video.videoHeight) {
-        setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+        setVideoSize({ width, height });
+        const ratio = width / height;
+        setAspectRatio(ratio);
       }
     };
 
