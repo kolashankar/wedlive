@@ -18,6 +18,8 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
   const [currentAssignment, setCurrentAssignment] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState(null);
+  const [previewOverlays, setPreviewOverlays] = useState([]);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -53,11 +55,27 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
     }
   };
 
-  const handlePreviewTemplate = (templateId) => {
+  const handlePreviewTemplate = async (templateId) => {
     const template = templates.find(t => t.id === templateId);
     if (template) {
       setPreviewTemplate(template);
       setPreviewOpen(true);
+      
+      // Load populated overlays with wedding data
+      try {
+        setLoadingPreview(true);
+        const response = await api.post(`/api/video-templates/${templateId}/preview`, {
+          wedding_id: weddingId
+        });
+        console.log('Preview overlays:', response.data);
+        setPreviewOverlays(response.data.preview_data?.overlays || []);
+      } catch (error) {
+        console.error('Failed to load preview overlays:', error);
+        toast.error('Failed to load overlay preview');
+        setPreviewOverlays([]);
+      } finally {
+        setLoadingPreview(false);
+      }
     }
   };
 
