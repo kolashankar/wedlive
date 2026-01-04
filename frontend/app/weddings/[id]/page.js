@@ -40,6 +40,7 @@ function WeddingViewPageContent({ params, searchParams }) {
   const [viewerCount, setViewerCount] = useState(0);
   const [showTheme, setShowTheme] = useState(null); // null = checking, true = show theme, false = skip theme
   const [isMounted, setIsMounted] = useState(false); // Fix hydration mismatch
+  const [videoTemplate, setVideoTemplate] = useState(null); // Video template data
 
   // Check if live=true parameter is present to skip theme
   const skipTheme = searchParams?.live === 'true';
