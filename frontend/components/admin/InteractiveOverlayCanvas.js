@@ -676,6 +676,9 @@ export default function InteractiveOverlayCanvas({
       const handle = getResizeHandleAtPosition(coords.x, coords.y, selectedOverlay);
       if (handle) {
         const pixelPos = percentToPixels(selectedOverlay.position);
+        const dims = overlayDimensions[selectedOverlay.id];
+        const dimensions_data = selectedOverlay.dimensions || {};
+        
         setIsResizing(true);
         setResizeHandle(handle);
         setDragStart(coords);
@@ -683,6 +686,8 @@ export default function InteractiveOverlayCanvas({
           x: pixelPos.x,
           y: pixelPos.y,
           fontSize: selectedOverlay.styling?.font_size || 48,
+          width: dims?.width || 200,
+          widthPercent: dimensions_data.width || ((dims?.width || 200) / CANVAS_WIDTH * 100),
           percentX: selectedOverlay.position.x,
           percentY: selectedOverlay.position.y
         });
@@ -722,49 +727,39 @@ export default function InteractiveOverlayCanvas({
       const dims = overlayDimensions[selectedOverlay.id];
       if (!dims) return;
 
-      let newFontSize = overlayStart.fontSize;
-      let newX = overlayStart.x;
-      let newY = overlayStart.y;
-
-      // Calculate new font size based on resize direction
       const handle = resizeHandle.position;
+      let newWidth = overlayStart.width;
       
+      // Adjust width based on resize handle direction
       if (handle.includes('e')) {
-        const scale = (dims.width + dx) / dims.width;
-        newFontSize = Math.max(12, overlayStart.fontSize * scale);
+        // Resize from right edge
+        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width + dx);
       } else if (handle.includes('w')) {
-        const scale = (dims.width - dx) / dims.width;
-        newFontSize = Math.max(12, overlayStart.fontSize * scale);
-        newX = overlayStart.x + dx / 2;
+        // Resize from left edge
+        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width - dx);
       }
-      
-      if (handle.includes('s')) {
-        const scale = (dims.height + dy) / dims.height;
-        newFontSize = Math.max(12, overlayStart.fontSize * scale);
-      } else if (handle.includes('n')) {
-        const scale = (dims.height - dy) / dims.height;
-        newFontSize = Math.max(12, overlayStart.fontSize * scale);
-        newY = overlayStart.y + dy / 2;
+
+      // For corner handles, also consider vertical resize
+      if (handle.includes('n') || handle.includes('s')) {
+        // Adjust width proportionally based on height change
+        const heightScale = (dims.height + (handle.includes('s') ? dy : -dy)) / dims.height;
+        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width * heightScale);
       }
 
       // Proportional resizing with shift key
-      if (shiftPressed && handle.length === 2) {
-        const avgScale = ((coords.x - dragStart.x) + (coords.y - dragStart.y)) / 2;
-        const scale = (dims.width + avgScale) / dims.width;
-        newFontSize = Math.max(12, overlayStart.fontSize * scale);
+      if (shiftPressed) {
+        const avgDelta = (dx + dy) / 2;
+        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width + avgDelta);
       }
 
-      // Convert pixel position back to percentage
-      const newPercentPos = pixelsToPercent({ x: newX, y: newY });
+      // Convert width to percentage
+      const newWidthPercent = (newWidth / CANVAS_WIDTH) * 100;
 
+      // Update overlay with new width
       onUpdateOverlay(selectedOverlay.id, {
-        styling: {
-          ...selectedOverlay.styling,
-          font_size: Math.round(newFontSize)
-        },
-        position: {
-          ...selectedOverlay.position,
-          ...newPercentPos
+        dimensions: {
+          ...(selectedOverlay.dimensions || {}),
+          width: Math.round(newWidthPercent * 100) / 100
         }
       });
 
