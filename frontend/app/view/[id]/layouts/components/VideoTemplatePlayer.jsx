@@ -177,17 +177,22 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     return { opacity, transform };
   };
 
-  // Calculate font size relative to video container height
-  const getScaledFontSize = (baseFontSize) => {
-    if (!containerRef.current) return baseFontSize;
+  // Calculate responsive font size using viewport-relative units
+  // Font size scales with container width to maintain proportions across all devices
+  const getResponsiveFontSize = (baseFontSize) => {
+    if (!containerRef.current) return `${baseFontSize}px`;
     
     const container = containerRef.current;
-    const containerHeight = container.clientHeight;
-    const referenceHeight = referenceResolution.height;
+    const containerWidth = container.clientWidth;
+    const referenceWidth = referenceResolution.width;
     
-    // Scale font size proportionally to container height
-    const scaleFactor = containerHeight / referenceHeight;
-    return Math.max(12, Math.round(baseFontSize * scaleFactor));
+    // Calculate vw unit relative to container width
+    // This ensures font scales proportionally with video size
+    const vwValue = (baseFontSize / referenceWidth) * 100;
+    
+    // Use clamp to prevent fonts from becoming too small or too large
+    // min: 12px, preferred: calculated vw, max: baseFontSize
+    return `clamp(12px, ${vwValue}vw, ${baseFontSize}px)`;
   };
 
   return (
