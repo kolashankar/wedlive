@@ -77,8 +77,15 @@ export default function Layout4({
          <div className="absolute top-12 left-1/2 -translate-x-1/2 w-48 h-12 bg-yellow-200/80 rotate-1 transform skew-x-12 z-10" />
          
          <div className="bg-white p-6 pb-20 shadow-xl transform -rotate-1 max-w-2xl w-full border border-gray-200 relative">
-             {/* Couple Photo */}
-             {couplePhoto?.url ? (
+             {/* Video Template or Couple Photo */}
+             {hasTemplateVideo && templateVideoWeddingId ? (
+               <div className="aspect-[4/5] bg-transparent overflow-hidden relative flex items-center justify-center">
+                  <TemplateVideoPlayer 
+                     weddingId={templateVideoWeddingId}
+                     className="w-full h-full"
+                  />
+               </div>
+             ) : couplePhoto?.url ? (
                <div className="aspect-[4/5] bg-gray-100 overflow-hidden relative">
                   <PhotoFrame 
                      src={couplePhoto.url} 
@@ -95,22 +102,24 @@ export default function Layout4({
                </div>
              )}
 
-             {/* Handwritten Caption */}
-             <div className="absolute bottom-4 left-0 right-0 text-center">
-                <h1 className="text-5xl font-bold mb-1" style={{ fontFamily: 'Caveat, cursive' }}>
-                   {bride_names} & {groom_names}
-                </h1>
-                {event_date && (() => {
-                  try {
-                    const parsedDate = parseISO(event_date);
-                    if (!isValid(parsedDate)) return null;
-                    return <p className="text-xl text-gray-500">{format(parsedDate, 'MMMM do, yyyy')}</p>;
-                  } catch (e) {
-                    console.error('Invalid date:', event_date, e);
-                    return null;
-                  }
-                })()}
-             </div>
+             {/* Handwritten Caption (only if no video template) */}
+             {!hasTemplateVideo && (
+               <div className="absolute bottom-4 left-0 right-0 text-center">
+                  <h1 className="text-5xl font-bold mb-1" style={{ fontFamily: 'Caveat, cursive' }}>
+                     {bride_names} & {groom_names}
+                  </h1>
+                  {event_date && (() => {
+                    try {
+                      const parsedDate = parseISO(event_date);
+                      if (!isValid(parsedDate)) return null;
+                      return <p className="text-xl text-gray-500">{format(parsedDate, 'MMMM do, yyyy')}</p>;
+                    } catch (e) {
+                      console.error('Invalid date:', event_date, e);
+                      return null;
+                    }
+                  })()}
+               </div>
+             )}
 
              {/* Sticker Decoration */}
              <div className="absolute -top-6 -right-6 text-red-400 transform rotate-12">
