@@ -228,13 +228,27 @@ async def get_wedding_complete_view(wedding_id: str):
             height = video_data.get("height")
             resolution = f"{width}x{height}" if width and height else None
             
+            # Map wedding data for overlays
+            wedding_data_mapped = wedding_mapper.map_wedding_data(wedding)
+            
+            # Populate overlays with wedding data
+            text_overlays = template.get("text_overlays", [])
+            populated_overlays = []
+            for overlay in text_overlays:
+                text_value = wedding_mapper.populate_overlay_text(overlay, wedding_data_mapped)
+                populated_overlays.append({
+                    **overlay,
+                    "text_value": text_value
+                })
+            
             template_data = {
                 "id": template["id"],
                 "name": template.get("name"),
                 "video_url": video_data.get("original_url"),
                 "thumbnail_url": preview_thumbnail.get("url"),
                 "duration": video_data.get("duration_seconds"),
-                "resolution": resolution
+                "resolution": resolution,
+                "text_overlays": populated_overlays
             }
     
     return {
