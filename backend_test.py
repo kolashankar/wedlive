@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://template-connect.preview.emergentagent.com"
+BACKEND_URL = "https://peaceful-galileo.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test wedding ID from the review request
