@@ -80,11 +80,11 @@ frontend:
   
   - task: "Fix admin template editor page 404 error"
     implemented: true
-    working: "pending_test"
+    working: false
     file: "/app/frontend/app/admin/video-templates/[id]/page.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
@@ -92,6 +92,9 @@ frontend:
       - working: "pending_test"
         agent: "main"
         comment: "🔧 FIXED: Replaced hardcoded API_URL with centralized api module from @/lib/api. This ensures consistent API routing and uses the proper REACT_APP_BACKEND_URL environment variable. Also removed unused axios import. The page now uses the same API configuration as other parts of the application, which should resolve the 404 error. Needs testing to verify admin template editor page loads correctly."
+      - working: false
+        agent: "testing"
+        comment: "❌ STILL FAILING: Admin template editor page (/admin/video-templates/9a601269-e7e3-4263-96be-de243ea5eede) continues to show 404 error despite API configuration fix. The page displays '404 - This page could not be found' indicating the route or API endpoint is not accessible. The centralized API configuration change did not resolve the underlying routing issue. This suggests the problem may be with the backend API endpoint /api/video-templates/{id} not being available or requiring authentication that is not being provided."
 
 
 metadata:
