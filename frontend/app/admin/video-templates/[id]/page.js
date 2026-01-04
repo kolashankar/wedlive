@@ -49,12 +49,26 @@ export default function EditVideoTemplate() {
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: 'Success',
-      description: 'Template saved successfully'
-    });
-    loadTemplate(); // Reload to get updated data
+  const handleSave = async () => {
+    try {
+      toast({
+        title: 'Success',
+        description: 'Template saved successfully'
+      });
+      
+      // Wait a moment for any pending updates to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Redirect to templates list
+      router.push('/admin/video-templates');
+    } catch (error) {
+      console.error('Error during save:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save template',
+        variant: 'destructive'
+      });
+    }
   };
 
   if (loading) {
