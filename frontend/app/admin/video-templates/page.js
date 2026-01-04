@@ -63,7 +63,8 @@ export default function VideoTemplatesAdmin() {
           category: categoryFilter !== 'all' ? categoryFilter : undefined
         }
       });
-      setTemplates(response.data.templates || []);
+      // Backend returns array directly, not {templates: []}
+      setTemplates(response.data || []);
     } catch (error) {
       console.error('Failed to load templates:', error);
       toast({
