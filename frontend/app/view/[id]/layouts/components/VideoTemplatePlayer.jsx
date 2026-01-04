@@ -216,18 +216,28 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           </div>
         )}
         
-        {/* Play/Pause Button Overlay */}
-        <button
-          onClick={handlePlayPause}
-          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-all group z-20"
-          style={{ zIndex: 20 }}
-        >
-          {!isPlaying && (
+        {/* Play/Pause Button Overlay - Only show when not playing */}
+        {!isPlaying && (
+          <button
+            onClick={handlePlayPause}
+            className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-all group z-20"
+            style={{ zIndex: 20 }}
+          >
             <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Play className="w-10 h-10 text-gray-800 ml-1" fill="currentColor" />
             </div>
-          )}
-        </button>
+          </button>
+        )}
+        
+        {/* Invisible click area when playing */}
+        {isPlaying && (
+          <button
+            onClick={handlePlayPause}
+            className="absolute inset-0 z-20"
+            style={{ zIndex: 20, backgroundColor: 'transparent' }}
+            aria-label="Pause video"
+          />
+        )}
       </div>
     </div>
   );
