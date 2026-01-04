@@ -30,8 +30,8 @@ export default function EditVideoTemplate() {
 
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${API_URL}/api/video-templates/${params.id}`,
+      const response = await api.get(
+        `/api/video-templates/${params.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTemplate(response.data);
