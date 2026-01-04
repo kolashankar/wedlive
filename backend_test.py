@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Video Template Integration Fix
-Tests the /api/viewer/wedding/{wedding_id}/all endpoint to verify video template data
+Backend API Testing for Video Template Overlay Rendering Fix
+Tests the specific endpoints mentioned in the review request:
+1. /api/weddings/{wedding_id}/template-assignment
+2. /api/video-templates/{template_id}/preview with wedding_id
 """
 
 import requests
