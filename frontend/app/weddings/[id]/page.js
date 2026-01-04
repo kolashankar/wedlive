@@ -194,9 +194,9 @@ function WeddingViewPageContent({ params, searchParams }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [weddingId]);
 
-  const updateViewerCount = async () => {
+  const updateViewerCount = useCallback(async () => {
     try {
       const response = await api.get(`/api/weddings/${weddingId}`);
       setViewerCount(response.data.viewers_count || 0);
