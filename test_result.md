@@ -96,10 +96,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix React error #310 preventing video template overlay rendering"
-  stuck_tasks:
-    - "Fix video template display in all 8 layouts"
-    - "Fix missing template overlays in layout rendering"
+    - "Test React error #310 fix - verify /weddings/[id] and /view/[id] pages render without crashing"
+    - "Test overlay rendering with pixel-to-percentage conversion"
+    - "Test admin template editor page loads correctly"
+  stuck_tasks: []
   test_all: false
   test_priority: "critical_first"
 
