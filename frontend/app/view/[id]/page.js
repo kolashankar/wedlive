@@ -47,6 +47,8 @@ function ViewerContent({ weddingId }) {
   const loadWeddingData = async () => {
     try {
       const response = await api.get(`/api/viewer/wedding/${weddingId}/all`);
+      console.log('API Response:', response.data);
+      console.log('Video Template Data:', response.data.video_template);
       setWeddingData(response.data);
       
       // Auto-select appropriate tab
