@@ -440,7 +440,8 @@ function WeddingViewPageContent({ params, searchParams }) {
   if (showTheme && wedding && wedding.theme_settings && typeof wedding.theme_settings === 'object') {
     return (
       <LayoutRenderer 
-        wedding={wedding} 
+        wedding={wedding}
+        videoTemplate={videoTemplate}
         onEnter={handleEnterWedding}
       />
     );
