@@ -218,13 +218,21 @@ async def get_wedding_complete_view(wedding_id: str):
     if template_assignment:
         template = await db.video_templates.find_one({"id": template_assignment["template_id"]})
         if template:
+            video_data = template.get("video_data", {})
+            preview_thumbnail = template.get("preview_thumbnail", {})
+            
+            # Construct resolution string from width and height
+            width = video_data.get("width")
+            height = video_data.get("height")
+            resolution = f"{width}x{height}" if width and height else None
+            
             template_data = {
                 "id": template["id"],
                 "name": template.get("name"),
-                "video_url": template.get("video_data", {}).get("url"),
-                "thumbnail_url": template.get("thumbnail", {}).get("url"),
-                "duration": template.get("video_data", {}).get("duration"),
-                "resolution": template.get("video_data", {}).get("resolution")
+                "video_url": video_data.get("original_url"),
+                "thumbnail_url": preview_thumbnail.get("url"),
+                "duration": video_data.get("duration_seconds"),
+                "resolution": resolution
             }
     
     return {
