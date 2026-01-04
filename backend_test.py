@@ -25,97 +25,62 @@ def log_test(message, status="INFO"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{timestamp}] [{status}] {message}")
 
-def test_template_assignment_endpoint():
-    """Test the wedding template assignment endpoint"""
-    log_test("Testing /api/weddings/{wedding_id}/template-assignment endpoint")
+def test_venue_mapping():
+    """Test venue mapping - wedding location field should be mapped to venue endpoint"""
+    log_test("Testing venue mapping from wedding location to venue endpoint")
     
-    url = f"{API_BASE}/weddings/{TEST_WEDDING_ID}/template-assignment"
+    url = f"{API_BASE}/viewer/wedding/{TEST_WEDDING_ID}/all"
     log_test(f"Making request to: {url}")
     
     try:
         response = requests.get(url, timeout=30)
         log_test(f"Response status: {response.status_code}")
         
-        if response.status_code == 401:
-            log_test("Authentication required - this is expected for this endpoint", "WARNING")
-            log_test("Endpoint exists but requires authentication")
-            return True
-            
-        if response.status_code == 404:
-            log_test("Endpoint not found - this may indicate the endpoint doesn't exist", "ERROR")
-            return False
-            
         if response.status_code != 200:
             log_test(f"API returned error: {response.status_code} - {response.text}", "ERROR")
             return False
             
         data = response.json()
         log_test("Response received successfully")
-        log_test(f"Response data: {json.dumps(data, indent=2)}")
         
-        # Check if populated_overlays exists in response
-        if "populated_overlays" not in data:
-            log_test("populated_overlays field missing from response", "ERROR")
+        # Check if video_template exists
+        video_template = data.get("video_template")
+        if not video_template:
+            log_test("No video template found in response - this is expected if no template is assigned", "WARNING")
+            return True
+            
+        # Check text_overlays array
+        text_overlays = video_template.get("text_overlays", [])
+        log_test(f"Found {len(text_overlays)} text overlays")
+        
+        # Look for venue overlay
+        venue_overlay = None
+        for overlay in text_overlays:
+            if overlay.get("endpoint_key") == "venue":
+                venue_overlay = overlay
+                break
+        
+        if not venue_overlay:
+            log_test("No venue overlay found with endpoint_key 'venue'", "WARNING")
+            log_test("This may be expected if no venue overlay is configured in the template")
+            return True
+        
+        # Check venue text_value
+        text_value = venue_overlay.get("text_value", "")
+        log_test(f"Venue overlay text_value: '{text_value}'")
+        
+        # Verify it's not a placeholder
+        if text_value in ["Grand HotelCCFVVF", "Sample Venue", "Venue Name", ""]:
+            log_test(f"❌ Venue shows placeholder text '{text_value}' instead of actual location", "ERROR")
             return False
-            
-        populated_overlays = data["populated_overlays"]
-        log_test(f"Found {len(populated_overlays)} populated overlays")
         
-        # Test overlay structure
-        for i, overlay in enumerate(populated_overlays):
-            log_test(f"Testing overlay {i+1}:")
-            
-            # Check for text_value field
-            if "text_value" not in overlay:
-                log_test(f"  ❌ text_value field missing from overlay {i+1}", "ERROR")
-                return False
-            
-            text_value = overlay["text_value"]
-            log_test(f"  ✅ text_value: {text_value}")
-            
-            # Check for position object
-            if "position" not in overlay:
-                log_test(f"  ❌ position field missing from overlay {i+1}", "ERROR")
-                return False
-                
-            position = overlay["position"]
-            if not isinstance(position, dict):
-                log_test(f"  ❌ position is not an object in overlay {i+1}", "ERROR")
-                return False
-                
-            # Check for x and y coordinates
-            if "x" not in position or "y" not in position:
-                log_test(f"  ❌ position missing x or y coordinates in overlay {i+1}", "ERROR")
-                return False
-                
-            x, y = position["x"], position["y"]
-            log_test(f"  ✅ position: x={x}, y={y}")
-            
-            # Check for styling object
-            if "styling" in overlay:
-                styling = overlay["styling"]
-                log_test(f"  ✅ styling object present")
-            else:
-                log_test(f"  ⚠️ styling object missing from overlay {i+1}", "WARNING")
-                
-            # Check for timing object
-            if "timing" not in overlay:
-                log_test(f"  ❌ timing field missing from overlay {i+1}", "ERROR")
-                return False
-                
-            timing = overlay["timing"]
-            if not isinstance(timing, dict):
-                log_test(f"  ❌ timing is not an object in overlay {i+1}", "ERROR")
-                return False
-                
-            if "start_time" not in timing or "end_time" not in timing:
-                log_test(f"  ❌ timing missing start_time or end_time in overlay {i+1}", "ERROR")
-                return False
-                
-            start_time, end_time = timing["start_time"], timing["end_time"]
-            log_test(f"  ✅ timing: start={start_time}, end={end_time}")
+        # Check if it matches expected location
+        if text_value == EXPECTED_LOCATION:
+            log_test(f"✅ Venue mapping CORRECT: '{text_value}' matches expected location", "SUCCESS")
+        else:
+            log_test(f"⚠️ Venue text_value '{text_value}' doesn't match expected '{EXPECTED_LOCATION}'", "WARNING")
+            log_test("This may be expected if wedding location has been updated")
         
-        log_test("✅ Template assignment endpoint structure is correct")
         return True
         
     except requests.exceptions.RequestException as e:
@@ -129,182 +94,241 @@ def test_template_assignment_endpoint():
         return False
 
 
-def test_template_preview_endpoint():
-    """Test the video template preview endpoint with wedding data"""
-    log_test("Testing /api/video-templates/{template_id}/preview endpoint")
+def test_date_components():
+    """Test date component separation into individual fields"""
+    log_test("Testing date component separation (event_date, event_month, event_year, event_day)")
     
-    # First, we need to get a template ID - let's try to get it from the assignment endpoint
-    assignment_url = f"{API_BASE}/weddings/{TEST_WEDDING_ID}/template-assignment"
-    template_id = None
-    
-    try:
-        assignment_response = requests.get(assignment_url, timeout=30)
-        if assignment_response.status_code == 200:
-            assignment_data = assignment_response.json()
-            if "template" in assignment_data and assignment_data["template"]:
-                template_id = assignment_data["template"].get("id")
-                log_test(f"Found template ID from assignment: {template_id}")
-    except:
-        pass
-    
-    # If we couldn't get template ID from assignment, try a common template ID
-    if not template_id:
-        # Let's try to get available templates first
-        templates_url = f"{API_BASE}/video-templates"
-        try:
-            templates_response = requests.get(templates_url, timeout=30)
-            if templates_response.status_code == 200:
-                templates_data = templates_response.json()
-                if templates_data and len(templates_data) > 0:
-                    template_id = templates_data[0].get("id")
-                    log_test(f"Using first available template ID: {template_id}")
-        except:
-            pass
-    
-    if not template_id:
-        log_test("Could not find a template ID to test with", "WARNING")
-        log_test("This may indicate no templates are available or assignment endpoint is not working")
-        return True  # Not a critical failure
-    
-    # Test the preview endpoint
-    preview_url = f"{API_BASE}/video-templates/{template_id}/preview"
-    log_test(f"Making request to: {preview_url}")
-    
-    # Prepare request body with wedding_id
-    request_body = {
-        "wedding_id": TEST_WEDDING_ID
-    }
-    
-    try:
-        response = requests.post(preview_url, json=request_body, timeout=30)
-        log_test(f"Response status: {response.status_code}")
-        
-        if response.status_code == 401:
-            log_test("Authentication required - this is expected for this endpoint", "WARNING")
-            log_test("Endpoint exists but requires authentication")
-            return True
-            
-        if response.status_code == 404:
-            log_test("Endpoint or template not found", "ERROR")
-            return False
-            
-        if response.status_code != 200:
-            log_test(f"API returned error: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-        data = response.json()
-        log_test("Response received successfully")
-        log_test(f"Response data: {json.dumps(data, indent=2)}")
-        
-        # Check if preview_data exists
-        if "preview_data" not in data:
-            log_test("preview_data field missing from response", "ERROR")
-            return False
-            
-        preview_data = data["preview_data"]
-        
-        # Check for overlays array
-        if "overlays" not in preview_data:
-            log_test("overlays field missing from preview_data", "ERROR")
-            return False
-            
-        overlays = preview_data["overlays"]
-        log_test(f"Found {len(overlays)} overlays in preview")
-        
-        # Test overlay structure (note: different field name 'text' instead of 'text_value')
-        for i, overlay in enumerate(overlays):
-            log_test(f"Testing preview overlay {i+1}:")
-            
-            # Check for text field (different from assignment endpoint)
-            if "text" not in overlay:
-                log_test(f"  ❌ text field missing from overlay {i+1}", "ERROR")
-                return False
-            
-            text = overlay["text"]
-            log_test(f"  ✅ text: {text}")
-            
-            # Check for position object
-            if "position" not in overlay:
-                log_test(f"  ❌ position field missing from overlay {i+1}", "ERROR")
-                return False
-                
-            position = overlay["position"]
-            if not isinstance(position, dict):
-                log_test(f"  ❌ position is not an object in overlay {i+1}", "ERROR")
-                return False
-                
-            # Check for x and y coordinates
-            if "x" not in position or "y" not in position:
-                log_test(f"  ❌ position missing x or y coordinates in overlay {i+1}", "ERROR")
-                return False
-                
-            x, y = position["x"], position["y"]
-            log_test(f"  ✅ position: x={x}, y={y}")
-            
-            # Check for timing object
-            if "timing" not in overlay:
-                log_test(f"  ❌ timing field missing from overlay {i+1}", "ERROR")
-                return False
-                
-            timing = overlay["timing"]
-            if not isinstance(timing, dict):
-                log_test(f"  ❌ timing is not an object in overlay {i+1}", "ERROR")
-                return False
-                
-            if "start_time" not in timing or "end_time" not in timing:
-                log_test(f"  ❌ timing missing start_time or end_time in overlay {i+1}", "ERROR")
-                return False
-                
-            start_time, end_time = timing["start_time"], timing["end_time"]
-            log_test(f"  ✅ timing: start={start_time}, end={end_time}")
-        
-        log_test("✅ Template preview endpoint structure is correct")
-        return True
-        
-    except requests.exceptions.RequestException as e:
-        log_test(f"Request failed: {str(e)}", "ERROR")
-        return False
-    except json.JSONDecodeError as e:
-        log_test(f"Failed to parse JSON response: {str(e)}", "ERROR")
-        return False
-    except Exception as e:
-        log_test(f"Unexpected error: {str(e)}", "ERROR")
-        return False
-
-def test_wedding_without_template():
-    """Test with a different wedding ID that might not have a template"""
-    log_test("Testing with a different wedding ID to check null template handling")
-    
-    # Use a different wedding ID that likely doesn't have a template
-    test_id = "00000000-0000-0000-0000-000000000000"
-    url = f"{API_BASE}/weddings/{test_id}/template-assignment"
+    url = f"{API_BASE}/viewer/wedding/{TEST_WEDDING_ID}/all"
+    log_test(f"Making request to: {url}")
     
     try:
         response = requests.get(url, timeout=30)
+        log_test(f"Response status: {response.status_code}")
         
-        if response.status_code == 404:
-            log_test("Wedding not found (expected for test ID)")
-            return True
+        if response.status_code != 200:
+            log_test(f"API returned error: {response.status_code} - {response.text}", "ERROR")
+            return False
+            
+        data = response.json()
         
-        if response.status_code == 401:
-            log_test("Authentication required (expected)")
+        # Check if video_template exists
+        video_template = data.get("video_template")
+        if not video_template:
+            log_test("No video template found in response", "WARNING")
             return True
             
-        if response.status_code == 200:
-            data = response.json()
-            populated_overlays = data.get("populated_overlays", [])
+        # Check text_overlays array
+        text_overlays = video_template.get("text_overlays", [])
+        log_test(f"Found {len(text_overlays)} text overlays")
+        
+        # Look for date component overlays
+        date_endpoints = {
+            "event_date": "Day number (e.g., '15')",
+            "event_month": "Month name (e.g., 'January')",
+            "event_year": "Year (e.g., '2025')",
+            "event_day": "Day name (e.g., 'Monday')",
+            "event_date_full": "Full formatted date (e.g., 'January 15, 2025')"
+        }
+        
+        found_overlays = {}
+        for overlay in text_overlays:
+            endpoint_key = overlay.get("endpoint_key")
+            if endpoint_key in date_endpoints:
+                found_overlays[endpoint_key] = overlay
+        
+        log_test(f"Found date component overlays: {list(found_overlays.keys())}")
+        
+        # Test each found date component
+        all_passed = True
+        for endpoint_key, overlay in found_overlays.items():
+            text_value = overlay.get("text_value", "")
+            log_test(f"Testing {endpoint_key}: '{text_value}'")
             
-            if len(populated_overlays) == 0:
-                log_test("✅ No overlays for wedding without template (correct behavior)")
+            # Validate based on endpoint type
+            if endpoint_key == "event_date":
+                # Should be day number (1-31)
+                if text_value.isdigit() and 1 <= int(text_value) <= 31:
+                    log_test(f"  ✅ {endpoint_key} is valid day number: {text_value}")
+                else:
+                    log_test(f"  ❌ {endpoint_key} should be day number (1-31), got: '{text_value}'", "ERROR")
+                    all_passed = False
+                    
+            elif endpoint_key == "event_month":
+                # Should be month name
+                months = ["January", "February", "March", "April", "May", "June",
+                         "July", "August", "September", "October", "November", "December"]
+                if text_value in months:
+                    log_test(f"  ✅ {endpoint_key} is valid month name: {text_value}")
+                else:
+                    log_test(f"  ❌ {endpoint_key} should be month name, got: '{text_value}'", "ERROR")
+                    all_passed = False
+                    
+            elif endpoint_key == "event_year":
+                # Should be 4-digit year
+                if text_value.isdigit() and len(text_value) == 4:
+                    log_test(f"  ✅ {endpoint_key} is valid year: {text_value}")
+                else:
+                    log_test(f"  ❌ {endpoint_key} should be 4-digit year, got: '{text_value}'", "ERROR")
+                    all_passed = False
+                    
+            elif endpoint_key == "event_day":
+                # Should be day name
+                days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                if text_value in days:
+                    log_test(f"  ✅ {endpoint_key} is valid day name: {text_value}")
+                else:
+                    log_test(f"  ❌ {endpoint_key} should be day name, got: '{text_value}'", "ERROR")
+                    all_passed = False
+                    
+            elif endpoint_key == "event_date_full":
+                # Should be formatted date (e.g., "January 15, 2025")
+                if len(text_value) > 5 and any(month in text_value for month in ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]):
+                    log_test(f"  ✅ {endpoint_key} is valid formatted date: {text_value}")
+                else:
+                    log_test(f"  ❌ {endpoint_key} should be formatted date, got: '{text_value}'", "ERROR")
+                    all_passed = False
+        
+        if not found_overlays:
+            log_test("No date component overlays found in template", "WARNING")
+            log_test("This may be expected if no date overlays are configured")
+            return True
+        
+        return all_passed
+        
+    except requests.exceptions.RequestException as e:
+        log_test(f"Request failed: {str(e)}", "ERROR")
+        return False
+    except json.JSONDecodeError as e:
+        log_test(f"Failed to parse JSON response: {str(e)}", "ERROR")
+        return False
+    except Exception as e:
+        log_test(f"Unexpected error: {str(e)}", "ERROR")
+        return False
+
+
+def test_backward_compatibility():
+    """Test backward compatibility - old event_date endpoint should still work"""
+    log_test("Testing backward compatibility for old event_date endpoint")
+    
+    url = f"{API_BASE}/viewer/wedding/{TEST_WEDDING_ID}/all"
+    log_test(f"Making request to: {url}")
+    
+    try:
+        response = requests.get(url, timeout=30)
+        log_test(f"Response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            log_test(f"API returned error: {response.status_code} - {response.text}", "ERROR")
+            return False
+            
+        data = response.json()
+        
+        # Check if video_template exists
+        video_template = data.get("video_template")
+        if not video_template:
+            log_test("No video template found in response", "WARNING")
+            return True
+            
+        # Check text_overlays array
+        text_overlays = video_template.get("text_overlays", [])
+        
+        # Look for old event_date overlay (should still work)
+        old_event_date_overlay = None
+        for overlay in text_overlays:
+            if overlay.get("endpoint_key") == "event_date":
+                old_event_date_overlay = overlay
+                break
+        
+        if old_event_date_overlay:
+            text_value = old_event_date_overlay.get("text_value", "")
+            log_test(f"Found old event_date overlay with text_value: '{text_value}'")
+            
+            # Should be populated with some date value (either day number or full date)
+            if text_value and text_value not in ["Sample Date", "Event Date", ""]:
+                log_test("✅ Backward compatibility: old event_date endpoint still works")
                 return True
             else:
-                log_test("Wedding unexpectedly has template assigned")
-                return True
-                
+                log_test("❌ Backward compatibility: old event_date endpoint not populated", "ERROR")
+                return False
+        else:
+            log_test("No old event_date overlay found - this is expected if template uses new date components", "INFO")
+            return True
+        
+    except requests.exceptions.RequestException as e:
+        log_test(f"Request failed: {str(e)}", "ERROR")
+        return False
+    except json.JSONDecodeError as e:
+        log_test(f"Failed to parse JSON response: {str(e)}", "ERROR")
+        return False
     except Exception as e:
-        log_test(f"Test with different wedding ID failed: {str(e)}", "WARNING")
-        # This is not critical since we're testing with a dummy ID
+        log_test(f"Unexpected error: {str(e)}", "ERROR")
+        return False
+
+
+def test_wedding_data_structure():
+    """Test that wedding data structure is correct and contains expected fields"""
+    log_test("Testing wedding data structure and scheduled_date field")
+    
+    url = f"{API_BASE}/viewer/wedding/{TEST_WEDDING_ID}/all"
+    log_test(f"Making request to: {url}")
+    
+    try:
+        response = requests.get(url, timeout=30)
+        log_test(f"Response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            log_test(f"API returned error: {response.status_code} - {response.text}", "ERROR")
+            return False
+            
+        data = response.json()
+        
+        # Check wedding data structure
+        wedding = data.get("wedding", {})
+        if not wedding:
+            log_test("No wedding data found in response", "ERROR")
+            return False
+        
+        # Check required fields
+        required_fields = ["id", "bride_name", "groom_name", "scheduled_date", "location"]
+        missing_fields = []
+        
+        for field in required_fields:
+            if field not in wedding:
+                missing_fields.append(field)
+            else:
+                value = wedding[field]
+                log_test(f"Wedding {field}: {value}")
+        
+        if missing_fields:
+            log_test(f"❌ Missing required wedding fields: {missing_fields}", "ERROR")
+            return False
+        
+        # Specifically check location field (used for venue mapping)
+        location = wedding.get("location", "")
+        if location:
+            log_test(f"✅ Wedding location field present: '{location}'")
+        else:
+            log_test("⚠️ Wedding location field is empty", "WARNING")
+        
+        # Check scheduled_date field (used for date components)
+        scheduled_date = wedding.get("scheduled_date", "")
+        if scheduled_date:
+            log_test(f"✅ Wedding scheduled_date field present: '{scheduled_date}'")
+        else:
+            log_test("❌ Wedding scheduled_date field is missing or empty", "ERROR")
+            return False
+        
         return True
+        
+    except requests.exceptions.RequestException as e:
+        log_test(f"Request failed: {str(e)}", "ERROR")
+        return False
+    except json.JSONDecodeError as e:
+        log_test(f"Failed to parse JSON response: {str(e)}", "ERROR")
+        return False
+    except Exception as e:
+        log_test(f"Unexpected error: {str(e)}", "ERROR")
+        return False
 
 def main():
     """Run all backend tests"""
