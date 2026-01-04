@@ -79,9 +79,17 @@ export default function Layout1({
     >
       <div className="flex flex-col lg:flex-row min-h-screen">
         
-        {/* --- LEFT SIDE (STICKY HERO) --- */}
+        {/* --- LEFT SIDE (STICKY HERO / SECTION 1) --- */}
         <div className="lg:w-1/2 h-[60vh] lg:h-screen lg:sticky lg:top-0 relative overflow-hidden bg-gray-100">
-           {couplePhoto?.url ? (
+           {/* Video Template - Section 1 Fixed Template (Only if assigned) */}
+           {hasTemplateVideo && templateVideoWeddingId ? (
+             <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+               <TemplateVideoPlayer 
+                 weddingId={templateVideoWeddingId}
+                 className="w-full h-full"
+               />
+             </div>
+           ) : couplePhoto?.url ? (
              <motion.div 
                className="w-full h-full"
                style={{ scale: imageScale }}
@@ -103,21 +111,23 @@ export default function Layout1({
              </div>
            )}
 
-           {/* Floating Names on Image */}
-           <div className="absolute bottom-12 left-8 md:left-12 text-white z-10">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="text-lg uppercase tracking-[0.3em] mb-4 opacity-80">{welcomeMessage}</div>
-                <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                  {bride_names} <br/> 
-                  <span className="text-3xl md:text-5xl font-light italic opacity-90">&</span> <br/>
-                  {groom_names}
-                </h1>
-              </motion.div>
-           </div>
+           {/* Floating Names on Image (only if no video template) */}
+           {!hasTemplateVideo && (
+             <div className="absolute bottom-12 left-8 md:left-12 text-white z-10">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <div className="text-lg uppercase tracking-[0.3em] mb-4 opacity-80">{welcomeMessage}</div>
+                  <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                    {bride_names} <br/> 
+                    <span className="text-3xl md:text-5xl font-light italic opacity-90">&</span> <br/>
+                    {groom_names}
+                  </h1>
+                </motion.div>
+             </div>
+           )}
         </div>
 
         {/* --- RIGHT SIDE (SCROLLING CONTENT) --- */}
