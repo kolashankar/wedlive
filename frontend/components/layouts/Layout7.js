@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, MapPin, Clock, Play, ArrowDownRight, MoveRight, X } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import PhotoFrame from '@/components/PhotoFrame';
+import TemplateVideoPlayer from '@/components/TemplateVideoPlayer';
 import { format, parseISO } from 'date-fns';
 
 /**
