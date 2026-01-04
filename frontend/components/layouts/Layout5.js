@@ -180,8 +180,23 @@ export default function Layout5({
             </div>
           </motion.div>
 
-          {/* Couple Photo Card */}
-          {couplePhoto?.url && (
+          {/* Couple Photo or Video Template Card - Section 1 */}
+          {hasTemplateVideo && templateVideoWeddingId ? (
+            <motion.div
+               variants={cardVariants}
+               initial="hidden"
+               whileInView="visible"
+               viewport={{ once: true }}
+               className="bg-white p-4 shadow-xl"
+            >
+               <div className="aspect-[16/10] overflow-hidden bg-transparent relative flex items-center justify-center">
+                  <TemplateVideoPlayer
+                    weddingId={templateVideoWeddingId}
+                    className="w-full h-full"
+                  />
+               </div>
+            </motion.div>
+          ) : couplePhoto?.url ? (
             <motion.div
                variants={cardVariants}
                initial="hidden"
@@ -204,7 +219,7 @@ export default function Layout5({
                   </div>
                </div>
             </motion.div>
-          )}
+          ) : null}
 
           {/* Video Section */}
           {preWeddingVideo && (
