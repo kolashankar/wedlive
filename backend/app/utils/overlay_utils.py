@@ -90,8 +90,8 @@ class OverlayCoordinateSystem:
         y = position.get('y', 50)
         unit = position.get('unit', 'percent')
         
-        # If already in percentages, return as-is
-        if unit == 'percent':
+        # If already in percentages and both values are <=100, return as-is
+        if unit == 'percent' and x <= 100 and y <= 100:
             return {
                 **position,
                 'unit': 'percent',
