@@ -8,6 +8,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   const [duration, setDuration] = useState(0);
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
   const [aspectRatio, setAspectRatio] = useState(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   
