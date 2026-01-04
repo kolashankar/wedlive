@@ -60,6 +60,8 @@ export default function Layout6({
     preWeddingVideo = null,
     borders = {},
     borderMasks = {},
+    templateVideoWeddingId = null,
+    hasTemplateVideo = false,
   } = layoutConfig;
 
   // Floating animation for elements
