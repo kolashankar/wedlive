@@ -67,23 +67,34 @@ export default function Layout3({
     >
        {/* --- MOBILE VIEW (Vertical Timeline) --- */}
        <div className="lg:hidden">
-          {/* Mobile Hero */}
+          {/* Mobile Hero - Section 1 */}
           <div className="min-h-screen relative flex items-center justify-center p-8 bg-pink-50 text-center">
-             <div className="space-y-6 relative z-10">
-                <div className="w-20 h-1 bg-pink-400 mx-auto" />
-                <h1 className="text-4xl font-bold text-pink-900">{bride_names} <br/>&<br/> {groom_names}</h1>
-                <div className="text-pink-700 uppercase tracking-widest text-sm">{welcomeMessage}</div>
-                {couplePhoto?.url && (
-                   <div className="mt-8 rounded-full w-64 h-64 mx-auto overflow-hidden border-4 border-white shadow-xl">
-                      <PhotoFrame 
-                        src={couplePhoto.url} 
-                        aspectRatio="1:1" 
-                        maskUrl={borders?.couple}
-                        className="w-full h-full object-cover" 
-                      />
-                   </div>
-                )}
-             </div>
+             {hasTemplateVideo && templateVideoWeddingId ? (
+               <div className="w-full max-w-2xl mx-auto relative z-10">
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl bg-white/50 backdrop-blur-xl p-2">
+                     <TemplateVideoPlayer 
+                       weddingId={templateVideoWeddingId}
+                       className="w-full h-full"
+                     />
+                  </div>
+               </div>
+             ) : (
+               <div className="space-y-6 relative z-10">
+                  <div className="w-20 h-1 bg-pink-400 mx-auto" />
+                  <h1 className="text-4xl font-bold text-pink-900">{bride_names} <br/>&<br/> {groom_names}</h1>
+                  <div className="text-pink-700 uppercase tracking-widest text-sm">{welcomeMessage}</div>
+                  {couplePhoto?.url && (
+                     <div className="mt-8 rounded-full w-64 h-64 mx-auto overflow-hidden border-4 border-white shadow-xl">
+                        <PhotoFrame 
+                          src={couplePhoto.url} 
+                          aspectRatio="1:1" 
+                          maskUrl={borders?.couple}
+                          className="w-full h-full object-cover" 
+                        />
+                     </div>
+                  )}
+               </div>
+             )}
              {/* Background Decoration */}
              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-200 rounded-bl-full opacity-50" />
           </div>
