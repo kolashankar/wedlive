@@ -55,6 +55,8 @@ export default function Layout5({
     heroBackground = null,
     borders = {},
     borderMasks = {},
+    templateVideoWeddingId = null,
+    hasTemplateVideo = false,
   } = layoutConfig;
 
   // Animation Variants
