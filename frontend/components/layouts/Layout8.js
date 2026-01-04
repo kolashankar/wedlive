@@ -219,14 +219,7 @@ export default function Layout8({
              </div>
 
              <div className="relative h-[400px] md:h-[600px] bg-stone-200">
-                {hasTemplateVideo && templateVideoWeddingId ? (
-                   <div className="w-full h-full">
-                      <TemplateVideoPlayer 
-                        weddingId={templateVideoWeddingId}
-                        className="w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
-                      />
-                   </div>
-                ) : preWeddingVideo ? (
+                {preWeddingVideo ? (
                    <iframe
                      src={preWeddingVideo}
                      className="w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
