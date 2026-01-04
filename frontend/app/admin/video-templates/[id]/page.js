@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import axios from 'axios';
 import TemplateEditor from '@/components/admin/TemplateEditor';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
