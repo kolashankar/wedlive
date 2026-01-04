@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Video Template Overlay Rendering Fix
-Tests the specific endpoints mentioned in the review request:
-1. /api/weddings/{wedding_id}/template-assignment
-2. /api/video-templates/{template_id}/preview with wedding_id
+Backend API Testing for WeddingDataMapper Updates
+Tests the venue mapping and date component fixes:
+1. Venue mapping - wedding document uses `location` field, mapped to `venue`
+2. Date components - separated into `event_date`, `event_month`, `event_year`, `event_day`
+3. Backward compatibility testing
 """
 
 import requests
@@ -17,6 +18,7 @@ API_BASE = f"{BACKEND_URL}/api"
 
 # Test wedding ID from the review request
 TEST_WEDDING_ID = "b75e23c9-ca5e-4d10-bf20-065169d1a01e"
+EXPECTED_LOCATION = "Maddimadugu, c k dinne, xadapal"
 
 def log_test(message, status="INFO"):
     """Log test messages with timestamp"""
