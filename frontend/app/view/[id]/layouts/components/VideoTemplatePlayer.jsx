@@ -292,6 +292,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
             {sortedOverlays.map((overlay, index) => {
               const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
               const styling = overlay.styling || {};
+              const dimensions_data = overlay.dimensions || {};
               const animStyle = getAnimationStyle(overlay);
               
               // Convert positions to percentages for responsive layout
@@ -307,6 +308,9 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                 xPercent = position.x;
                 yPercent = position.y;
               }
+              
+              // Get text box width constraint
+              const boxWidthPercent = dimensions_data.width || null;
               
               // Scale font size and spacing responsively
               const baseFontSize = styling.font_size || 48;
@@ -327,11 +331,14 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               return (
                 <div
                   key={overlay.id || index}
-                  className="absolute whitespace-pre-wrap"
+                  className="absolute"
                   style={{
                     left: `${xPercent}%`,
                     top: `${yPercent}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
+                    // Apply text box width constraint if defined
+                    width: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
+                    maxWidth: boxWidthPercent ? `${boxWidthPercent}%` : '90%',
                     fontSize: `${scaledFontSize}px`,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
@@ -341,7 +348,6 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     lineHeight: lineHeight,
                     textShadow: textShadow,
                     opacity: animStyle.opacity,
-                    maxWidth: '90%',
                     zIndex: overlay.layer_index || 1,
                     transition: 'none', // No CSS transitions - animations synced to video time
                     WebkitTextStroke: stroke.enabled ? `${scaledStrokeWidth}px ${stroke.color || '#000000'}` : 'none',
@@ -349,9 +355,11 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     // Ensure no padding/margin interference
                     margin: 0,
                     padding: 0,
-                    // Prevent text overflow on mobile
+                    // Enable automatic word wrapping
+                    whiteSpace: 'normal',
                     wordWrap: 'break-word',
-                    overflowWrap: 'break-word'
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-word'
                   }}
                 >
                   {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
