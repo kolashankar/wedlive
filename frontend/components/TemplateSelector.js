@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Video, Check, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Loader2, Video, Check, X, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import ReactPlayer from 'react-player';
 
 export default function TemplateSelector({ weddingId, currentTemplateId, onTemplateAssigned }) {
   const [templates, setTemplates] = useState([]);
@@ -14,6 +16,8 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
   const [selectedTemplateId, setSelectedTemplateId] = useState(currentTemplateId || '');
   const [assigning, setAssigning] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -23,8 +27,10 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
   const loadTemplates = async () => {
     try {
       setLoading(true);
+      console.log('Loading templates from /api/video-templates');
       const response = await api.get('/api/video-templates');
-      setTemplates(response.data);
+      console.log('Templates loaded:', response.data);
+      setTemplates(response.data || []);
     } catch (error) {
       console.error('Failed to load templates:', error);
       toast.error('Failed to load video templates');
@@ -36,12 +42,22 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
   const loadCurrentAssignment = async () => {
     try {
       const response = await api.get(`/api/weddings/${weddingId}/template-assignment`);
+      console.log('Current assignment:', response.data);
       if (response.data.assignment_id) {
         setCurrentAssignment(response.data);
         setSelectedTemplateId(response.data.template?.id || '');
       }
     } catch (error) {
       console.error('Failed to load current assignment:', error);
+      // Don't show error toast - assignment might not exist yet
+    }
+  };
+
+  const handlePreviewTemplate = (templateId) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setPreviewTemplate(template);
+      setPreviewOpen(true);
     }
   };
 
@@ -53,10 +69,22 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
 
     try {
       setAssigning(true);
+      console.log('Assigning template:', {
+        template_id: selectedTemplateId,
+        slot: 1,
+        customizations: {
+          color_overrides: {},
+          font_overrides: {}
+        }
+      });
+      
       await api.post(`/api/weddings/${weddingId}/assign-template`, {
         template_id: selectedTemplateId,
-        slot: 'main',
-        customizations: {}
+        slot: 1, // Changed from 'main' to integer 1
+        customizations: {
+          color_overrides: {},
+          font_overrides: {}
+        }
       });
 
       toast.success('Template assigned successfully!');
@@ -67,6 +95,7 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
       }
     } catch (error) {
       console.error('Failed to assign template:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.detail || 'Failed to assign template');
     } finally {
       setAssigning(false);
