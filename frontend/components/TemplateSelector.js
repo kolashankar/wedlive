@@ -367,6 +367,54 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
                     }
                   }}
                 />
+                
+                {/* Overlay Preview - Show dynamic overlays with wedding data */}
+                {!loadingPreview && previewOverlays.length > 0 && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    {previewOverlays.map((overlay, index) => (
+                      <div
+                        key={overlay.id || index}
+                        className="absolute"
+                        style={{
+                          left: `${overlay.position?.x || 0}%`,
+                          top: `${overlay.position?.y || 0}%`,
+                          transform: 'translate(-50%, -50%)',
+                          fontSize: `${overlay.style?.font_size || 24}px`,
+                          fontFamily: overlay.style?.font_family || 'Arial',
+                          color: overlay.style?.color || '#FFFFFF',
+                          fontWeight: overlay.style?.font_weight || 'normal',
+                          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                          textAlign: 'center',
+                          maxWidth: '80%'
+                        }}
+                      >
+                        {overlay.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {loadingPreview && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <Loader2 className="w-8 h-8 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Display Overlay Information */}
+            {previewOverlays.length > 0 && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm font-medium text-blue-900 mb-2">
+                  Dynamic Overlays Preview (populated with your wedding data):
+                </p>
+                <div className="space-y-1">
+                  {previewOverlays.map((overlay, index) => (
+                    <p key={index} className="text-xs text-blue-800">
+                      • {overlay.data_source}: <span className="font-semibold">{overlay.text}</span>
+                    </p>
+                  ))}
+                </div>
               </div>
             )}
             
