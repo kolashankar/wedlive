@@ -229,7 +229,123 @@ function WeddingViewPageContent({ params, searchParams }) {
     } catch (error) {
       console.error('Error updating viewer count:', error);
     }
-  };
+  }, [wedding]);
+
+  // useEffect hooks - all must be called unconditionally at the top level
+  useEffect(() => {
+    if (weddingId) {
+      loadWedding();
+    }
+  }, [weddingId, loadWedding]);
+
+  useEffect(() => {
+    if (!weddingId) return;
+    const interval = setInterval(() => {
+      updateViewerCount();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [weddingId, updateViewerCount]);
+
+  // FIX 2: Apply background to body element so it covers entire page/all sections
+  // This should work for BOTH theme view and stream view
+  useEffect(() => {
+    if (!streamBackgroundUrl) return;
+    
+    // Apply background to body element for full-page coverage
+    const originalBackground = document.body.style.background;
+    const originalBackgroundImage = document.body.style.backgroundImage;
+    const originalBackgroundSize = document.body.style.backgroundSize;
+    const originalBackgroundPosition = document.body.style.backgroundPosition;
+    const originalBackgroundAttachment = document.body.style.backgroundAttachment;
+    const originalBackgroundRepeat = document.body.style.backgroundRepeat;
+    const originalMinHeight = document.body.style.minHeight;
+    
+    // Apply background to body - works for ALL sections and pages
+    document.body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.18), rgba(0,0,0,0.22)), url(${streamBackgroundUrl})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.minHeight = '100vh';
+    
+    console.log('[FIX 2] Applied stream background to body element (covers all sections):', streamBackgroundUrl);
+    
+    // Cleanup function to restore original styles
+    return () => {
+      document.body.style.background = originalBackground;
+      document.body.style.backgroundImage = originalBackgroundImage;
+      document.body.style.backgroundSize = originalBackgroundSize;
+      document.body.style.backgroundPosition = originalBackgroundPosition;
+      document.body.style.backgroundAttachment = originalBackgroundAttachment;
+      document.body.style.backgroundRepeat = originalBackgroundRepeat;
+      document.body.style.minHeight = originalMinHeight;
+      console.log('[FIX 2] Restored original body background');
+    };
+  }, [streamBackgroundUrl]); // FIX 2: Remove showTheme dependency - apply whenever URL exists
+
+  useEffect(() => {
+    if (!showTheme || !weddingId) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const response = await api.get(`/api/weddings/${weddingId}`);
+        if (response.data.theme_settings) {
+          setWedding(prev => ({
+            ...prev,
+            theme_settings: response.data.theme_settings
+          }));
+        }
+        // FIX 2: Enhanced background refresh - detect and apply changes immediately
+        if (response.data.backgrounds) {
+          const currentBgUrl = wedding?.backgrounds?.stream_page_background_url;
+          const newBgUrl = response.data.backgrounds?.stream_page_background_url;
+          
+          if (currentBgUrl !== newBgUrl) {
+            console.log('[FIX 2] Background changed detected during polling:', { 
+              old: currentBgUrl, 
+              new: newBgUrl 
+            });
+            setWedding(prev => ({
+              ...prev,
+              backgrounds: response.data.backgrounds
+            }));
+            
+            // Show user feedback about background change
+            console.log('[FIX 2] Stream background updated automatically');
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing theme settings:', error);
+      }
+    }, 10000); // Refresh every 10 seconds when theme is shown
+    
+    return () => clearInterval(interval);
+  }, [showTheme, weddingId, wedding]);
+
+  // Listen for background update events for immediate updates (no waiting for polling)
+  useEffect(() => {
+    const handleBackgroundUpdate = async (event) => {
+      console.log('[BACKGROUND_UPDATE] Background update event received, reloading wedding data...', event.detail);
+      
+      // For background updates, do a hard reload to ensure changes are visible
+      // This prevents caching issues and ensures the new background shows immediately
+      if (event.detail?.updates) {
+        console.log('[BACKGROUND_UPDATE] Reloading page to apply background changes');
+        // Small delay to let the toast show
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('wedding-backgrounds-updated', handleBackgroundUpdate);
+      
+      return () => {
+        window.removeEventListener('wedding-backgrounds-updated', handleBackgroundUpdate);
+      };
+    }
+  }, [weddingId]);
 
   const handleEnterWedding = () => {
     setShowTheme(false);
