@@ -270,18 +270,15 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           onPause={() => setIsPlaying(false)}
         />
         
-        {/* Text Overlays - Positioned with CSS percentages for proper scaling */}
+        {/* Text Overlays - Responsive positioning and sizing for all devices */}
         {sortedOverlays.length > 0 && (
           <div 
             className="absolute inset-0 pointer-events-none" 
             style={{ 
               zIndex: 10,
-              // Scale entire overlay container to match video size
-              transform: `scale(${overlayScale})`,
-              transformOrigin: 'top left',
-              // Ensure overlay container matches reference dimensions
-              width: `${referenceResolution.width}px`,
-              height: `${referenceResolution.height}px`,
+              // Use full container size - we'll scale individual elements
+              width: '100%',
+              height: '100%',
               position: 'absolute',
               top: 0,
               left: 0
