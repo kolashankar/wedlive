@@ -55,6 +55,8 @@ export default function Layout1({
     preWeddingVideo = null,
     borders = {},
     borderMasks = {},
+    templateVideoWeddingId = null,
+    hasTemplateVideo = false,
   } = layoutConfig;
 
   // Animation variants
