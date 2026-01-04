@@ -4,6 +4,7 @@ import { Heart, Calendar, MapPin, Clock, Play, Sparkles, Mail, Phone, Globe, Che
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import PhotoFrame from '@/components/PhotoFrame';
 import BorderedPhotoGallery from '@/components/BorderedPhotoGallery';
+import TemplateVideoPlayer from '@/components/TemplateVideoPlayer';
 import { format, parseISO, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, isValid } from 'date-fns';
 
 /**
