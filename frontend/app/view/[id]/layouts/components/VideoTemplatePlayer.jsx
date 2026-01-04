@@ -68,6 +68,29 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     };
   }, []);
 
+  // Monitor container size changes for responsive scaling
+  useEffect(() => {
+    const updateContainerSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    // Initial size
+    updateContainerSize();
+
+    // Update on resize
+    const resizeObserver = new ResizeObserver(updateContainerSize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   const handlePlayPause = () => {
     const video = videoRef.current;
     if (video) {
