@@ -7,6 +7,14 @@ const HANDLE_SIZE = 12;
 const MIN_OVERLAY_WIDTH = 50;
 const MIN_OVERLAY_HEIGHT = 20;
 
+/**
+ * Coordinate System:
+ * - Canvas renders at fixed 1920x1080 resolution (reference resolution)
+ * - Overlays stored as percentages (0-100) in database
+ * - Convert percentage to pixels for canvas rendering
+ * - Convert pixels back to percentage when updating position
+ */
+
 export default function InteractiveOverlayCanvas({
   overlays = [],
   currentTime,
@@ -28,6 +36,26 @@ export default function InteractiveOverlayCanvas({
   const [shiftPressed, setShiftPressed] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Convert percentage position to canvas pixels
+  const percentToPixels = useCallback((percentPos) => {
+    const x = percentPos.x !== undefined ? percentPos.x : 50;
+    const y = percentPos.y !== undefined ? percentPos.y : 50;
+    
+    return {
+      x: (x / 100) * CANVAS_WIDTH,
+      y: (y / 100) * CANVAS_HEIGHT
+    };
+  }, []);
+
+  // Convert canvas pixels to percentage position
+  const pixelsToPercent = useCallback((pixelPos) => {
+    return {
+      x: Math.round(((pixelPos.x / CANVAS_WIDTH) * 100) * 100) / 100,
+      y: Math.round(((pixelPos.y / CANVAS_HEIGHT) * 100) * 100) / 100,
+      unit: 'percent'
+    };
+  }, []);
 
   // Helper function for resize handles
   const getResizeHandles = useCallback((x, y, width, height) => {
