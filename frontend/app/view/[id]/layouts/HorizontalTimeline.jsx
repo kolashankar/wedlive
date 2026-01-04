@@ -3,8 +3,9 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { format, isValid } from 'date-fns';
 import BorderedPhoto from './components/BorderedPhoto';
+import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 
-export default function HorizontalTimeline({ wedding, themeSettings, media }) {
+export default function HorizontalTimeline({ wedding, themeSettings, media, videoTemplate }) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -61,12 +62,14 @@ export default function HorizontalTimeline({ wedding, themeSettings, media }) {
                style={{ backgroundImage: `url('${bgUrl}')`, backgroundSize: 'cover' }} />
       )}
 
-      {/* Fixed Title */}
-      <div className="fixed top-8 left-0 w-full text-center z-20 pointer-events-none">
-          <h1 className="text-3xl md:text-5xl font-serif font-bold" style={{ color: themeSettings?.secondary_color || '#8b0000' }}>
-              {wedding.bride_name} & {wedding.groom_name}
-          </h1>
-      </div>
+      {/* Video Template Section */}
+      {videoTemplate && (
+        <div className="container mx-auto px-4 py-8">
+          <VideoTemplatePlayer videoTemplate={videoTemplate} />
+        </div>
+      )}
+
+      {/* Removed Fixed Title - info is in template */}
 
       <div className="sticky top-0 h-screen overflow-hidden flex items-center">
         <motion.div style={{ x }} className="flex gap-12 md:gap-32 px-12 md:px-32 items-center">
