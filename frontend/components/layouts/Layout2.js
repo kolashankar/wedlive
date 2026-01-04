@@ -57,6 +57,8 @@ export default function Layout2({
     preWeddingVideo = null,
     borders = {},
     borderMasks = {},
+    templateVideoWeddingId = null,
+    hasTemplateVideo = false,
   } = layoutConfig;
 
   // Hydration fix
