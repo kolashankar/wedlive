@@ -149,13 +149,14 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
 
   return (
     <div className={`relative w-full ${className}`}>
-      <div className="relative aspect-video bg-black overflow-hidden rounded-lg">
+      <div className="relative aspect-video overflow-hidden" style={{ backgroundColor: 'transparent' }}>
         {/* Video Element */}
         <video
           ref={videoRef}
           src={videoTemplate.video_url}
           poster={videoTemplate.thumbnail_url}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
+          style={{ backgroundColor: 'transparent' }}
           loop
           playsInline
           onPlay={() => setIsPlaying(true)}
