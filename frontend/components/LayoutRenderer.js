@@ -428,7 +428,7 @@ export default function LayoutRenderer({ wedding, videoTemplate, onEnter }) {
     
     // Video Template - Pass wedding ID so layout can render the template video
     templateVideoWeddingId: wedding.id,
-    hasTemplateVideo: !!wedding.template_assignment?.template_id,
+    hasTemplateVideo: !!videoTemplate?.id, // Use videoTemplate prop instead of wedding.template_assignment
     
     // Borders - Use resolved URLs from backend theme_assets with mask data
     borders: {
