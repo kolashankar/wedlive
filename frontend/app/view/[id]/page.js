@@ -59,7 +59,13 @@ function ViewerContent({ weddingId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [weddingId]);
+
+  useEffect(() => {
+    if (weddingId) {
+      loadWeddingData();
+    }
+  }, [weddingId, loadWeddingData]);
 
   const handleShare = () => {
     const url = window.location.href;
