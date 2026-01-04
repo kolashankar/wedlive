@@ -160,7 +160,7 @@ class TextOverlay(BaseModel):
 
 
 class VideoData(BaseModel):
-    """Video file data"""
+    """Video file data with reference resolution for overlay positioning"""
     original_url: str = Field(..., description="CDN URL")
     telegram_file_id: str = Field(..., description="Telegram file ID")
     duration_seconds: float = Field(..., ge=0)
@@ -168,6 +168,10 @@ class VideoData(BaseModel):
     height: int = Field(..., ge=1)
     format: str = Field(default="mp4")
     file_size_mb: float = Field(..., ge=0)
+    reference_resolution: Dict[str, int] = Field(
+        default_factory=lambda: {"width": 1920, "height": 1080},
+        description="Reference resolution for overlay positioning"
+    )
 
 
 class PreviewThumbnail(BaseModel):
