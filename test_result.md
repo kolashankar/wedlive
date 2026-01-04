@@ -33,3 +33,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "Starting backend testing for video template integration fix. Will test /api/viewer/wedding/{wedding_id}/all endpoint with wedding ID b75e23c9-ca5e-4d10-bf20-065169d1a01e to verify video template data is returned correctly."
+  - agent: "testing"
+    message: "✅ TESTING COMPLETE: Video template integration fix is working correctly. The /api/viewer/wedding/{wedding_id}/all endpoint successfully returns video template data with all required fields populated. Fixed field names (original_url, preview_thumbnail, duration_seconds) are being correctly extracted from the video_templates collection. Applied minor fix for missing setuptools dependency. All tests passed."
