@@ -99,6 +99,16 @@ export default function LayoutRenderer({ wedding, videoTemplate, onEnter }) {
   const [borderDetails, setBorderDetails] = useState({}); // Store border data with masks
   const [borderLoadingErrors, setBorderLoadingErrors] = useState([]); // Track loading errors for debugging
 
+  // Debug log for video template
+  useEffect(() => {
+    console.log('[LayoutRenderer] Video Template Debug:', {
+      hasVideoTemplate: !!videoTemplate,
+      videoTemplateId: videoTemplate?.id,
+      videoTemplateName: videoTemplate?.name,
+      videoTemplateData: videoTemplate
+    });
+  }, [videoTemplate]);
+
   // Fetch layout photos from new API
   useEffect(() => {
     const fetchLayoutPhotos = async () => {
