@@ -212,6 +212,21 @@ async def get_wedding_complete_view(wedding_id: str):
             "hide_wedlive_branding": branding.get("hide_wedlive_branding", False)
         }
     
+    # Get video template assignment and template data
+    template_data = None
+    template_assignment = await db.wedding_template_assignments.find_one({"wedding_id": wedding_id})
+    if template_assignment:
+        template = await db.video_templates.find_one({"id": template_assignment["template_id"]})
+        if template:
+            template_data = {
+                "id": template["id"],
+                "name": template.get("name"),
+                "video_url": template.get("video_data", {}).get("url"),
+                "thumbnail_url": template.get("thumbnail", {}).get("url"),
+                "duration": template.get("video_data", {}).get("duration"),
+                "resolution": template.get("video_data", {}).get("resolution")
+            }
+    
     return {
         "wedding": {
             "id": wedding["id"],
@@ -223,6 +238,8 @@ async def get_wedding_complete_view(wedding_id: str):
             "scheduled_date": wedding["scheduled_date"],
             "location": wedding.get("location"),
             "cover_image": wedding.get("cover_image"),
+            "bride_photo": wedding.get("bride_photo"),
+            "groom_photo": wedding.get("groom_photo"),
             "status": wedding["status"],
             "is_locked": is_locked
         },
@@ -253,6 +270,7 @@ async def get_wedding_complete_view(wedding_id: str):
             "url": wedding.get("recording_url") if not is_locked else None
         },
         "theme_settings": wedding.get("theme_settings"),
+        "video_template": template_data,
         "branding": branding_data,
         "access_restricted": is_locked,
         "restriction_message": "This wedding content is locked. The creator needs to upgrade to Premium to unlock all features." if is_locked else None
