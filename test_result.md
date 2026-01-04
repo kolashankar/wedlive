@@ -17,9 +17,9 @@ backend:
 frontend:
   - task: "Fix video template display in all 8 layouts"
     implemented: true
-    working: true
-    file: "/app/frontend/components/LayoutRenderer.js"
-    stuck_count: 0
+    working: false
+    file: "/app/frontend/app/view/[id]/page.js, /app/frontend/app/view/[id]/layouts/*"
+    stuck_count: 1
     priority: "critical"
     needs_retesting: true
     status_history:
@@ -29,6 +29,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: Updated LayoutRenderer to accept videoTemplate prop and use videoTemplate?.id instead of wedding.template_assignment?.template_id. All 8 layouts (Layout1-Layout8) already had TemplateVideoPlayer implementation, they just needed the correct hasTemplateVideo flag. Added debug logging for troubleshooting."
+      - working: false
+        agent: "main"
+        comment: "INVESTIGATION: User reports video template still not showing in ANY layout. Verified: 1) All 8 layouts have correct VideoTemplatePlayer implementation, 2) DB has correct template assignment and template data, 3) API endpoint returns video_template correctly, 4) Backend fixed (setuptools installed). Added extensive debug logging to page.js, LayoutRenderer, ClassicSplitHero, and VideoTemplatePlayer to diagnose data flow."
 
 metadata:
   created_by: "testing_agent"
