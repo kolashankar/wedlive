@@ -310,7 +310,7 @@ export default function Layout3({
                    </div>
                 </div>
 
-                {/* 5. MEDIA & END */}
+                {/* 6. MEDIA & END */}
                 <div className="w-[60vw] shrink-0 flex items-center justify-center">
                    {(playback_url || recording_url || onEnter) ? (
                       <div className="text-center">
