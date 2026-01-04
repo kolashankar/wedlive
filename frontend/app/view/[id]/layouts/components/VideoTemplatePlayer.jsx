@@ -204,17 +204,15 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   // Calculate scale factor for responsive overlay sizing
   // This ensures overlays scale proportionally with video container
   const getOverlayScale = () => {
-    if (!containerRef.current) return 1;
-    
-    const container = containerRef.current;
-    const containerWidth = container.clientWidth;
-    const referenceWidth = referenceResolution.width;
+    if (!containerSize.width || !referenceResolution.width) return 1;
     
     // Calculate scale factor based on container width vs reference width
-    const scale = containerWidth / referenceWidth;
+    const scale = containerSize.width / referenceResolution.width;
     
-    // Ensure minimum scale for readability
-    return Math.max(0.3, scale);
+    console.log('Overlay scale:', scale, `container: ${containerSize.width}px, reference: ${referenceResolution.width}px`);
+    
+    // Return scale without minimum - let it scale naturally
+    return scale;
   };
   
   const overlayScale = getOverlayScale();
