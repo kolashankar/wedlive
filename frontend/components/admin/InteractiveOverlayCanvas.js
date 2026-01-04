@@ -357,8 +357,11 @@ export default function InteractiveOverlayCanvas({
 
   const renderOverlay = useCallback((ctx, overlay) => {
     const text = overlay.placeholder_text || overlay.endpoint_key || 'Sample Text';
-    const position = overlay.position || { x: 960, y: 540 };
+    const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
     const styling = overlay.styling || {};
+
+    // Convert percentage position to canvas pixels
+    const pixelPos = percentToPixels(position);
 
     // Set font
     const fontSize = styling.font_size || 48;
@@ -378,8 +381,8 @@ export default function InteractiveOverlayCanvas({
     // Save context for transformations
     ctx.save();
     
-    // Apply animation transformations
-    ctx.translate(position.x, position.y);
+    // Apply animation transformations at pixel position
+    ctx.translate(pixelPos.x, pixelPos.y);
     ctx.globalAlpha = animState.opacity;
     ctx.scale(animState.scale, animState.scale);
     ctx.rotate(animState.rotation);
@@ -415,7 +418,7 @@ export default function InteractiveOverlayCanvas({
 
     // Reset
     ctx.restore();
-  }, [currentTime, calculateAnimationState, renderTextWithLetterSpacing]);
+  }, [currentTime, calculateAnimationState, renderTextWithLetterSpacing, percentToPixels]);
 
   const renderSelectionBox = useCallback((ctx, overlay) => {
     const dims = overlayDimensions[overlay.id];
