@@ -75,6 +75,10 @@ export default function TemplateEditor({ template, onSave }) {
         anchor_point: 'center',
         unit: 'percent'
       },
+      dimensions: {
+        width: 50,  // Default text box width as percentage (50% of video width)
+        unit: 'percent'
+      },
       timing: { 
         start_time: 0, 
         end_time: duration || 10 
