@@ -20,11 +20,14 @@ backend:
     file: "/app/backend/app/routes/viewer_access.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "✅ IMPLEMENTED: Added WeddingDataMapper service to viewer_access.py and updated /api/viewer/wedding/{wedding_id}/all endpoint to include text_overlays array with populated wedding data. Each overlay now includes text_value field with actual data (bride_name, groom_name, venue, etc.) replacing placeholder text. This enables overlays to display correctly in the frontend player."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: API endpoint working correctly. Returns video template data with text_overlays containing proper wedding data: text_value='Radha & Rajagopal', position={x:960, y:336}, timing={start_time:0, end_time:8.5}. Backend integration is functioning as expected. Fixed missing setuptools dependency that was causing backend startup failure."
 
 frontend:
   - task: "Fix video template display in all 8 layouts in ADMIN wedding editor page"
