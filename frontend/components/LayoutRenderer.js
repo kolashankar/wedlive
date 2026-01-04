@@ -90,9 +90,10 @@ const LAYOUT_COMPONENTS = {
  * NOW USES: layout_photos API for photo data (NEW SYSTEM)
  * 
  * @param {Object} wedding - Wedding data from API
+ * @param {Object} videoTemplate - Video template data from API
  * @param {Function} onEnter - Callback for entering live stream
  */
-export default function LayoutRenderer({ wedding, onEnter }) {
+export default function LayoutRenderer({ wedding, videoTemplate, onEnter }) {
   const [layoutPhotos, setLayoutPhotos] = useState(null);
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(true);
   const [borderDetails, setBorderDetails] = useState({}); // Store border data with masks
