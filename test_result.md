@@ -74,9 +74,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix video template display in all 8 layouts"
+    - "Fix React error #310 preventing video template overlay rendering"
   stuck_tasks:
     - "Fix video template display in all 8 layouts"
+    - "Fix missing template overlays in layout rendering"
   test_all: false
   test_priority: "critical_first"
 
