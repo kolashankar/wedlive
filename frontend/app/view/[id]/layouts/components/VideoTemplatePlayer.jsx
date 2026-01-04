@@ -236,9 +236,12 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
             className="absolute inset-0 pointer-events-none" 
             style={{ 
               zIndex: 10,
-              // Ensure overlay container matches video exactly
-              width: '100%',
-              height: '100%',
+              // Scale entire overlay container to match video size
+              transform: `scale(${overlayScale})`,
+              transformOrigin: 'top left',
+              // Ensure overlay container matches reference dimensions
+              width: `${referenceResolution.width}px`,
+              height: `${referenceResolution.height}px`,
               position: 'absolute',
               top: 0,
               left: 0
@@ -249,22 +252,21 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               const styling = overlay.styling || {};
               const animStyle = getAnimationStyle(overlay);
               
-              // Convert pixel positions to percentages if needed
-              let xPercent, yPercent;
+              // Convert pixel positions to absolute pixels if needed
+              let xPixels, yPixels;
               
               // Check if position is in pixels (values > 100 or explicit unit)
               if (position.unit === 'pixels' || position.x > 100 || position.y > 100) {
-                // Convert from pixels to percentage using reference resolution
-                xPercent = (position.x / referenceResolution.width) * 100;
-                yPercent = (position.y / referenceResolution.height) * 100;
+                // Already in pixels
+                xPixels = position.x;
+                yPixels = position.y;
               } else {
-                // Already in percentage
-                xPercent = position.x || 50;
-                yPercent = position.y || 50;
+                // Convert percentage to pixels using reference resolution
+                xPixels = (position.x / 100) * referenceResolution.width;
+                yPixels = (position.y / 100) * referenceResolution.height;
               }
               
               const baseFontSize = styling.font_size || 48;
-              const responsiveFontSize = getResponsiveFontSize(baseFontSize);
               const fontFamily = styling.font_family || 'Playfair Display';
               const fontWeight = styling.font_weight || 'bold';
               const color = styling.color || '#ffffff';
@@ -281,10 +283,10 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                   key={overlay.id || index}
                   className="absolute whitespace-pre-wrap"
                   style={{
-                    left: `${xPercent}%`,
-                    top: `${yPercent}%`,
+                    left: `${xPixels}px`,
+                    top: `${yPixels}px`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    fontSize: responsiveFontSize,
+                    fontSize: `${baseFontSize}px`,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
                     color: color,
@@ -293,7 +295,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     lineHeight: lineHeight,
                     textShadow: textShadow,
                     opacity: animStyle.opacity,
-                    maxWidth: '90%',
+                    maxWidth: `${referenceResolution.width * 0.9}px`,
                     zIndex: overlay.layer_index || 1,
                     transition: 'none', // No CSS transitions - animations synced to video time
                     WebkitTextStroke: stroke.enabled ? `${stroke.width || 2}px ${stroke.color || '#000000'}` : 'none',
