@@ -111,9 +111,21 @@ export default function Layout8({
              </motion.div>
           </div>
 
-          {/* Right Column - Photo */}
+          {/* Right Column - Photo or Video Template */}
           <div className="w-full md:w-2/3 h-[50vh] md:h-screen relative overflow-hidden">
-             {couplePhoto?.url ? (
+             {hasTemplateVideo && templateVideoWeddingId ? (
+               <motion.div 
+                 initial={{ scale: 1.1, opacity: 0 }}
+                 animate={{ scale: 1, opacity: 1 }}
+                 transition={{ duration: 2 }}
+                 className="w-full h-full flex items-center justify-center"
+               >
+                 <TemplateVideoPlayer
+                    weddingId={templateVideoWeddingId}
+                    className="w-full h-full"
+                 />
+               </motion.div>
+             ) : couplePhoto?.url ? (
                <motion.div 
                  initial={{ scale: 1.1, opacity: 0 }}
                  animate={{ scale: 1, opacity: 1 }}
