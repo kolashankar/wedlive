@@ -37,6 +37,7 @@ export default function TemplateEditor({ template, onSave }) {
   useEffect(() => {
     // Update overlays when template changes
     setOverlays(template?.text_overlays || []);
+    setAspectRatio(template?.video_data?.aspect_ratio || '16:9');
   }, [template]);
 
   const handleAddOverlay = async () => {
