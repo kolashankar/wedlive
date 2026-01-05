@@ -317,6 +317,22 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 Controls text wrapping width. Text will automatically wrap to new lines when it exceeds this width.
               </p>
             </div>
+
+            <div>
+              <Label>Text Box Height: {formData.dimensions?.height ? `${formData.dimensions.height}%` : 'Auto'}</Label>
+              <Slider
+                value={[formData.dimensions?.height || 20]}
+                onValueChange={([value]) => handleUpdate('dimensions.height', value)}
+                min={5}
+                max={100}
+                step={1}
+                className="mt-2"
+                data-testid="textbox-height-slider"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Controls text box height. Set to control vertical space for text. Text will wrap within this box.
+              </p>
+            </div>
           </TabsContent>
 
           {/* Style Tab */}
