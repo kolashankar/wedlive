@@ -172,14 +172,21 @@ export default function TemplateEditor({ template, onSave }) {
       );
 
       console.log('Update response:', response.data);
+      console.log('Returned overlays:', response.data.text_overlays);
       
-      setOverlays(response.data.text_overlays);
+      // Update overlays state with the response
+      const updatedOverlays = response.data.text_overlays;
+      setOverlays(updatedOverlays);
       
       // Update selected overlay if it's the one being updated
+      // Use the returned data from the server to ensure consistency
       if (selectedOverlay?.id === overlayId) {
-        const updatedOverlay = response.data.text_overlays.find(o => o.id === overlayId);
-        setSelectedOverlay(updatedOverlay);
-        console.log('Updated selected overlay:', updatedOverlay);
+        const updatedOverlay = updatedOverlays.find(o => o.id === overlayId);
+        if (updatedOverlay) {
+          console.log('Updated overlay data from server:', JSON.stringify(updatedOverlay.styling, null, 2));
+          console.log('Updated overlay animation from server:', JSON.stringify(updatedOverlay.animation, null, 2));
+          setSelectedOverlay(updatedOverlay);
+        }
       }
       
       // Only show toast for manual updates (not drag/resize which happens frequently)
@@ -197,6 +204,7 @@ export default function TemplateEditor({ template, onSave }) {
         description: error.response?.data?.detail || 'Failed to update overlay',
         variant: 'destructive'
       });
+      throw error; // Re-throw so OverlayConfigurator knows the save failed
     }
   };
 
