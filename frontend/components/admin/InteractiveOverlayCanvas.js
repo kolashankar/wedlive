@@ -205,6 +205,10 @@ export default function InteractiveOverlayCanvas({
       const boxWidthPercent = dimensions_data.width || null;
       const boxWidth = boxWidthPercent ? (boxWidthPercent / 100) * CANVAS_WIDTH : null;
       
+      // Get text box height - if explicitly set, use it; otherwise calculate
+      const boxHeightPercent = dimensions_data.height || null;
+      const explicitHeight = boxHeightPercent ? (boxHeightPercent / 100) * CANVAS_HEIGHT : null;
+      
       ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       
       let width, height;
@@ -214,7 +218,13 @@ export default function InteractiveOverlayCanvas({
         // Word wrap text within the box width
         wrappedLines = wrapText(ctx, text, boxWidth, letterSpacing);
         width = boxWidth;
-        height = wrappedLines.length * fontSize * lineHeight;
+        
+        // Use explicit height if set, otherwise calculate based on text
+        if (explicitHeight) {
+          height = explicitHeight;
+        } else {
+          height = wrappedLines.length * fontSize * lineHeight;
+        }
       } else {
         // Auto-width: single line
         const metrics = ctx.measureText(text);
@@ -222,7 +232,13 @@ export default function InteractiveOverlayCanvas({
         if (letterSpacing > 0) {
           width += letterSpacing * (text.length - 1);
         }
-        height = fontSize * lineHeight;
+        
+        // Use explicit height if set, otherwise calculate
+        if (explicitHeight) {
+          height = explicitHeight;
+        } else {
+          height = fontSize * lineHeight;
+        }
       }
       
       dimensions[overlay.id] = {
