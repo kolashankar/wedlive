@@ -268,7 +268,7 @@ export default function InteractiveOverlayCanvas({
     });
 
     setOverlayDimensions(dimensions);
-  }, [overlays, wrapText]);
+  }, [overlays, wrapText, fontsLoaded]);
 
   // Helper functions for rendering
   const renderTextWithLetterSpacing = useCallback((ctx, text, x, y, spacing, isStroke) => {
