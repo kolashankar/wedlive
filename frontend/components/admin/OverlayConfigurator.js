@@ -198,7 +198,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
     
     autoSaveTimeoutRef.current = setTimeout(() => {
       handleSave();
-    }, 800);
+    }, 100); // Reduced from 800ms to 100ms for immediate feedback
   };
 
   const autoSaveTimeoutRef = useRef(null);
