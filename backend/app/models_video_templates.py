@@ -77,6 +77,13 @@ class OverlayPosition(BaseModel):
         return v
 
 
+class OverlayDimensions(BaseModel):
+    """Dimensions configuration for text overlay box"""
+    width: Optional[float] = Field(None, description="Text box width as percentage (0-100)")
+    height: Optional[float] = Field(None, description="Text box height as percentage (0-100)")
+    unit: str = Field(default="percent", description="Dimension unit system (percent or pixel)")
+
+
 class OverlayTiming(BaseModel):
     """Timing configuration for text overlay"""
     start_time: float = Field(..., ge=0, description="Start time in seconds")
