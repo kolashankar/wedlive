@@ -162,6 +162,8 @@ export default function TemplateEditor({ template, onSave }) {
     }
 
     try {
+      console.log('Updating overlay:', overlayId, 'with updates:', updates);
+      
       const token = localStorage.getItem('token');
       const response = await axios.put(
         `${API_URL}/api/admin/video-templates/${template.id}/overlays/${overlayId}`,
@@ -169,26 +171,30 @@ export default function TemplateEditor({ template, onSave }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log('Update response:', response.data);
+      
       setOverlays(response.data.text_overlays);
       
       // Update selected overlay if it's the one being updated
       if (selectedOverlay?.id === overlayId) {
         const updatedOverlay = response.data.text_overlays.find(o => o.id === overlayId);
         setSelectedOverlay(updatedOverlay);
+        console.log('Updated selected overlay:', updatedOverlay);
       }
       
       // Only show toast for manual updates (not drag/resize which happens frequently)
       if (!updates.position || Object.keys(updates).length > 1) {
         toast({
           title: 'Success',
-          description: 'Overlay updated'
+          description: 'Overlay updated successfully'
         });
       }
     } catch (error) {
       console.error('Failed to update overlay:', error);
+      console.error('Error details:', error.response?.data);
       toast({
         title: 'Error',
-        description: 'Failed to update overlay',
+        description: error.response?.data?.detail || 'Failed to update overlay',
         variant: 'destructive'
       });
     }
