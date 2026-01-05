@@ -687,7 +687,9 @@ export default function InteractiveOverlayCanvas({
           y: pixelPos.y,
           fontSize: selectedOverlay.styling?.font_size || 48,
           width: dims?.width || 200,
+          height: dims?.height || 100,
           widthPercent: dimensions_data.width || ((dims?.width || 200) / CANVAS_WIDTH * 100),
+          heightPercent: dimensions_data.height || ((dims?.height || 100) / CANVAS_HEIGHT * 100),
           percentX: selectedOverlay.position.x,
           percentY: selectedOverlay.position.y
         });
