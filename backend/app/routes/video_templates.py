@@ -37,6 +37,30 @@ render_service = VideoRenderService()
 MAX_VIDEO_SIZE = 50 * 1024 * 1024
 
 
+def deep_merge_dict(base: dict, update: dict) -> dict:
+    """
+    Deep merge two dictionaries, preserving nested structures.
+    This ensures that nested objects like 'styling' and 'animation' 
+    are merged field-by-field instead of being completely replaced.
+    
+    Example:
+        base = {'styling': {'font_size': 48, 'color': '#fff', 'font_family': 'Arial'}}
+        update = {'styling': {'font_size': 72}}
+        result = {'styling': {'font_size': 72, 'color': '#fff', 'font_family': 'Arial'}}
+    """
+    result = base.copy()
+    
+    for key, value in update.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            # Recursively merge nested dictionaries
+            result[key] = deep_merge_dict(result[key], value)
+        else:
+            # Direct assignment for non-dict values or new keys
+            result[key] = value
+    
+    return result
+
+
 async def validate_and_save_video(file: UploadFile, max_size: int = MAX_VIDEO_SIZE) -> str:
     """
     Validate video file and save to temp location
