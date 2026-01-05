@@ -369,6 +369,61 @@ async def list_video_templates_admin(
         )
 
 
+@router.put("/admin/video-templates/{template_id}/aspect-ratio")
+async def update_template_aspect_ratio(
+    template_id: str,
+    aspect_ratio_data: Dict[str, str],
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Update video template aspect ratio
+    """
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        new_aspect_ratio = aspect_ratio_data.get("aspect_ratio")
+        if new_aspect_ratio not in ["16:9", "9:16"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid aspect ratio. Must be '16:9' or '9:16'"
+            )
+        
+        # Update aspect ratio in video_data
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    "video_data.aspect_ratio": new_aspect_ratio,
+                    "metadata.updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        logger.info(f"[UPDATE_ASPECT_RATIO] Template {template_id} aspect ratio changed to {new_aspect_ratio}")
+        
+        return {
+            "success": True,
+            "message": f"Aspect ratio updated to {new_aspect_ratio}",
+            "aspect_ratio": new_aspect_ratio
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[UPDATE_ASPECT_RATIO] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update aspect ratio"
+        )
+
+
 @router.put("/admin/video-templates/{template_id}", response_model=VideoTemplate)
 async def update_video_template(
     template_id: str,
