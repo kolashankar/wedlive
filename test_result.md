@@ -1,4 +1,16 @@
 backend:
+  - task: "Fix overlay style and animation settings persistence (Deep Merge)"
+    implemented: true
+    working: true
+    file: "/app/backend/app/routes/video_templates.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ CRITICAL FIX APPLIED: Implemented deep_merge_dict() function to properly merge nested overlay updates. Previously, Python's dict.update() was REPLACING entire nested objects (styling, animation) instead of merging them field-by-field, causing all non-updated fields to be lost. Now using recursive deep merge that preserves all existing fields while updating only the specified ones. This fixes: 1) Style settings (font_family, font_size, font_weight, color, text_align, letter_spacing, line_height, stroke) now persist correctly. 2) Animation settings (entrance/exit types, durations, easing) now persist correctly. 3) All nested object updates now preserve existing data."
+
   - task: "Video template integration fix for wedding viewer page"
     implemented: true
     working: true
