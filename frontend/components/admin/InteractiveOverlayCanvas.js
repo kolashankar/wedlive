@@ -197,6 +197,8 @@ export default function InteractiveOverlayCanvas({
 
   // Measure text dimensions for each overlay with word wrapping support
   useEffect(() => {
+    if (!fontsLoaded) return; // Wait for fonts to be ready
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
 
