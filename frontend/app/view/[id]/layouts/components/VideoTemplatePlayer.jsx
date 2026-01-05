@@ -309,8 +309,9 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                 yPercent = position.y;
               }
               
-              // Get text box width constraint
+              // Get text box dimensions
               const boxWidthPercent = dimensions_data.width || null;
+              const boxHeightPercent = dimensions_data.height || null;
               
               // Scale font size and spacing responsively
               const baseFontSize = styling.font_size || 48;
@@ -331,13 +332,14 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               return (
                 <div
                   key={overlay.id || index}
-                  className="absolute"
+                  className="absolute flex items-center justify-center"
                   style={{
                     left: `${xPercent}%`,
                     top: `${yPercent}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    // Apply text box width constraint if defined
+                    // Apply text box dimensions if defined
                     width: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
+                    height: boxHeightPercent ? `${boxHeightPercent}%` : 'auto',
                     maxWidth: boxWidthPercent ? `${boxWidthPercent}%` : '90%',
                     fontSize: `${scaledFontSize}px`,
                     fontFamily: fontFamily,
@@ -359,10 +361,21 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     whiteSpace: 'normal',
                     wordWrap: 'break-word',
                     overflowWrap: 'break-word',
-                    wordBreak: 'break-word'
+                    wordBreak: 'break-word',
+                    // Vertical text overflow handling
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center'
                   }}
                 >
-                  {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
+                  <span style={{ 
+                    width: '100%',
+                    display: 'block',
+                    textAlign: textAlign
+                  }}>
+                    {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
+                  </span>
                 </div>
               );
             })}
