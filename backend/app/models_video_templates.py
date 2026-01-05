@@ -242,6 +242,7 @@ class TextOverlayCreate(BaseModel):
     label: str = Field(..., description="Display label")
     placeholder_text: str = Field(default="Sample Text")
     position: OverlayPosition
+    dimensions: Optional[OverlayDimensions] = None
     timing: OverlayTiming
     styling: Optional[OverlayStyling] = None
     animation: Optional[OverlayAnimation] = None
@@ -254,6 +255,7 @@ class TextOverlayUpdate(BaseModel):
     label: Optional[str] = None
     placeholder_text: Optional[str] = None
     position: Optional[OverlayPosition] = None
+    dimensions: Optional[OverlayDimensions] = None
     timing: Optional[OverlayTiming] = None
     styling: Optional[OverlayStyling] = None
     animation: Optional[OverlayAnimation] = None
