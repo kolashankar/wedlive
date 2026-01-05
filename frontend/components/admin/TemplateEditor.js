@@ -32,6 +32,7 @@ export default function TemplateEditor({ template, onSave }) {
   const [lockedOverlays, setLockedOverlays] = useState(new Set());
   const [gridSnap, setGridSnap] = useState(false);
   const [newOverlayType, setNewOverlayType] = useState('couple_names');
+  const [aspectRatio, setAspectRatio] = useState(template?.video_data?.aspect_ratio || '16:9');
 
   useEffect(() => {
     // Update overlays when template changes
