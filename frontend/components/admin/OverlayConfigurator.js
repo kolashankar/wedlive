@@ -100,6 +100,8 @@ const EASING_OPTIONS = [
 
 export default function OverlayConfigurator({ overlay, duration, currentTime, onUpdate, onSeek }) {
   const [formData, setFormData] = useState(getDefaultFormData());
+  const [pendingChanges, setPendingChanges] = useState({});
+  const isSavingRef = useRef(false);
 
   function getDefaultFormData() {
     return {
@@ -147,10 +149,11 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
   }
 
   useEffect(() => {
-    if (overlay) {
+    if (overlay && !isSavingRef.current) {
       setFormData(getDefaultFormData());
+      setPendingChanges({});
     }
-  }, [overlay, duration]);
+  }, [overlay?.id, duration]);
 
   const handleUpdate = (path, value) => {
     setFormData(prev => {
@@ -171,6 +174,23 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
       return updated;
     });
 
+    // Track which fields have changed
+    setPendingChanges(prev => {
+      const updated = { ...prev };
+      const keys = path.split('.');
+      let current = updated;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+      }
+      
+      current[keys[keys.length - 1]] = value;
+      return updated;
+    });
+
     // Auto-save after a short delay for real-time updates
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
@@ -178,7 +198,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
     
     autoSaveTimeoutRef.current = setTimeout(() => {
       handleSave();
-    }, 800); // Increased delay to reduce API calls
+    }, 800);
   };
 
   const autoSaveTimeoutRef = useRef(null);
@@ -191,12 +211,29 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
     };
   }, []);
 
-  const handleSave = () => {
-    // Ensure complete nested objects are sent (Pydantic expects complete objects)
-    const updatePayload = {
-      ...formData,
-      // Ensure all nested objects are complete
-      styling: {
+  const handleSave = async () => {
+    if (Object.keys(pendingChanges).length === 0) {
+      return;
+    }
+
+    isSavingRef.current = true;
+
+    // Build update payload with complete nested objects for changed sections
+    const updatePayload = {};
+    
+    // If any field in pendingChanges exists, include the complete parent object
+    if (pendingChanges.endpoint_key !== undefined) updatePayload.endpoint_key = formData.endpoint_key;
+    if (pendingChanges.label !== undefined) updatePayload.label = formData.label;
+    if (pendingChanges.placeholder_text !== undefined) updatePayload.placeholder_text = formData.placeholder_text;
+    if (pendingChanges.position) updatePayload.position = formData.position;
+    if (pendingChanges.dimensions) updatePayload.dimensions = formData.dimensions;
+    if (pendingChanges.timing) updatePayload.timing = formData.timing;
+    if (pendingChanges.responsive) updatePayload.responsive = formData.responsive;
+    if (pendingChanges.layer_index !== undefined) updatePayload.layer_index = formData.layer_index;
+    
+    // For styling and animation, send complete nested objects when any sub-field changes
+    if (pendingChanges.styling) {
+      updatePayload.styling = {
         font_family: formData.styling.font_family,
         font_size: formData.styling.font_size,
         font_weight: formData.styling.font_weight,
@@ -210,8 +247,11 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
           color: formData.styling.stroke.color,
           width: formData.styling.stroke.width
         }
-      },
-      animation: {
+      };
+    }
+    
+    if (pendingChanges.animation) {
+      updatePayload.animation = {
         type: formData.animation.type,
         duration: formData.animation.duration,
         easing: formData.animation.easing,
@@ -225,11 +265,20 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
           duration: formData.animation.exit.duration,
           easing: formData.animation.exit.easing
         }
-      }
-    };
+      };
+    }
     
-    console.log('Saving overlay update:', updatePayload);
-    onUpdate(updatePayload);
+    console.log('Saving overlay update with changes:', updatePayload);
+    
+    try {
+      await onUpdate(updatePayload);
+      setPendingChanges({});
+    } finally {
+      // Small delay before allowing overlay updates to prevent race conditions
+      setTimeout(() => {
+        isSavingRef.current = false;
+      }, 500);
+    }
   };
 
   return (
