@@ -75,6 +75,7 @@ async def upload_video_template(
     name: str = Form(...),
     description: str = Form(""),
     category: str = Form("general"),
+    aspect_ratio: str = Form("16:9"),
     tags: str = Form(""),
     current_user: dict = Depends(get_current_admin),
     db = Depends(get_db_dependency)
@@ -88,7 +89,7 @@ async def upload_video_template(
     temp_thumb_path = None
     
     try:
-        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Starting upload: {name}")
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Starting upload: {name} with aspect ratio {aspect_ratio}")
         
         # Validate and save video file
         temp_video_path = await validate_and_save_video(file)
@@ -104,6 +105,30 @@ async def upload_video_template(
         
         metadata = validation_result["metadata"]
         logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Video validated: {metadata}")
+        
+        # Validate aspect ratio matches video dimensions
+        video_width = metadata["width"]
+        video_height = metadata["height"]
+        video_aspect = video_width / video_height
+        
+        if aspect_ratio == "16:9":
+            expected_aspect = 16 / 9  # ~1.78
+            tolerance = 0.1
+            if not (expected_aspect - tolerance <= video_aspect <= expected_aspect + tolerance):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Video aspect ratio ({video_width}x{video_height}, ratio: {video_aspect:.2f}) does not match selected 16:9. Please upload a 16:9 landscape video."
+                )
+        elif aspect_ratio == "9:16":
+            expected_aspect = 9 / 16  # ~0.56
+            tolerance = 0.1
+            if not (expected_aspect - tolerance <= video_aspect <= expected_aspect + tolerance):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Video aspect ratio ({video_width}x{video_height}, ratio: {video_aspect:.2f}) does not match selected 9:16. Please upload a 9:16 portrait video."
+                )
+        
+        logger.info(f"[VIDEO_TEMPLATE_UPLOAD] Aspect ratio validation passed: {aspect_ratio}")
         
         # Generate thumbnail
         temp_thumb_path = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg').name
@@ -162,7 +187,8 @@ async def upload_video_template(
             width=metadata["width"],
             height=metadata["height"],
             format=metadata["format"],
-            file_size_mb=metadata["file_size_mb"]
+            file_size_mb=metadata["file_size_mb"],
+            aspect_ratio=aspect_ratio
         )
         
         template_metadata = TemplateMetadata(
