@@ -327,6 +327,37 @@ export default function TemplateEditor({ template, onSave }) {
     }
   };
 
+  const handleAspectRatioChange = async (newAspectRatio) => {
+    if (!confirm(`Changing aspect ratio from ${aspectRatio} to ${newAspectRatio} may affect overlay positioning. Continue?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/api/admin/video-templates/${template.id}/aspect-ratio`,
+        { aspect_ratio: newAspectRatio },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setAspectRatio(newAspectRatio);
+      toast({
+        title: 'Success',
+        description: `Aspect ratio changed to ${newAspectRatio}. Please review overlay positions.`
+      });
+
+      // Reload template to get updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to change aspect ratio:', error);
+      toast({
+        title: 'Error',
+        description: error.response?.data?.detail || 'Failed to change aspect ratio',
+        variant: 'destructive'
+      });
+    }
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
