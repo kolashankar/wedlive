@@ -36,6 +36,19 @@ export default function InteractiveOverlayCanvas({
   const [shiftPressed, setShiftPressed] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  // Check if fonts are loaded
+  useEffect(() => {
+    if (typeof document !== 'undefined' && document.fonts) {
+      document.fonts.ready.then(() => {
+        setFontsLoaded(true);
+      });
+    } else {
+      // Fallback for browsers that don't support font loading API
+      setFontsLoaded(true);
+    }
+  }, []);
 
   // Convert percentage position to canvas pixels
   const percentToPixels = useCallback((percentPos) => {
