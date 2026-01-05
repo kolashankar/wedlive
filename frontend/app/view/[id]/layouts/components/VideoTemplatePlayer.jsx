@@ -228,14 +228,23 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     // Base scale on actual container width
     if (!containerSize.width) return 1;
     
+    // Calculate base scale from container vs reference
+    const baseScale = containerSize.width / referenceResolution.width;
+    
     // For mobile devices (< 768px), ensure minimum readable size
     if (containerSize.width < 768) {
-      // Scale proportionally but maintain readability
-      return Math.max(0.6, overlayScale);
+      // Use mobile-specific font size if available
+      const mobileScale = Math.max(0.5, Math.min(1.0, baseScale));
+      return mobileScale;
     }
     
-    // For tablets and desktop, use natural scale
-    return overlayScale;
+    // For tablets (768px - 1024px), use proportional scaling with constraints
+    if (containerSize.width < 1024) {
+      return Math.max(0.7, Math.min(1.2, baseScale));
+    }
+    
+    // For desktop, use natural scale with reasonable bounds
+    return Math.max(0.8, Math.min(1.5, baseScale));
   };
   
   const fontScale = getResponsiveFontScale();
