@@ -164,6 +164,105 @@ export default function TemplateEditor({ template, onSave }) {
     try {
       console.log('Updating overlay:', overlayId, 'with updates:', updates);
       
+      // OPTIMISTIC UPDATE: Apply changes immediately to local state for instant visual feedback
+      setOverlays(prevOverlays => {
+        return prevOverlays.map(overlay => {
+          if (overlay.id === overlayId) {
+            // Deep merge the updates into the overlay
+            const updatedOverlay = { ...overlay };
+            
+            // Handle nested objects properly
+            if (updates.styling) {
+              updatedOverlay.styling = { 
+                ...overlay.styling, 
+                ...updates.styling,
+                stroke: updates.styling.stroke 
+                  ? { ...overlay.styling?.stroke, ...updates.styling.stroke }
+                  : overlay.styling?.stroke
+              };
+            }
+            
+            if (updates.animation) {
+              updatedOverlay.animation = {
+                ...overlay.animation,
+                ...updates.animation,
+                entrance: updates.animation.entrance 
+                  ? { ...overlay.animation?.entrance, ...updates.animation.entrance }
+                  : overlay.animation?.entrance,
+                exit: updates.animation.exit
+                  ? { ...overlay.animation?.exit, ...updates.animation.exit }
+                  : overlay.animation?.exit
+              };
+            }
+            
+            if (updates.position) {
+              updatedOverlay.position = { ...overlay.position, ...updates.position };
+            }
+            
+            if (updates.dimensions) {
+              updatedOverlay.dimensions = { ...overlay.dimensions, ...updates.dimensions };
+            }
+            
+            if (updates.timing) {
+              updatedOverlay.timing = { ...overlay.timing, ...updates.timing };
+            }
+            
+            // Handle other top-level fields
+            Object.keys(updates).forEach(key => {
+              if (!['styling', 'animation', 'position', 'dimensions', 'timing'].includes(key)) {
+                updatedOverlay[key] = updates[key];
+              }
+            });
+            
+            return updatedOverlay;
+          }
+          return overlay;
+        });
+      });
+      
+      // Also update selectedOverlay for immediate feedback in the configurator
+      if (selectedOverlay?.id === overlayId) {
+        setSelectedOverlay(prev => {
+          const updated = { ...prev };
+          
+          if (updates.styling) {
+            updated.styling = { 
+              ...prev.styling, 
+              ...updates.styling,
+              stroke: updates.styling.stroke 
+                ? { ...prev.styling?.stroke, ...updates.styling.stroke }
+                : prev.styling?.stroke
+            };
+          }
+          
+          if (updates.animation) {
+            updated.animation = {
+              ...prev.animation,
+              ...updates.animation,
+              entrance: updates.animation.entrance 
+                ? { ...prev.animation?.entrance, ...updates.animation.entrance }
+                : prev.animation?.entrance,
+              exit: updates.animation.exit
+                ? { ...prev.animation?.exit, ...updates.animation.exit }
+                : prev.animation?.exit
+            };
+          }
+          
+          if (updates.position) updated.position = { ...prev.position, ...updates.position };
+          if (updates.dimensions) updated.dimensions = { ...prev.dimensions, ...updates.dimensions };
+          if (updates.timing) updated.timing = { ...prev.timing, ...updates.timing };
+          
+          Object.keys(updates).forEach(key => {
+            if (!['styling', 'animation', 'position', 'dimensions', 'timing'].includes(key)) {
+              updated[key] = updates[key];
+            }
+          });
+          
+          return updated;
+        });
+      }
+      
+      // Now make the API call in the background
       const token = localStorage.getItem('token');
       const response = await axios.put(
         `${API_URL}/api/admin/video-templates/${template.id}/overlays/${overlayId}`,
@@ -174,12 +273,11 @@ export default function TemplateEditor({ template, onSave }) {
       console.log('Update response:', response.data);
       console.log('Returned overlays:', response.data.text_overlays);
       
-      // Update overlays state with the response
+      // Update with server response to ensure consistency
       const updatedOverlays = response.data.text_overlays;
       setOverlays(updatedOverlays);
       
-      // Update selected overlay if it's the one being updated
-      // Use the returned data from the server to ensure consistency
+      // Update selected overlay with server data
       if (selectedOverlay?.id === overlayId) {
         const updatedOverlay = updatedOverlays.find(o => o.id === overlayId);
         if (updatedOverlay) {
@@ -199,6 +297,16 @@ export default function TemplateEditor({ template, onSave }) {
     } catch (error) {
       console.error('Failed to update overlay:', error);
       console.error('Error details:', error.response?.data);
+      
+      // Revert optimistic update on error by reloading from template
+      setOverlays(template?.text_overlays || []);
+      if (selectedOverlay?.id === overlayId) {
+        const originalOverlay = template?.text_overlays?.find(o => o.id === overlayId);
+        if (originalOverlay) {
+          setSelectedOverlay(originalOverlay);
+        }
+      }
+      
       toast({
         title: 'Error',
         description: error.response?.data?.detail || 'Failed to update overlay',
