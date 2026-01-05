@@ -441,7 +441,9 @@ export default function InteractiveOverlayCanvas({
     const lineHeight = styling.line_height || 1.2;
     const textAlign = styling.text_align || 'center';
     
-    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+    // Wrap font family in quotes if it contains spaces for proper canvas rendering
+    const formattedFontFamily = fontFamily.includes(' ') ? `"${fontFamily}"` : fontFamily;
+    ctx.font = `${fontWeight} ${fontSize}px ${formattedFontFamily}`;
     ctx.fillStyle = styling.color || '#ffffff';
     ctx.textAlign = textAlign;
     ctx.textBaseline = 'middle';
