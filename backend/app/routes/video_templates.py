@@ -492,7 +492,7 @@ async def update_text_overlay(
         for i, overlay in enumerate(overlays):
             if overlay.get("id") == overlay_id:
                 overlay_found = True
-                # Update fields
+                # Update fields using deep merge to preserve nested structures
                 update_dict = update_data.dict(exclude_unset=True)
                 
                 # Normalize position if it's being updated
@@ -503,7 +503,10 @@ async def update_text_overlay(
                         reference_resolution["height"]
                     )
                 
-                overlays[i].update(update_dict)
+                # Deep merge to preserve all nested fields (styling, animation, etc.)
+                overlays[i] = deep_merge_dict(overlays[i], update_dict)
+                
+                logger.info(f"[UPDATE_OVERLAY] Deep merged overlay {overlay_id}. Updated fields: {list(update_dict.keys())}")
                 break
         
         if not overlay_found:
