@@ -268,6 +268,26 @@ export default function VideoTemplateUploader({ onSuccess }) {
             </Select>
           </div>
 
+          {/* Aspect Ratio */}
+          <div>
+            <Label htmlFor="aspect_ratio">Video Aspect Ratio *</Label>
+            <Select
+              value={formData.aspect_ratio}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, aspect_ratio: value }))}
+            >
+              <SelectTrigger className="mt-1" data-testid="aspect-ratio-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="16:9">16:9 (Landscape - Widescreen)</SelectItem>
+                <SelectItem value="9:16">9:16 (Portrait - Mobile/Story)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 mt-1">
+              Select the aspect ratio of your video. Only videos matching this ratio should be uploaded.
+            </p>
+          </div>
+
           {/* Tags */}
           <div>
             <Label htmlFor="tags">Tags (comma separated)</Label>
