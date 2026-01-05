@@ -332,7 +332,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               return (
                 <div
                   key={overlay.id || index}
-                  className="absolute flex items-center justify-center"
+                  className="absolute"
                   style={{
                     left: `${xPercent}%`,
                     top: `${yPercent}%`,
@@ -341,6 +341,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     width: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
                     height: boxHeightPercent ? `${boxHeightPercent}%` : 'auto',
                     maxWidth: boxWidthPercent ? `${boxWidthPercent}%` : '90%',
+                    minWidth: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
                     fontSize: `${scaledFontSize}px`,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
@@ -357,25 +358,21 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     // Ensure no padding/margin interference
                     margin: 0,
                     padding: 0,
-                    // Enable automatic word wrapping
+                    // Enable automatic word wrapping with proper word boundaries
                     whiteSpace: 'normal',
                     wordWrap: 'break-word',
                     overflowWrap: 'break-word',
-                    wordBreak: 'break-word',
+                    wordBreak: 'normal', // Changed from 'break-word' to preserve word boundaries
+                    hyphens: 'auto', // Enable hyphenation for long words
                     // Vertical text overflow handling
                     overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center'
+                    // Remove flex to prevent interference with text-align
+                    display: 'block',
+                    // Box sizing to include padding in width calculations
+                    boxSizing: 'border-box'
                   }}
                 >
-                  <span style={{ 
-                    width: '100%',
-                    display: 'block',
-                    textAlign: textAlign
-                  }}>
-                    {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
-                  </span>
+                  {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
                 </div>
               );
             })}
