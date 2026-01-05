@@ -209,7 +209,9 @@ export default function InteractiveOverlayCanvas({
       const boxHeightPercent = dimensions_data.height || null;
       const explicitHeight = boxHeightPercent ? (boxHeightPercent / 100) * CANVAS_HEIGHT : null;
       
-      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+      // Wrap font family in quotes if it contains spaces for proper canvas rendering
+      const formattedFontFamily = fontFamily.includes(' ') ? `"${fontFamily}"` : fontFamily;
+      ctx.font = `${fontWeight} ${fontSize}px ${formattedFontFamily}`;
       
       let width, height;
       let wrappedLines = [text]; // Default to single line
