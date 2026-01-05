@@ -192,7 +192,44 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
   }, []);
 
   const handleSave = () => {
-    onUpdate(formData);
+    // Ensure complete nested objects are sent (Pydantic expects complete objects)
+    const updatePayload = {
+      ...formData,
+      // Ensure all nested objects are complete
+      styling: {
+        font_family: formData.styling.font_family,
+        font_size: formData.styling.font_size,
+        font_weight: formData.styling.font_weight,
+        color: formData.styling.color,
+        text_align: formData.styling.text_align,
+        letter_spacing: formData.styling.letter_spacing,
+        line_height: formData.styling.line_height,
+        text_shadow: formData.styling.text_shadow,
+        stroke: {
+          enabled: formData.styling.stroke.enabled,
+          color: formData.styling.stroke.color,
+          width: formData.styling.stroke.width
+        }
+      },
+      animation: {
+        type: formData.animation.type,
+        duration: formData.animation.duration,
+        easing: formData.animation.easing,
+        entrance: {
+          type: formData.animation.entrance.type,
+          duration: formData.animation.entrance.duration,
+          easing: formData.animation.entrance.easing
+        },
+        exit: {
+          type: formData.animation.exit.type,
+          duration: formData.animation.exit.duration,
+          easing: formData.animation.exit.easing
+        }
+      }
+    };
+    
+    console.log('Saving overlay update:', updatePayload);
+    onUpdate(updatePayload);
   };
 
   return (
