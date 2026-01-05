@@ -547,8 +547,18 @@ async def update_text_overlay(
         for i, overlay in enumerate(overlays):
             if overlay.get("id") == overlay_id:
                 overlay_found = True
+                
+                logger.info(f"[UPDATE_OVERLAY] Before update - overlay {overlay_id} styling: {overlay.get('styling', {})}")
+                logger.info(f"[UPDATE_OVERLAY] Before update - overlay {overlay_id} animation: {overlay.get('animation', {})}")
+                
                 # Update fields using deep merge to preserve nested structures
                 update_dict = update_data.dict(exclude_unset=True)
+                
+                logger.info(f"[UPDATE_OVERLAY] Update dict keys: {list(update_dict.keys())}")
+                if 'styling' in update_dict:
+                    logger.info(f"[UPDATE_OVERLAY] Update styling: {update_dict['styling']}")
+                if 'animation' in update_dict:
+                    logger.info(f"[UPDATE_OVERLAY] Update animation: {update_dict['animation']}")
                 
                 # Normalize position if it's being updated
                 if "position" in update_dict:
@@ -561,6 +571,8 @@ async def update_text_overlay(
                 # Deep merge to preserve all nested fields (styling, animation, etc.)
                 overlays[i] = deep_merge_dict(overlays[i], update_dict)
                 
+                logger.info(f"[UPDATE_OVERLAY] After merge - overlay {overlay_id} styling: {overlays[i].get('styling', {})}")
+                logger.info(f"[UPDATE_OVERLAY] After merge - overlay {overlay_id} animation: {overlays[i].get('animation', {})}")
                 logger.info(f"[UPDATE_OVERLAY] Deep merged overlay {overlay_id}. Updated fields: {list(update_dict.keys())}")
                 break
         
