@@ -277,7 +277,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
       // Small delay before allowing overlay updates to prevent race conditions
       setTimeout(() => {
         isSavingRef.current = false;
-      }, 500);
+      }, 100); // Reduced from 500ms to 100ms for faster updates
     }
   };
 
