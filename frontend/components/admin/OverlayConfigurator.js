@@ -178,7 +178,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
     
     autoSaveTimeoutRef.current = setTimeout(() => {
       handleSave();
-    }, 500);
+    }, 800); // Increased delay to reduce API calls
   };
 
   const autoSaveTimeoutRef = useRef(null);
