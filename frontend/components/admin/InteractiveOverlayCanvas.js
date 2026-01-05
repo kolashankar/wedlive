@@ -731,37 +731,44 @@ export default function InteractiveOverlayCanvas({
 
       const handle = resizeHandle.position;
       let newWidth = overlayStart.width;
+      let newHeight = overlayStart.height;
       
-      // Adjust width based on resize handle direction
-      if (handle.includes('e')) {
-        // Resize from right edge
-        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width + dx);
-      } else if (handle.includes('w')) {
-        // Resize from left edge
-        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width - dx);
-      }
-
-      // For corner handles, also consider vertical resize
-      if (handle.includes('n') || handle.includes('s')) {
-        // Adjust width proportionally based on height change
-        const heightScale = (dims.height + (handle.includes('s') ? dy : -dy)) / dims.height;
-        newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width * heightScale);
-      }
-
       // Proportional resizing with shift key
       if (shiftPressed) {
+        // Use diagonal resize for proportional scaling
         const avgDelta = (dx + dy) / 2;
         newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width + avgDelta);
+        newHeight = Math.max(MIN_OVERLAY_HEIGHT, overlayStart.height + avgDelta);
+      } else {
+        // Resize width based on horizontal handles
+        if (handle.includes('e')) {
+          // Resize from right edge
+          newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width + dx);
+        } else if (handle.includes('w')) {
+          // Resize from left edge
+          newWidth = Math.max(MIN_OVERLAY_WIDTH, overlayStart.width - dx);
+        }
+
+        // Resize height based on vertical handles
+        if (handle.includes('s')) {
+          // Resize from bottom edge
+          newHeight = Math.max(MIN_OVERLAY_HEIGHT, overlayStart.height + dy);
+        } else if (handle.includes('n')) {
+          // Resize from top edge
+          newHeight = Math.max(MIN_OVERLAY_HEIGHT, overlayStart.height - dy);
+        }
       }
 
-      // Convert width to percentage
+      // Convert dimensions to percentage
       const newWidthPercent = (newWidth / CANVAS_WIDTH) * 100;
+      const newHeightPercent = (newHeight / CANVAS_HEIGHT) * 100;
 
-      // Update overlay with new width
+      // Update overlay with new dimensions (NOT font size)
       onUpdateOverlay(selectedOverlay.id, {
         dimensions: {
-          ...(selectedOverlay.dimensions || {}),
-          width: Math.round(newWidthPercent * 100) / 100
+          width: Math.round(newWidthPercent * 100) / 100,
+          height: Math.round(newHeightPercent * 100) / 100,
+          unit: 'percent'
         }
       });
 
