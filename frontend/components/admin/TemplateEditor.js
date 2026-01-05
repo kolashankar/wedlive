@@ -398,6 +398,18 @@ export default function TemplateEditor({ template, onSave }) {
             <div className="text-sm text-gray-600">
               <strong>{overlays.length}</strong> overlays configured
             </div>
+            <div className="flex items-center gap-2 pl-4 border-l">
+              <span className="text-sm text-gray-600">Aspect Ratio:</span>
+              <Select value={aspectRatio} onValueChange={handleAspectRatioChange}>
+                <SelectTrigger className="w-[120px]" data-testid="aspect-ratio-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="16:9">16:9 (Landscape)</SelectItem>
+                  <SelectItem value="9:16">9:16 (Portrait)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {selectedOverlay && (
               <div className="flex items-center gap-2 ml-4 pl-4 border-l">
                 <span className="text-sm text-gray-600">Selected:</span>
