@@ -13,7 +13,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://overlay-timing-1.preview.emergentagent.com"
+BACKEND_URL = "https://aspect-ratio-tool-3.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test wedding ID from the review request
