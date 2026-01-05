@@ -14,6 +14,32 @@ export default function EditVideoTemplate() {
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load Google Fonts for overlay text rendering
+  useEffect(() => {
+    const fonts = [
+      'Playfair+Display:wght@400;600;700',
+      'Montserrat:wght@400;600;700',
+      'Roboto:wght@400;700',
+      'Open+Sans:wght@400;700',
+      'Lato:wght@400;700',
+      'Caveat:wght@400;700',
+      'Bebas+Neue',
+      'Rozha+One',
+      'Pinyon+Script',
+      'Great+Vibes',
+      'Cinzel:wght@400;600;700'
+    ];
+    
+    const link = document.createElement('link');
+    link.href = `https://fonts.googleapis.com/css2?${fonts.map(f => `family=${f}`).join('&')}&display=swap`;
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
   useEffect(() => {
     if (params.id) {
       loadTemplate();
