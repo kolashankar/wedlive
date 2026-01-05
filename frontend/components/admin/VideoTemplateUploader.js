@@ -25,6 +25,7 @@ export default function VideoTemplateUploader({ onSuccess }) {
     name: '',
     description: '',
     category: 'general',
+    aspect_ratio: '16:9',
     tags: ''
   });
 
