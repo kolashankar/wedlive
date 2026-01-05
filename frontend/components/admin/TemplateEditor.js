@@ -503,7 +503,7 @@ export default function TemplateEditor({ template, onSave }) {
             {/* Video with Interactive Canvas Overlay */}
             <div 
               className={`relative bg-black rounded-lg overflow-hidden ${
-                template?.video_data?.aspect_ratio === '9:16' 
+                aspectRatio === '9:16' 
                   ? 'aspect-[9/16] max-w-md mx-auto' 
                   : 'aspect-video'
               }`}
