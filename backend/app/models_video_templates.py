@@ -157,6 +157,19 @@ class TextOverlay(BaseModel):
     is_active: bool = Field(default=True)
 
 
+class AspectRatio(str, Enum):
+    """Video aspect ratios"""
+    LANDSCAPE = "16:9"
+    PORTRAIT = "9:16"
+
+
+class OverlayDimensions(BaseModel):
+    """Dimensions configuration for text overlay box"""
+    width: Optional[float] = Field(None, description="Text box width as percentage (0-100)")
+    height: Optional[float] = Field(None, description="Text box height as percentage (0-100)")
+    unit: str = Field(default="percent", description="Dimension unit system (percent or pixel)")
+
+
 class VideoData(BaseModel):
     """Video file data with reference resolution for overlay positioning"""
     original_url: str = Field(..., description="CDN URL")
@@ -166,6 +179,7 @@ class VideoData(BaseModel):
     height: int = Field(..., ge=1)
     format: str = Field(default="mp4")
     file_size_mb: float = Field(..., ge=0)
+    aspect_ratio: Optional[AspectRatio] = Field(None, description="Video aspect ratio")
     reference_resolution: Dict[str, int] = Field(
         default_factory=lambda: {"width": 1920, "height": 1080},
         description="Reference resolution for overlay positioning"
