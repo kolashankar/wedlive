@@ -148,6 +148,7 @@ class TextOverlay(BaseModel):
     placeholder_text: str = Field(default="Sample Text")
     
     position: OverlayPosition
+    dimensions: Optional[OverlayDimensions] = Field(None, description="Text box dimensions")
     timing: OverlayTiming
     styling: OverlayStyling = Field(default_factory=OverlayStyling)
     animation: OverlayAnimation = Field(default_factory=OverlayAnimation)
