@@ -123,6 +123,7 @@ export default function VideoTemplateUploader({ onSuccess }) {
       uploadFormData.append('name', formData.name);
       uploadFormData.append('description', formData.description);
       uploadFormData.append('category', formData.category);
+      uploadFormData.append('aspect_ratio', formData.aspect_ratio);
       uploadFormData.append('tags', formData.tags);
 
       const response = await axios.post(
