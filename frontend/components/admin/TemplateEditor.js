@@ -81,6 +81,7 @@ export default function TemplateEditor({ template, onSave }) {
       },
       dimensions: {
         width: 50,  // Default text box width as percentage (50% of video width)
+        height: null,  // Auto-height based on text content
         unit: 'percent'
       },
       timing: { 
