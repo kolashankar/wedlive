@@ -81,10 +81,14 @@ async def list_admin_borders(
             # Log for debugging category issues
             logger.debug(f"[ADMIN_BORDERS] Border '{border.get('name')}' has category: {border_category}")
             
+            # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URL instead of stale cdn_url
+            # This ensures the URL always works even if the stored cdn_url is expired
+            proxy_url = telegram_file_id_to_proxy_url(border.get("telegram_file_id"))
+            
             borders.append(BorderResponse(
                 id=border["id"],
                 name=border["name"],
-                cdn_url=border["cdn_url"],
+                cdn_url=proxy_url or border["cdn_url"],  # Fallback to stored URL if proxy fails
                 telegram_file_id=border["telegram_file_id"],
                 orientation=border.get("orientation", "square"),
                 width=border.get("width", 0),
