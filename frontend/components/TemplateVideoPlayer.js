@@ -147,25 +147,6 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
   // Reference resolution for the template (default: 1920x1080)
   const referenceResolution = template.reference_resolution || { width: 1920, height: 1080 };
 
-  // Calculate unified scale factor based on rendered video vs reference
-  const unifiedScale = renderedVideoSize.width > 0 ? renderedVideoSize.width / referenceResolution.width : 1;
-
-  // Convert pixel position to percentage
-  const convertPositionToPercentage = (position) => {
-    if (!position) return { x: 50, y: 50 };
-    
-    // If EITHER position value is greater than 100, treat as pixels and convert
-    if (position.x > 100 || position.y > 100) {
-      const converted = {
-        x: (position.x / referenceResolution.width) * 100,
-        y: (position.y / referenceResolution.height) * 100
-      };
-      return converted;
-    }
-    
-    return { x: position.x, y: position.y };
-  };
-
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       {/* Video Player - Auto-play, Loop, No Controls */}
