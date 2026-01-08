@@ -140,6 +140,13 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     };
   }, []);
 
+  // Recalculate rendered video size when container or video dimensions change
+  useEffect(() => {
+    const rendered = calculateRenderedVideoSize();
+    setRenderedVideoSize(rendered);
+    console.log('Rendered video size:', rendered);
+  }, [containerSize, videoSize]);
+
   const handlePlayPause = () => {
     const video = videoRef.current;
     if (video) {
