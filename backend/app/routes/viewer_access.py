@@ -249,11 +249,15 @@ async def get_wedding_complete_view(wedding_id: str):
                     "text_value": text_value
                 })
             
+            # Convert Telegram URLs to proxied URLs to avoid CORS issues
+            video_url_proxied = telegram_url_to_proxy(video_data.get("original_url"))
+            thumbnail_url_proxied = telegram_url_to_proxy(preview_thumbnail.get("url"))
+            
             template_data = {
                 "id": template["id"],
                 "name": template.get("name"),
-                "video_url": video_data.get("original_url"),
-                "thumbnail_url": preview_thumbnail.get("url"),
+                "video_url": video_url_proxied,
+                "thumbnail_url": thumbnail_url_proxied,
                 "duration": video_data.get("duration_seconds"),
                 "resolution": resolution,
                 "reference_resolution": reference_resolution,
