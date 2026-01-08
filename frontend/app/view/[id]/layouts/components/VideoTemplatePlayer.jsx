@@ -318,18 +318,18 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           onPause={() => setIsPlaying(false)}
         />
         
-        {/* Text Overlays - Responsive positioning and sizing for all devices */}
-        {sortedOverlays.length > 0 && (
+        {/* Text Overlays - Positioned relative to ACTUAL rendered video, not container */}
+        {sortedOverlays.length > 0 && renderedVideoSize.width > 0 && (
           <div 
-            className="absolute inset-0 pointer-events-none" 
+            className="absolute pointer-events-none" 
             style={{ 
-              zIndex: 10,
-              // Use full container size - we'll scale individual elements
-              width: '100%',
-              height: '100%',
+              // Position overlay container to match the rendered video exactly
+              left: `${renderedVideoSize.offsetX}px`,
+              top: `${renderedVideoSize.offsetY}px`,
+              width: `${renderedVideoSize.width}px`,
+              height: `${renderedVideoSize.height}px`,
               position: 'absolute',
-              top: 0,
-              left: 0
+              zIndex: 10
             }}
           >
             {sortedOverlays.map((overlay, index) => {
@@ -352,39 +352,41 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                 yPercent = position.y;
               }
               
-              // Get text box dimensions
+              // Get text box dimensions in percentage
               const boxWidthPercent = dimensions_data.width || null;
               const boxHeightPercent = dimensions_data.height || null;
               
-              // Scale font size and spacing responsively
+              // Scale ALL properties uniformly using the unified scale
               const baseFontSize = styling.font_size || 48;
-              const scaledFontSize = baseFontSize * fontScale;
+              const scaledFontSize = baseFontSize * unifiedScale;
               const fontFamily = styling.font_family || 'Playfair Display';
               const fontWeight = styling.font_weight || 'bold';
               const color = styling.color || '#ffffff';
               const textAlign = styling.text_align || 'center';
               const baseLetterSpacing = styling.letter_spacing || 2;
-              const scaledLetterSpacing = baseLetterSpacing * fontScale;
+              const scaledLetterSpacing = baseLetterSpacing * unifiedScale;
               const lineHeight = styling.line_height || 1.2;
               const textShadow = styling.text_shadow || '0 2px 4px rgba(0,0,0,0.5)';
               
               // Handle stroke with scaled width
               const stroke = styling.stroke || {};
-              const scaledStrokeWidth = stroke.width ? stroke.width * fontScale : 2 * fontScale;
+              const baseStrokeWidth = stroke.width || 2;
+              const scaledStrokeWidth = baseStrokeWidth * unifiedScale;
               
               return (
                 <div
                   key={overlay.id || index}
                   className="absolute"
                   style={{
+                    // Position relative to the rendered video frame
                     left: `${xPercent}%`,
                     top: `${yPercent}%`,
                     transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    // Apply text box dimensions if defined
+                    // Text box dimensions scale with the video
                     width: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
                     height: boxHeightPercent ? `${boxHeightPercent}%` : 'auto',
                     maxWidth: boxWidthPercent ? `${boxWidthPercent}%` : '90%',
-                    minWidth: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
+                    // All text properties scale uniformly
                     fontSize: `${scaledFontSize}px`,
                     fontFamily: fontFamily,
                     fontWeight: fontWeight,
@@ -395,23 +397,19 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                     textShadow: textShadow,
                     opacity: animStyle.opacity,
                     zIndex: overlay.layer_index || 1,
-                    transition: 'none', // No CSS transitions - animations synced to video time
+                    transition: 'none',
                     WebkitTextStroke: stroke.enabled ? `${scaledStrokeWidth}px ${stroke.color || '#000000'}` : 'none',
-                    willChange: 'opacity, transform', // Optimize rendering
-                    // Ensure no padding/margin interference
+                    willChange: 'opacity, transform',
                     margin: 0,
                     padding: 0,
-                    // Enable automatic word wrapping with proper word boundaries
+                    // Text wrapping and overflow handling
                     whiteSpace: 'normal',
                     wordWrap: 'break-word',
                     overflowWrap: 'break-word',
-                    wordBreak: 'normal', // Changed from 'break-word' to preserve word boundaries
-                    hyphens: 'auto', // Enable hyphenation for long words
-                    // Vertical text overflow handling
+                    wordBreak: 'normal',
+                    hyphens: 'auto',
                     overflow: 'hidden',
-                    // Remove flex to prevent interference with text-align
                     display: 'block',
-                    // Box sizing to include padding in width calculations
                     boxSizing: 'border-box'
                   }}
                 >
