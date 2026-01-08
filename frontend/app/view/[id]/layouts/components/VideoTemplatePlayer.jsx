@@ -94,16 +94,28 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
       }
     };
 
+    const handleError = (e) => {
+      console.error('[VideoTemplatePlayer] Video load error:', e);
+      console.error('[VideoTemplatePlayer] Video URL:', videoTemplate?.video_url);
+      console.error('[VideoTemplatePlayer] Error details:', {
+        error: e.target.error,
+        networkState: e.target.networkState,
+        readyState: e.target.readyState
+      });
+    };
+
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('resize', handleResize);
+    video.addEventListener('error', handleError);
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('resize', handleResize);
+      video.removeEventListener('error', handleError);
     };
-  }, []);
+  }, [videoTemplate]);
 
   // Monitor container size changes for responsive scaling
   useEffect(() => {
