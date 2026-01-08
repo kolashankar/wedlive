@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 from app.services.wedding_data_mapper import WeddingDataMapper
-from app.utils.telegram_url_proxy import telegram_url_to_proxy
+from app.utils.telegram_url_proxy import telegram_url_to_proxy, telegram_file_id_to_proxy_url
 
 router = APIRouter()
 wedding_mapper = WeddingDataMapper()
