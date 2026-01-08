@@ -47,8 +47,19 @@ export default function ResponsiveTextOverlay({
   const responsiveFontSize = useMemo(() => {
     if (!containerSize.height) return 16; // fallback
     // Calculate font size as percentage of container height
-    return (fontSizePercent / 100) * containerSize.height;
-  }, [fontSizePercent, containerSize.height]);
+    const calculatedSize = (fontSizePercent / 100) * containerSize.height;
+    
+    // Debug logging
+    console.log('[ResponsiveTextOverlay] Font size calculation:', {
+      baseFontSize: overlay.styling?.font_size || 48,
+      referenceHeight: referenceResolution.height,
+      fontSizePercent: fontSizePercent.toFixed(2) + '%',
+      containerHeight: containerSize.height,
+      calculatedFontSize: calculatedSize.toFixed(2) + 'px'
+    });
+    
+    return calculatedSize;
+  }, [fontSizePercent, containerSize.height, overlay.styling?.font_size, referenceResolution.height]);
 
   // Convert letter spacing from pixels to em units for responsive scaling
   const letterSpacingEm = useMemo(() => {
