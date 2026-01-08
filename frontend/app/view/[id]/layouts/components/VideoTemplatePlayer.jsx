@@ -262,48 +262,26 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     return { opacity, transform };
   };
 
-  // Calculate scale factor for responsive overlay sizing
-  // This ensures overlays scale proportionally with video container
-  const getOverlayScale = () => {
-    if (!containerSize.width || !referenceResolution.width) return 1;
+  /**
+   * Calculate the unified scale factor for all overlay properties
+   * This ensures everything scales proportionally with the video
+   * Based on the ACTUAL rendered video size, not the container
+   */
+  const getUnifiedScale = () => {
+    if (!renderedVideoSize.width || !referenceResolution.width) return 1;
     
-    // Calculate scale factor based on container width vs reference width
-    const scale = containerSize.width / referenceResolution.width;
+    // Scale based on actual rendered video width vs reference width
+    const scale = renderedVideoSize.width / referenceResolution.width;
     
-    console.log('Overlay scale:', scale, `container: ${containerSize.width}px, reference: ${referenceResolution.width}px`);
+    console.log('Unified scale:', scale, {
+      renderedWidth: renderedVideoSize.width,
+      referenceWidth: referenceResolution.width
+    });
     
-    // Return scale without minimum - let it scale naturally
     return scale;
   };
   
-  const overlayScale = getOverlayScale();
-  
-  // Calculate responsive font scale to ensure text remains readable on all devices
-  // This prevents text from becoming too small on mobile or too large on desktop
-  const getResponsiveFontScale = () => {
-    // Base scale on actual container width
-    if (!containerSize.width) return 1;
-    
-    // Calculate base scale from container vs reference
-    const baseScale = containerSize.width / referenceResolution.width;
-    
-    // For mobile devices (< 768px), ensure minimum readable size
-    if (containerSize.width < 768) {
-      // Use mobile-specific font size if available
-      const mobileScale = Math.max(0.5, Math.min(1.0, baseScale));
-      return mobileScale;
-    }
-    
-    // For tablets (768px - 1024px), use proportional scaling with constraints
-    if (containerSize.width < 1024) {
-      return Math.max(0.7, Math.min(1.2, baseScale));
-    }
-    
-    // For desktop, use natural scale with reasonable bounds
-    return Math.max(0.8, Math.min(1.5, baseScale));
-  };
-  
-  const fontScale = getResponsiveFontScale();
+  const unifiedScale = getUnifiedScale();
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
