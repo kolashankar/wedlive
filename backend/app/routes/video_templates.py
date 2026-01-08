@@ -901,9 +901,22 @@ async def get_wedding_template_assignment(
                 "text_value": text_value
             })
         
+        # Convert template Telegram URLs to proxied URLs
+        template_dict = dict(template)
+        if "video_data" in template_dict and template_dict["video_data"]:
+            if "original_url" in template_dict["video_data"]:
+                template_dict["video_data"]["original_url"] = telegram_url_to_proxy(
+                    template_dict["video_data"]["original_url"]
+                )
+        if "preview_thumbnail" in template_dict and template_dict["preview_thumbnail"]:
+            if "url" in template_dict["preview_thumbnail"]:
+                template_dict["preview_thumbnail"]["url"] = telegram_url_to_proxy(
+                    template_dict["preview_thumbnail"]["url"]
+                )
+        
         return {
             "assignment_id": assignment["id"],
-            "template": VideoTemplate(**template),
+            "template": VideoTemplate(**template_dict),
             "populated_overlays": populated_overlays,
             "customizations": assignment.get("customizations", {})
         }
