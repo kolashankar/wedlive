@@ -770,7 +770,10 @@ async def list_video_templates(
         cursor = db.video_templates.find(query).sort("metadata.created_at", -1).skip(skip).limit(limit)
         templates = await cursor.to_list(length=limit)
         
-        return [VideoTemplate(**template) for template in templates]
+        # Convert URLs to proxy URLs using file_ids
+        converted_templates = [convert_template_urls_to_proxy(t) for t in templates]
+        
+        return [VideoTemplate(**template) for template in converted_templates]
         
     except Exception as e:
         logger.error(f"[LIST_TEMPLATES] Error: {str(e)}")
@@ -795,6 +798,9 @@ async def get_video_template(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Template not found"
             )
+        
+        # Convert URLs to proxy URLs using file_ids
+        template = convert_template_urls_to_proxy(template)
         
         return VideoTemplate(**template)
         
