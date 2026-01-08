@@ -11,14 +11,25 @@ const isProduction = () => {
 
 // Get backend URL based on environment
 const getBackendUrl = () => {
-  // Priority 1: Use environment variable if set
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+  // Priority 1: Use environment variables if set (check all possible names)
+  // Check both NEXT_PUBLIC_ and REACT_APP_ prefixes for compatibility
+  const envUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 
+                 process.env.REACT_APP_BACKEND_URL || 
+                 process.env.NEXT_PUBLIC_API_URL;
+  
+  if (envUrl) {
+    return envUrl;
   }
   
   // Priority 2: Auto-detect based on hostname
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
+    
+    // Emergent platform deployment
+    if (hostname.includes('emergentagent.com') || hostname.includes('preview.emergentagent.com')) {
+      // Use same domain for API calls (handled by Kubernetes ingress)
+      return window.location.origin;
+    }
     
     // Production: Vercel → Render
     if (hostname.includes('vercel.app') || hostname.includes('wedlive.vercel.app')) {
