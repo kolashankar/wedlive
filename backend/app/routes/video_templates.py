@@ -16,6 +16,7 @@ from app.services.video_processing_service import VideoProcessingService
 from app.services.wedding_data_mapper import WeddingDataMapper
 from app.services.render_service import VideoRenderService
 from app.utils.overlay_utils import OverlayCoordinateSystem
+from app.utils.telegram_url_proxy import telegram_url_to_proxy
 from typing import List, Optional, Dict
 from datetime import datetime
 import uuid
