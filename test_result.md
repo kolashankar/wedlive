@@ -108,7 +108,7 @@ frontend:
   - task: "Fix text overlay responsive scaling for mobile devices"
     implemented: true
     working: "pending_test"
-    file: "/app/frontend/app/view/[id]/layouts/components/VideoTemplatePlayer.jsx"
+    file: "/app/frontend/app/view/[id]/layouts/components/VideoTemplatePlayer.jsx, /app/frontend/components/TemplateVideoPlayer.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
@@ -116,6 +116,9 @@ frontend:
       - working: "pending_test"
         agent: "main"
         comment: "🔧 RESPONSIVE FIX APPLIED: Fixed text overlay positioning and scaling issues on mobile devices. Changes made to VideoTemplatePlayer.jsx: 1) Removed fixed-size overlay container with scale transform that caused text blurriness. 2) Changed overlay container to use 100% width/height with percentage-based positioning. 3) Added responsive font scaling function that scales font-size, letter-spacing, and stroke-width proportionally based on container size. 4) For mobile devices (< 768px width), enforces minimum readable scale of 0.6 to prevent text from becoming too small. 5) Converted all pixel positions to percentages using reference resolution for proper responsive layout. 6) Added word-wrap and overflow-wrap to prevent text overflow on small screens. This ensures overlays maintain correct position and readable size across all device sizes from mobile to desktop."
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ COMPREHENSIVE MOBILE RESPONSIVE FIX: Completely rewrote overlay positioning system to fix mobile alignment issues. ROOT CAUSE: Overlays were positioned relative to container, but video uses object-fit:contain which adds letterboxing/pillarboxing - causing misalignment. SOLUTION IMPLEMENTED: 1) RENDERED VIDEO TRACKING: Added calculateRenderedVideoSize() function that calculates actual video dimensions within container accounting for object-fit:contain and aspect ratio. Tracks offsetX/offsetY for letterboxing. 2) RESPONSIVE REFERENCE FRAME: Overlay container now positioned exactly over rendered video (not full container), using calculated offsets and dimensions. 3) UNIFIED SCALING: All properties (fontSize, letterSpacing, strokeWidth, boxDimensions) scale using single unifiedScale factor = renderedVideoWidth / referenceResolutionWidth. 4) PIXEL-PERFECT ACROSS DEVICES: Same calculation logic ensures identical appearance on mobile/tablet/desktop - only scaled proportionally. 5) ENHANCED ERROR HANDLING: Added detailed video load error logging with networkState and readyState. Applied to BOTH VideoTemplatePlayer.jsx (preview/public view) and TemplateVideoPlayer.js (admin layouts). NO MORE HARDCODED PX - everything percentage-based + scale-factor driven."
   
   - task: "Fix admin template editor page 404 error"
     implemented: true
