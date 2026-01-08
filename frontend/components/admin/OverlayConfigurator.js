@@ -462,7 +462,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
             </div>
 
             <div>
-              <Label>Font Size: {formData.styling.font_size}px</Label>
+              <Label>Font Size: {formData.styling.font_size}px ({fontSizeToPercent(formData.styling.font_size)}% of video height)</Label>
               <Slider
                 value={[formData.styling.font_size]}
                 onValueChange={([value]) => handleUpdate('styling.font_size', value)}
@@ -472,6 +472,9 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 className="mt-2"
                 data-testid="font-size-slider"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Font will automatically scale on all devices. {fontSizeToPercent(formData.styling.font_size)}% = {formData.styling.font_size}px on {referenceResolution.height}px video
+              </p>
             </div>
 
             <div>
