@@ -103,6 +103,25 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
   const [pendingChanges, setPendingChanges] = useState({});
   const isSavingRef = useRef(false);
 
+  // Reference resolution for percentage calculations (default: 1920x1080)
+  const referenceResolution = overlay?.template?.reference_resolution || { width: 1920, height: 1080 };
+
+  // Helper functions to convert between pixels and responsive units
+  const fontSizeToPercent = (pixelSize) => {
+    const refHeight = referenceResolution.height || 1080;
+    return ((pixelSize / refHeight) * 100).toFixed(2);
+  };
+
+  const letterSpacingToEm = (pixelSpacing, fontSize) => {
+    if (!fontSize || fontSize === 0) return 0;
+    return (pixelSpacing / fontSize).toFixed(3);
+  };
+
+  const strokeWidthToEm = (pixelWidth, fontSize) => {
+    if (!fontSize || fontSize === 0) return 0;
+    return (pixelWidth / fontSize).toFixed(3);
+  };
+
   function getDefaultFormData() {
     return {
       endpoint_key: overlay?.endpoint_key ?? 'couple_names',
