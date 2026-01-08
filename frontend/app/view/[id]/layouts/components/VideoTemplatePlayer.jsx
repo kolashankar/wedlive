@@ -178,6 +178,8 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   );
 
   console.log('VideoTemplatePlayer - sortedOverlays:', sortedOverlays);
+
+  // Calculate animation style for overlay based on video time
   const getAnimationStyle = (overlay) => {
     const startTime = overlay.timing?.start_time || 0;
     const endTime = overlay.timing?.end_time || duration;
