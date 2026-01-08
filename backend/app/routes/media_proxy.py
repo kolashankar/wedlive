@@ -20,11 +20,27 @@ MEDIA_RESPONSE_HEADERS = {
     "X-Content-Type-Options": "nosniff"
 }
 
+@router.options("/media/proxy")
+async def media_proxy_options():
+    """Handle CORS preflight for media proxy"""
+    return Response(
+        content=None,
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400"
+        }
+    )
+
+@router.head("/media/proxy")
 @router.get("/media/proxy")
-async def media_proxy(url: str = None):
+async def media_proxy(url: str = None, request: Request = None):
     """
-    Generic media proxy endpoint to handle external URLs
-    Used to proxy images and other media from external sources
+    Generic media proxy endpoint to handle external URLs (images and videos)
+    Supports Range requests for video streaming
+    Used to proxy media from Telegram and other external sources
     """
     try:
         if not url:
@@ -33,7 +49,7 @@ async def media_proxy(url: str = None):
                 detail="URL parameter is required"
             )
         
-        logger.info(f"Proxy request for URL: {url}")
+        logger.info(f"Proxy request for URL: {url[:100]}...")
         
         # Validate URL format
         if not (url.startswith("http://") or url.startswith("https://")):
@@ -42,25 +58,79 @@ async def media_proxy(url: str = None):
                 detail="Invalid URL format"
             )
         
+        # Check for Range header for video streaming
+        range_header = request.headers.get("Range") if request else None
+        
+        # Build request headers
+        request_headers = {
+            'User-Agent': 'WedLive-Media-Proxy/1.0',
+        }
+        if range_header:
+            request_headers['Range'] = range_header
+            logger.info(f"Range request: {range_header}")
+        
+        # Handle HEAD request
+        if request and request.method == "HEAD":
+            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                response = await client.head(url, headers=request_headers)
+                
+                if response.status_code == 200:
+                    return Response(
+                        content=None,
+                        media_type=response.headers.get("content-type", "application/octet-stream"),
+                        headers={
+                            "Content-Length": response.headers.get("content-length", "0"),
+                            "Accept-Ranges": "bytes",
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+                            "Access-Control-Allow-Headers": "*",
+                            "Cache-Control": "public, max-age=3600"
+                        }
+                    )
+                else:
+                    raise HTTPException(status_code=response.status_code, detail="Failed to fetch media")
+        
         # Stream the file from the external URL
-        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
-            response = await client.get(url)
+        async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
+            response = await client.get(url, headers=request_headers)
             
-            if response.status_code == 200:
+            if response.status_code in [200, 206]:  # OK or Partial Content
                 # Get content type from response headers
                 content_type = response.headers.get("content-type", "application/octet-stream")
+                content_length = response.headers.get("content-length")
                 
-                logger.info(f"Successfully proxied media, size: {len(response.content)} bytes")
+                # Prepare response headers
+                response_headers = {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                    "Accept-Ranges": "bytes",
+                }
+                
+                # For videos, add streaming-friendly headers
+                if content_type.startswith("video/"):
+                    response_headers["Cache-Control"] = "public, max-age=31536000"  # 1 year for videos
+                else:
+                    response_headers["Cache-Control"] = "public, max-age=3600"  # 1 hour for images
+                
+                # Add content-length if available
+                if content_length:
+                    response_headers["Content-Length"] = content_length
+                
+                # Handle range responses
+                if response.status_code == 206:
+                    content_range = response.headers.get("content-range")
+                    if content_range:
+                        response_headers["Content-Range"] = content_range
+                    logger.info(f"Returning partial content: {content_range}")
+                else:
+                    logger.info(f"Successfully proxied media, size: {len(response.content)} bytes, type: {content_type}")
                 
                 return Response(
                     content=response.content,
+                    status_code=response.status_code,
                     media_type=content_type,
-                    headers={
-                        "Cache-Control": "public, max-age=3600",
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "GET, OPTIONS",
-                        "Access-Control-Allow-Headers": "*"
-                    }
+                    headers=response_headers
                 )
             else:
                 logger.error(f"Failed to fetch media from URL: {response.status_code}")
