@@ -188,6 +188,17 @@ export default function ResponsiveTextOverlay({
 
   if (!isVisible) return null;
 
+  // Debug: Log final computed values
+  console.log('[ResponsiveTextOverlay] Final overlay styling:', {
+    overlayId: overlay.id,
+    position: `${positionPercent.x}%, ${positionPercent.y}%`,
+    textBoxSize: `${dimensions.width || 'auto'}% x ${dimensions.height || 'auto'}%`,
+    fontSize: `${responsiveFontSize.toFixed(2)}px`,
+    letterSpacing: `${letterSpacingEm.toFixed(3)}em`,
+    strokeWidth: `${strokeWidthEm.toFixed(3)}em`,
+    textValue: overlay.text_value || overlay.placeholder_text
+  });
+
   return (
     <div
       className={`absolute ${className}`}
