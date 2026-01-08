@@ -1,0 +1,196 @@
+'use client';
+import { useMemo } from 'react';
+
+/**
+ * ResponsiveTextOverlay - Universal responsive text overlay component
+ * 
+ * KEY FEATURES:
+ * 1. All dimensions are percentage-based relative to video container
+ * 2. Single unified scaling factor derived from rendered video size
+ * 3. Text wraps automatically within box constraints
+ * 4. Consistent behavior across Admin, Preview, and Public views
+ * 5. No fixed pixel values - everything scales proportionally
+ * 
+ * SCALING LOGIC:
+ * - Reference resolution (e.g., 1920x1080) is used for base calculations
+ * - scaleFactor = actualRenderedWidth / referenceWidth
+ * - ALL properties (font, spacing, stroke) scale by same factor
+ * - Text box dimensions are percentage of video size
+ */
+
+export default function ResponsiveTextOverlay({
+  overlay,
+  currentTime,
+  duration,
+  containerSize,      // The actual rendered video dimensions {width, height, offsetX, offsetY}
+  referenceResolution, // Template's reference resolution {width, height}
+  animationState = null, // Optional pre-calculated animation state
+  className = ''
+}) {
+  // Calculate unified scale factor
+  const scaleFactor = useMemo(() => {
+    if (!containerSize.width || !referenceResolution.width) return 1;
+    return containerSize.width / referenceResolution.width;
+  }, [containerSize.width, referenceResolution.width]);
+
+  // Check if overlay should be visible at current time
+  const isVisible = useMemo(() => {
+    const startTime = overlay.timing?.start_time ?? 0;
+    const endTime = overlay.timing?.end_time ?? duration;
+    return currentTime >= startTime && currentTime <= endTime;
+  }, [currentTime, overlay.timing, duration]);
+
+  // Calculate animation state if not provided
+  const animState = useMemo(() => {
+    if (animationState) return animationState;
+    
+    const startTime = overlay.timing?.start_time || 0;
+    const endTime = overlay.timing?.end_time || duration;
+    const entranceAnim = overlay.animation?.entrance || { type: 'fade-in', duration: 1, easing: 'ease-in-out' };
+    const exitAnim = overlay.animation?.exit || { type: 'fade-out', duration: 1, easing: 'ease-in-out' };
+    
+    let opacity = 1;
+    let transform = '';
+
+    // Entrance animation
+    if (currentTime < startTime + entranceAnim.duration) {
+      const progress = Math.max(0, Math.min(1, (currentTime - startTime) / entranceAnim.duration));
+      
+      switch (entranceAnim.type) {
+        case 'fade-in':
+          opacity = progress;
+          break;
+        case 'slide-up':
+          opacity = progress;
+          transform = `translateY(${(1 - progress) * 50}px)`;
+          break;
+        case 'slide-down':
+          opacity = progress;
+          transform = `translateY(${-(1 - progress) * 50}px)`;
+          break;
+        case 'scale-up':
+        case 'zoom-in':
+          opacity = progress;
+          const scale = 0.5 + (progress * 0.5);
+          transform = `scale(${scale})`;
+          break;
+        default:
+          opacity = progress;
+      }
+    }
+    // Exit animation
+    else if (currentTime > endTime - exitAnim.duration) {
+      const progress = 1 - Math.max(0, Math.min(1, (currentTime - (endTime - exitAnim.duration)) / exitAnim.duration));
+      opacity = progress;
+      
+      if (exitAnim.type === 'slide-up') {
+        transform = `translateY(${-(1 - progress) * 50}px)`;
+      }
+    }
+
+    return { opacity, transform };
+  }, [currentTime, overlay.timing, overlay.animation, duration, animationState]);
+
+  // Get overlay properties
+  const position = overlay.position || { x: 50, y: 50 };
+  const styling = overlay.styling || {};
+  const dimensions = overlay.dimensions || {};
+
+  // Convert position to percentages if needed
+  const positionPercent = useMemo(() => {
+    let xPercent = position.x;
+    let yPercent = position.y;
+
+    // Check if values are in pixels (> 100 or explicit unit)
+    if (position.unit === 'pixels' || position.x > 100 || position.y > 100) {
+      xPercent = (position.x / referenceResolution.width) * 100;
+      yPercent = (position.y / referenceResolution.height) * 100;
+    }
+
+    return { x: xPercent, y: yPercent };
+  }, [position, referenceResolution]);
+
+  // Calculate scaled styling properties
+  const scaledStyling = useMemo(() => {
+    const baseFontSize = styling.font_size || 48;
+    const baseLetterSpacing = styling.letter_spacing || 0;
+    const baseStrokeWidth = styling.stroke?.width || 2;
+
+    return {
+      fontSize: `${baseFontSize * scaleFactor}px`,
+      fontFamily: styling.font_family || 'Playfair Display',
+      fontWeight: styling.font_weight || 'bold',
+      color: styling.color || '#ffffff',
+      textAlign: styling.text_align || 'center',
+      letterSpacing: `${baseLetterSpacing * scaleFactor}px`,
+      lineHeight: styling.line_height || 1.2,
+      textShadow: styling.text_shadow || '0 2px 4px rgba(0,0,0,0.5)',
+      WebkitTextStroke: styling.stroke?.enabled 
+        ? `${baseStrokeWidth * scaleFactor}px ${styling.stroke.color || '#000000'}` 
+        : 'none'
+    };
+  }, [styling, scaleFactor]);
+
+  // Calculate text box dimensions (percentage of container)
+  const textBoxStyle = useMemo(() => {
+    return {
+      width: dimensions.width ? `${dimensions.width}%` : 'auto',
+      height: dimensions.height ? `${dimensions.height}%` : 'auto',
+      maxWidth: dimensions.width ? `${dimensions.width}%` : '90%'
+    };
+  }, [dimensions]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className={`absolute ${className}`}
+      style={{
+        // Position relative to rendered video (percentage-based)
+        left: `${positionPercent.x}%`,
+        top: `${positionPercent.y}%`,
+        transform: `translate(-50%, -50%) ${animState.transform}`,
+        opacity: animState.opacity,
+        zIndex: overlay.layer_index || 1,
+        
+        // Text box dimensions (percentage of video size)
+        ...textBoxStyle,
+        
+        // Scaled text styling
+        ...scaledStyling,
+        
+        // Text wrapping and overflow control
+        whiteSpace: 'normal',
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        wordBreak: 'normal',
+        hyphens: 'auto',
+        overflow: 'hidden',
+        
+        // Layout properties
+        display: 'block',
+        boxSizing: 'border-box',
+        margin: 0,
+        padding: 0,
+        
+        // Vertical alignment for multi-line text
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: styling.text_align === 'left' ? 'flex-start' : 
+                   styling.text_align === 'right' ? 'flex-end' : 'center',
+        
+        // Performance optimization
+        willChange: 'opacity, transform',
+        transition: 'none'
+      }}
+    >
+      <span style={{ 
+        display: 'block',
+        width: '100%'
+      }}>
+        {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
+      </span>
+    </div>
+  );
+}
