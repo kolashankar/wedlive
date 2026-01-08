@@ -16,6 +16,33 @@ def get_backend_url() -> str:
     # Remove trailing slash if present
     return backend_url.rstrip("/")
 
+def telegram_file_id_to_proxy_url(telegram_file_id: str, media_type: str = "photos") -> Optional[str]:
+    """
+    Convert a Telegram file_id to a proxied URL through our backend.
+    This is the PREFERRED method as it ensures files are always accessible.
+    
+    Args:
+        telegram_file_id: The Telegram file_id (e.g., "BQACAgUAAyEGAATO...")
+        media_type: Type of media - "photos", "videos", or "documents" (default: "photos")
+    
+    Returns:
+        Proxied URL: "/api/media/telegram-proxy/{media_type}/{file_id}"
+    
+    Example:
+        Input:  "BQACAgUAAyEGAATO7nwaAAORaU_lARiYUfa4-Ql7aimRSPI5FiwAAv4cAALG7oBWmnWGZsd6drE2BA"
+        Output: "/api/media/telegram-proxy/photos/BQACAgUAAyEGAATO7nwaAAORaU_lARiYUfa4-Ql7aimRSPI5FiwAAv4cAALG7oBWmnWGZsd6drE2BA"
+    """
+    if not telegram_file_id:
+        return None
+    
+    # Validate that it looks like a Telegram file_id (starts with common prefixes)
+    if not any(telegram_file_id.startswith(prefix) for prefix in ['AgAC', 'BQAC', 'BAAC', 'CgAC', 'AwAC']):
+        logger.warning(f"Unusual file_id format: {telegram_file_id[:20]}...")
+    
+    # Use our media proxy endpoint which will call Telegram's getFile API with the file_id
+    # and stream the file with proper CORS headers
+    return f"/api/media/telegram-proxy/{media_type}/{telegram_file_id}"
+
 def telegram_url_to_proxy(telegram_url: Optional[str]) -> Optional[str]:
     """
     Convert a direct Telegram Bot API URL to a proxied URL
