@@ -536,7 +536,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
             </div>
 
             <div>
-              <Label>Letter Spacing: {formData.styling.letter_spacing}px</Label>
+              <Label>Letter Spacing: {formData.styling.letter_spacing}px ({letterSpacingToEm(formData.styling.letter_spacing, formData.styling.font_size)}em)</Label>
               <Slider
                 value={[formData.styling.letter_spacing]}
                 onValueChange={([value]) => handleUpdate('styling.letter_spacing', value)}
@@ -545,6 +545,9 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 step={1}
                 className="mt-2"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Responsive unit: {letterSpacingToEm(formData.styling.letter_spacing, formData.styling.font_size)}em scales automatically with font size
+              </p>
             </div>
 
             <div>
