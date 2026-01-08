@@ -43,6 +43,22 @@ export default function ResponsiveTextOverlay({
     return (baseFontSize / refHeight) * 100;
   }, [overlay.styling?.font_size, referenceResolution.height]);
 
+  // Convert letter spacing from pixels to em units for responsive scaling
+  const letterSpacingEm = useMemo(() => {
+    const baseFontSize = overlay.styling?.font_size || 48;
+    const baseLetterSpacing = overlay.styling?.letter_spacing || 0;
+    // Convert px to em: em = px / font-size
+    return baseFontSize > 0 ? baseLetterSpacing / baseFontSize : 0;
+  }, [overlay.styling?.font_size, overlay.styling?.letter_spacing]);
+
+  // Convert stroke width from pixels to em units for responsive scaling
+  const strokeWidthEm = useMemo(() => {
+    const baseFontSize = overlay.styling?.font_size || 48;
+    const baseStrokeWidth = overlay.styling?.stroke?.width || 2;
+    // Convert px to em: em = px / font-size
+    return baseFontSize > 0 ? baseStrokeWidth / baseFontSize : 0.05;
+  }, [overlay.styling?.font_size, overlay.styling?.stroke?.width]);
+
   // Check if overlay should be visible at current time
   const isVisible = useMemo(() => {
     const startTime = overlay.timing?.start_time ?? 0;
