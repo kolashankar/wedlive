@@ -560,6 +560,9 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 step={0.1}
                 className="mt-2"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Already using responsive ratio (1.0 = normal, 1.5 = 1.5x spacing). Scales automatically with all screen sizes.
+              </p>
             </div>
 
             {/* Text Stroke */}
