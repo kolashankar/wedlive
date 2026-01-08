@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause } from 'lucide-react';
+import ResponsiveTextOverlay from '@/components/video/ResponsiveTextOverlay';
 
 export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   const [isPlaying, setIsPlaying] = useState(false);
