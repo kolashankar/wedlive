@@ -16,7 +16,7 @@ from app.services.video_processing_service import VideoProcessingService
 from app.services.wedding_data_mapper import WeddingDataMapper
 from app.services.render_service import VideoRenderService
 from app.utils.overlay_utils import OverlayCoordinateSystem
-from app.utils.telegram_url_proxy import telegram_url_to_proxy
+from app.utils.telegram_url_proxy import telegram_url_to_proxy, telegram_file_id_to_proxy_url
 from typing import List, Optional, Dict
 from datetime import datetime
 import uuid
@@ -36,6 +36,40 @@ render_service = VideoRenderService()
 
 # Maximum file size: 50MB
 MAX_VIDEO_SIZE = 50 * 1024 * 1024
+
+
+def convert_template_urls_to_proxy(template: dict) -> dict:
+    """
+    Convert all Telegram URLs in a video template to proxy URLs.
+    Uses telegram_file_id to generate fresh proxy URLs instead of stale stored URLs.
+    
+    Args:
+        template: Template dictionary from database
+    
+    Returns:
+        Template with proxied URLs
+    """
+    template_copy = template.copy()
+    
+    # Convert video URL
+    if "video_data" in template_copy:
+        video_data = template_copy["video_data"]
+        video_file_id = video_data.get("telegram_file_id")
+        if video_file_id:
+            video_data["original_url"] = telegram_file_id_to_proxy_url(video_file_id, "videos")
+        elif video_data.get("original_url"):
+            video_data["original_url"] = telegram_url_to_proxy(video_data["original_url"])
+    
+    # Convert thumbnail URL
+    if "preview_thumbnail" in template_copy and template_copy["preview_thumbnail"]:
+        thumb_data = template_copy["preview_thumbnail"]
+        thumb_file_id = thumb_data.get("telegram_file_id")
+        if thumb_file_id:
+            thumb_data["url"] = telegram_file_id_to_proxy_url(thumb_file_id, "photos")
+        elif thumb_data.get("url"):
+            thumb_data["url"] = telegram_url_to_proxy(thumb_data["url"])
+    
+    return template_copy
 
 
 def deep_merge_dict(base: dict, update: dict) -> dict:
