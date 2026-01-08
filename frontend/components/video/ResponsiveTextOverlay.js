@@ -148,8 +148,8 @@ export default function ResponsiveTextOverlay({
     const styling = overlay.styling || {};
     
     return {
-      // Font size as percentage of rendered video height - fully responsive
-      fontSize: `${fontSizePercent}vh`,
+      // Font size calculated from container height - fully responsive to any screen size
+      fontSize: `${responsiveFontSize}px`,
       fontFamily: styling.font_family || 'Playfair Display',
       fontWeight: styling.font_weight || 'bold',
       color: styling.color || '#ffffff',
@@ -164,7 +164,7 @@ export default function ResponsiveTextOverlay({
         ? `${strokeWidthEm}em ${styling.stroke.color || '#000000'}` 
         : 'none'
     };
-  }, [overlay.styling, fontSizePercent, letterSpacingEm, strokeWidthEm]);
+  }, [overlay.styling, responsiveFontSize, letterSpacingEm, strokeWidthEm]);
 
   // Calculate text box dimensions (percentage of container)
   const textBoxStyle = useMemo(() => {
