@@ -6,16 +6,24 @@ import { useMemo } from 'react';
  * 
  * KEY FEATURES:
  * 1. All dimensions are percentage-based relative to video container
- * 2. Single unified scaling factor derived from rendered video size
- * 3. Text wraps automatically within box constraints
- * 4. Consistent behavior across Admin, Preview, and Public views
- * 5. No fixed pixel values - everything scales proportionally
+ * 2. Font size calculated as percentage of rendered video height - fully responsive
+ * 3. Letter spacing and stroke use em units - scale with font size automatically
+ * 4. Text wraps automatically within box constraints
+ * 5. Consistent behavior across Admin, Preview, and Public views
+ * 6. ZERO fixed pixel values - everything scales proportionally with template size
  * 
  * SCALING LOGIC:
  * - Reference resolution (e.g., 1920x1080) is used for base calculations
- * - scaleFactor = actualRenderedWidth / referenceWidth
- * - ALL properties (font, spacing, stroke) scale by same factor
- * - Text box dimensions are percentage of video size
+ * - Font size: baseFontSize / referenceHeight * 100 = percentage of video height
+ * - Letter spacing: converted to em units (relative to font size)
+ * - Stroke width: converted to em units (relative to font size)
+ * - Text box dimensions: percentage of video size
+ * - Position: percentage of video size
+ * 
+ * EXAMPLE:
+ * - Base font: 48px on 1080px height = 4.44% of height
+ * - Rendered at 540px height: 4.44% * 540px = 23.98px (auto-calculated by browser)
+ * - Rendered at 1920px height: 4.44% * 1920px = 85.25px (auto-calculated by browser)
  */
 
 export default function ResponsiveTextOverlay({
@@ -27,11 +35,13 @@ export default function ResponsiveTextOverlay({
   animationState = null, // Optional pre-calculated animation state
   className = ''
 }) {
-  // Calculate unified scale factor
-  const scaleFactor = useMemo(() => {
-    if (!containerSize.width || !referenceResolution.width) return 1;
-    return containerSize.width / referenceResolution.width;
-  }, [containerSize.width, referenceResolution.width]);
+  // Calculate font size as percentage of rendered video height for true responsiveness
+  const fontSizePercent = useMemo(() => {
+    const baseFontSize = overlay.styling?.font_size || 48;
+    const refHeight = referenceResolution.height || 1080;
+    // Convert base font size to percentage of reference height
+    return (baseFontSize / refHeight) * 100;
+  }, [overlay.styling?.font_size, referenceResolution.height]);
 
   // Check if overlay should be visible at current time
   const isVisible = useMemo(() => {
