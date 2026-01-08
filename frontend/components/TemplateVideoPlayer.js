@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import api from '@/lib/api';
+import ResponsiveTextOverlay from '@/components/video/ResponsiveTextOverlay';
 
 /**
  * TemplateVideoPlayer - Renders assigned video template with overlays
