@@ -196,62 +196,16 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
             zIndex: 10
           }}
         >
-          {overlays.map((overlay, index) => {
-            const position = overlay.position || { x: 50, y: 50 };
-            const percentagePos = convertPositionToPercentage(position);
-            const styling = overlay.styling || overlay.style || {};
-            const dimensions_data = overlay.dimensions || {};
-            
-            // Scale all properties uniformly
-            const baseFontSize = styling.font_size || 24;
-            const scaledFontSize = baseFontSize * unifiedScale;
-            const baseLetterSpacing = styling.letter_spacing || 0;
-            const scaledLetterSpacing = baseLetterSpacing * unifiedScale;
-            const stroke = styling.stroke || {};
-            const baseStrokeWidth = stroke.width || 0;
-            const scaledStrokeWidth = baseStrokeWidth * unifiedScale;
-            
-            // Get text box dimensions
-            const boxWidthPercent = dimensions_data.width || null;
-            const boxHeightPercent = dimensions_data.height || null;
-            
-            return (
-              <div
-                key={overlay.id || index}
-                className="absolute"
-                style={{
-                  left: `${percentagePos.x}%`,
-                  top: `${percentagePos.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                  width: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
-                  height: boxHeightPercent ? `${boxHeightPercent}%` : 'auto',
-                  maxWidth: boxWidthPercent ? `${boxWidthPercent}%` : '90%',
-                  fontSize: `${scaledFontSize}px`,
-                  fontFamily: styling.font_family || 'Arial',
-                  color: styling.color || '#FFFFFF',
-                  fontWeight: styling.font_weight || 'normal',
-                  textAlign: styling.text_align || 'center',
-                  letterSpacing: `${scaledLetterSpacing}px`,
-                  lineHeight: styling.line_height || 1.2,
-                  textShadow: styling.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)',
-                  WebkitTextStroke: stroke.enabled ? `${scaledStrokeWidth}px ${stroke.color || '#000000'}` : 'none',
-                  zIndex: overlay.layer_index || 1,
-                  whiteSpace: 'normal',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                  wordBreak: 'normal',
-                  hyphens: 'auto',
-                  overflow: 'hidden',
-                  display: 'block',
-                  boxSizing: 'border-box',
-                  margin: 0,
-                  padding: 0
-                }}
-              >
-                {overlay.text_value || overlay.text || overlay.placeholder_text || 'Sample Text'}
-              </div>
-            );
-          })}
+          {overlays.map((overlay, index) => (
+            <ResponsiveTextOverlay
+              key={overlay.id || index}
+              overlay={overlay}
+              currentTime={0} // Auto-play mode - always show
+              duration={999}  // Effectively always visible
+              containerSize={renderedVideoSize}
+              referenceResolution={referenceResolution}
+            />
+          ))}
         </div>
       )}
     </div>
