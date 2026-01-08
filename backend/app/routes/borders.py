@@ -24,6 +24,25 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 telegram_service = TelegramCDNService()
 
+
+def telegram_file_id_to_proxy_url(telegram_file_id: str) -> str:
+    """
+    Convert a Telegram file_id to a proxied URL through our backend.
+    This ensures files are always accessible even if the direct Telegram URL is stale.
+    
+    Args:
+        telegram_file_id: The Telegram file_id (e.g., "BQACAgUAAyEGAATO...")
+    
+    Returns:
+        Proxied URL: "/api/media/telegram-proxy/photos/{file_id}"
+    """
+    if not telegram_file_id:
+        return None
+    
+    # Use our media proxy endpoint which will call Telegram's getFile API with the file_id
+    # and stream the file with proper CORS headers
+    return f"/api/media/telegram-proxy/photos/{telegram_file_id}"
+
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 def get_image_dimensions(file_path: str) -> tuple:
