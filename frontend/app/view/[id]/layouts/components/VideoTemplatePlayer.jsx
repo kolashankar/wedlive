@@ -334,88 +334,18 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
             }}
           >
             {sortedOverlays.map((overlay, index) => {
-              const position = overlay.position || { x: 50, y: 50, unit: 'percent' };
-              const styling = overlay.styling || {};
-              const dimensions_data = overlay.dimensions || {};
               const animStyle = getAnimationStyle(overlay);
               
-              // Convert positions to percentages for responsive layout
-              let xPercent, yPercent;
-              
-              // Check if position is in pixels (values > 100 or explicit unit)
-              if (position.unit === 'pixels' || position.x > 100 || position.y > 100) {
-                // Convert pixels to percentage using reference resolution
-                xPercent = (position.x / referenceResolution.width) * 100;
-                yPercent = (position.y / referenceResolution.height) * 100;
-              } else {
-                // Already in percentage
-                xPercent = position.x;
-                yPercent = position.y;
-              }
-              
-              // Get text box dimensions in percentage
-              const boxWidthPercent = dimensions_data.width || null;
-              const boxHeightPercent = dimensions_data.height || null;
-              
-              // Scale ALL properties uniformly using the unified scale
-              const baseFontSize = styling.font_size || 48;
-              const scaledFontSize = baseFontSize * unifiedScale;
-              const fontFamily = styling.font_family || 'Playfair Display';
-              const fontWeight = styling.font_weight || 'bold';
-              const color = styling.color || '#ffffff';
-              const textAlign = styling.text_align || 'center';
-              const baseLetterSpacing = styling.letter_spacing || 2;
-              const scaledLetterSpacing = baseLetterSpacing * unifiedScale;
-              const lineHeight = styling.line_height || 1.2;
-              const textShadow = styling.text_shadow || '0 2px 4px rgba(0,0,0,0.5)';
-              
-              // Handle stroke with scaled width
-              const stroke = styling.stroke || {};
-              const baseStrokeWidth = stroke.width || 2;
-              const scaledStrokeWidth = baseStrokeWidth * unifiedScale;
-              
               return (
-                <div
+                <ResponsiveTextOverlay
                   key={overlay.id || index}
-                  className="absolute"
-                  style={{
-                    // Position relative to the rendered video frame
-                    left: `${xPercent}%`,
-                    top: `${yPercent}%`,
-                    transform: `translate(-50%, -50%) ${animStyle.transform}`,
-                    // Text box dimensions scale with the video
-                    width: boxWidthPercent ? `${boxWidthPercent}%` : 'auto',
-                    height: boxHeightPercent ? `${boxHeightPercent}%` : 'auto',
-                    maxWidth: boxWidthPercent ? `${boxWidthPercent}%` : '90%',
-                    // All text properties scale uniformly
-                    fontSize: `${scaledFontSize}px`,
-                    fontFamily: fontFamily,
-                    fontWeight: fontWeight,
-                    color: color,
-                    textAlign: textAlign,
-                    letterSpacing: `${scaledLetterSpacing}px`,
-                    lineHeight: lineHeight,
-                    textShadow: textShadow,
-                    opacity: animStyle.opacity,
-                    zIndex: overlay.layer_index || 1,
-                    transition: 'none',
-                    WebkitTextStroke: stroke.enabled ? `${scaledStrokeWidth}px ${stroke.color || '#000000'}` : 'none',
-                    willChange: 'opacity, transform',
-                    margin: 0,
-                    padding: 0,
-                    // Text wrapping and overflow handling
-                    whiteSpace: 'normal',
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
-                    wordBreak: 'normal',
-                    hyphens: 'auto',
-                    overflow: 'hidden',
-                    display: 'block',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
-                </div>
+                  overlay={overlay}
+                  currentTime={currentTime}
+                  duration={duration}
+                  containerSize={renderedVideoSize}
+                  referenceResolution={referenceResolution}
+                  animationState={animStyle}
+                />
               );
             })}
           </div>
