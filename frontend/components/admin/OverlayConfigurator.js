@@ -596,7 +596,7 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs">Stroke Width: {formData.styling.stroke.width}px</Label>
+                    <Label className="text-xs">Stroke Width: {formData.styling.stroke.width}px ({strokeWidthToEm(formData.styling.stroke.width, formData.styling.font_size)}em)</Label>
                     <Slider
                       value={[formData.styling.stroke.width]}
                       onValueChange={([value]) => handleUpdate('styling.stroke.width', value)}
@@ -605,6 +605,9 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                       step={1}
                       className="mt-2"
                     />
+                    <p className="text-xs text-gray-400 mt-1">
+                      {strokeWidthToEm(formData.styling.stroke.width, formData.styling.font_size)}em scales proportionally with font size
+                    </p>
                   </div>
                 </div>
               )}
