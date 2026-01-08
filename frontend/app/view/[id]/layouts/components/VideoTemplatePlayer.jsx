@@ -26,6 +26,42 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   // Default to 9:16 for wedding videos (portrait), fallback to 16:9
   const referenceResolution = videoTemplate.reference_resolution || { width: 1080, height: 1920 };
 
+  /**
+   * Calculate the actual rendered size of the video within its container
+   * Accounts for object-fit: contain which may add letterboxing/pillarboxing
+   * This is the KEY to proper overlay positioning on all screen sizes
+   */
+  const calculateRenderedVideoSize = () => {
+    if (!containerSize.width || !containerSize.height || !videoSize.width || !videoSize.height) {
+      return { width: 0, height: 0, offsetX: 0, offsetY: 0 };
+    }
+
+    const containerAspect = containerSize.width / containerSize.height;
+    const videoAspect = videoSize.width / videoSize.height;
+
+    let renderedWidth, renderedHeight, offsetX = 0, offsetY = 0;
+
+    // object-fit: contain logic
+    if (videoAspect > containerAspect) {
+      // Video is wider - fit to width, add letterboxing top/bottom
+      renderedWidth = containerSize.width;
+      renderedHeight = containerSize.width / videoAspect;
+      offsetY = (containerSize.height - renderedHeight) / 2;
+    } else {
+      // Video is taller - fit to height, add pillarboxing left/right
+      renderedHeight = containerSize.height;
+      renderedWidth = containerSize.height * videoAspect;
+      offsetX = (containerSize.width - renderedWidth) / 2;
+    }
+
+    return { 
+      width: renderedWidth, 
+      height: renderedHeight, 
+      offsetX, 
+      offsetY 
+    };
+  };
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
