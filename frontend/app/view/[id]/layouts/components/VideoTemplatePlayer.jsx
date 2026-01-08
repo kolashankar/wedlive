@@ -263,27 +263,6 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     return { opacity, transform };
   };
 
-  /**
-   * Calculate the unified scale factor for all overlay properties
-   * This ensures everything scales proportionally with the video
-   * Based on the ACTUAL rendered video size, not the container
-   */
-  const getUnifiedScale = () => {
-    if (!renderedVideoSize.width || !referenceResolution.width) return 1;
-    
-    // Scale based on actual rendered video width vs reference width
-    const scale = renderedVideoSize.width / referenceResolution.width;
-    
-    console.log('Unified scale:', scale, {
-      renderedWidth: renderedVideoSize.width,
-      referenceWidth: referenceResolution.width
-    });
-    
-    return scale;
-  };
-  
-  const unifiedScale = getUnifiedScale();
-
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
       {/* 
