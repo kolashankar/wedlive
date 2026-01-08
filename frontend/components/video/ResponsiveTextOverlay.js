@@ -136,26 +136,28 @@ export default function ResponsiveTextOverlay({
     return { x: xPercent, y: yPercent };
   }, [position, referenceResolution]);
 
-  // Calculate scaled styling properties
+  // Calculate scaled styling properties using percentage-based font size and em units
   const scaledStyling = useMemo(() => {
-    const baseFontSize = styling.font_size || 48;
-    const baseLetterSpacing = styling.letter_spacing || 0;
-    const baseStrokeWidth = styling.stroke?.width || 2;
-
+    const styling = overlay.styling || {};
+    
     return {
-      fontSize: `${baseFontSize * scaleFactor}px`,
+      // Font size as percentage of rendered video height - fully responsive
+      fontSize: `${fontSizePercent}vh`,
       fontFamily: styling.font_family || 'Playfair Display',
       fontWeight: styling.font_weight || 'bold',
       color: styling.color || '#ffffff',
       textAlign: styling.text_align || 'center',
-      letterSpacing: `${baseLetterSpacing * scaleFactor}px`,
+      // Letter spacing in em units - scales with font size automatically
+      letterSpacing: `${letterSpacingEm}em`,
+      // Line height is already a ratio - perfect for responsive design
       lineHeight: styling.line_height || 1.2,
       textShadow: styling.text_shadow || '0 2px 4px rgba(0,0,0,0.5)',
+      // Stroke width in em units - scales with font size automatically
       WebkitTextStroke: styling.stroke?.enabled 
-        ? `${baseStrokeWidth * scaleFactor}px ${styling.stroke.color || '#000000'}` 
+        ? `${strokeWidthEm}em ${styling.stroke.color || '#000000'}` 
         : 'none'
     };
-  }, [styling, scaleFactor]);
+  }, [overlay.styling, fontSizePercent, letterSpacingEm, strokeWidthEm]);
 
   // Calculate text box dimensions (percentage of container)
   const textBoxStyle = useMemo(() => {
