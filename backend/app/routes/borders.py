@@ -338,10 +338,13 @@ async def list_borders(
         borders = []
         
         async for border in cursor:
+            # Use telegram_file_id to generate fresh proxy URL
+            proxy_url = telegram_file_id_to_proxy_url(border.get("telegram_file_id"))
+            
             borders.append(BorderResponse(
                 id=border["id"],
                 name=border["name"],
-                cdn_url=border["cdn_url"],
+                cdn_url=proxy_url or border["cdn_url"],
                 telegram_file_id=border["telegram_file_id"],
                 orientation=border.get("orientation", "square"),
                 width=border.get("width", 0),
