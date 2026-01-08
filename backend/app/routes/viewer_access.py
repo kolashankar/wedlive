@@ -249,9 +249,13 @@ async def get_wedding_complete_view(wedding_id: str):
                     "text_value": text_value
                 })
             
-            # Convert Telegram URLs to proxied URLs to avoid CORS issues
-            video_url_proxied = telegram_url_to_proxy(video_data.get("original_url"))
-            thumbnail_url_proxied = telegram_url_to_proxy(preview_thumbnail.get("url"))
+            # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URLs
+            # This ensures URLs always work even if the stored urls are stale/expired
+            video_file_id = video_data.get("telegram_file_id")
+            thumbnail_file_id = preview_thumbnail.get("telegram_file_id")
+            
+            video_url_proxied = telegram_file_id_to_proxy_url(video_file_id, "videos") if video_file_id else telegram_url_to_proxy(video_data.get("original_url"))
+            thumbnail_url_proxied = telegram_file_id_to_proxy_url(thumbnail_file_id, "photos") if thumbnail_file_id else telegram_url_to_proxy(preview_thumbnail.get("url"))
             
             template_data = {
                 "id": template["id"],
