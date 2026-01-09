@@ -84,6 +84,18 @@ frontend:
         agent: "main"
         comment: "✅ COMPREHENSIVE TEXT RENDERING FIX: Fixed multiple critical text rendering issues: 1) TEXT WRAPPING: Changed wordBreak from 'break-word' to 'normal' to respect word boundaries, added hyphens: 'auto' for long words, text now wraps naturally within box width. 2) TEXT ALIGNMENT: Removed flex container (display: 'flex') that was interfering with text-align property, changed to display: 'block', alignment now works consistently (left/center/right) across admin/preview/public views. 3) TEXT BOX CONSTRAINTS: Added proper width constraints (width, maxWidth, minWidth) based on dimensions.width percentage, added boxSizing: 'border-box' for proper calculations. 4) MOBILE RESPONSIVENESS: Enhanced getResponsiveFontScale() with three-tier device-specific scaling: Mobile (<768px): 0.5x-1.0x scale for readability, Tablet (768-1024px): 0.7x-1.2x scale balanced, Desktop (>1024px): 0.8x-1.5x natural with bounds. Text now remains readable on all devices and scales appropriately."
 
+  - task: "Fix invalid placeholder Telegram URL 404 errors and template loading"
+    implemented: true
+    working: true
+    file: "/app/backend/app/routes/viewer_access.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ CRITICAL FIX: Fixed 404 errors from invalid placeholder Telegram URLs (file_126.png, file_134.png, etc.). ROOT CAUSE: Wedding theme_settings contained placeholder Telegram URLs like 'https://api.telegram.org/file/bot.../documents/file_126.png' which are NOT valid Telegram file_ids - they're just placeholder paths from bot testing that always return 404. SOLUTION: 1) Added clean_invalid_telegram_urls() function that recursively scans theme_settings and replaces any URL containing /file_\d+\.(png|jpg|jpeg|webp) pattern with None. 2) Applied this cleaning to viewer_access.py /api/viewer/wedding/{id}/all endpoint before returning theme_settings. 3) Frontend now receives null for invalid URLs instead of broken links. IMPACT: Eliminates hundreds of 404 errors on page load, improves page performance, prevents broken image requests. The cleaning is logged for debugging: 'Removing invalid placeholder URL from {key}: {url}'. Tested on wedding b75e23c9-ca5e-4d10-bf20-065169d1a01e - all placeholder URLs successfully cleaned."
+      
   - task: "Fix video template display in all 8 layouts in ADMIN wedding editor page"
     implemented: true
     working: false
