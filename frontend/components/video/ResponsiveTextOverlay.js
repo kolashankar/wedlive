@@ -175,13 +175,33 @@ export default function ResponsiveTextOverlay({
     return { x: xPercent, y: yPercent };
   }, [position, referenceResolution]);
 
+  // Convert text shadow from px to em units for responsive scaling
+  const textShadowEm = useMemo(() => {
+    const baseFontSize = overlay.styling?.font_size || 48;
+    const shadow = overlay.styling?.text_shadow;
+    
+    if (!shadow || shadow === 'none') {
+      return '0 0.04em 0.08em rgba(0,0,0,0.5)'; // Default shadow in em units
+    }
+    
+    // Parse px values from shadow string and convert to em
+    // Example: "0 2px 4px rgba(0,0,0,0.5)" -> "0 0.04em 0.08em rgba(0,0,0,0.5)"
+    const shadowWithEm = shadow.replace(/(\d+\.?\d*)px/g, (match, px) => {
+      const emValue = parseFloat(px) / baseFontSize;
+      return `${emValue.toFixed(4)}em`;
+    });
+    
+    return shadowWithEm;
+  }, [overlay.styling?.font_size, overlay.styling?.text_shadow]);
+
   // Calculate scaled styling properties using percentage-based font size and em units
   const scaledStyling = useMemo(() => {
     const styling = overlay.styling || {};
     
     return {
-      // Font size calculated from container height - fully responsive to any screen size
-      fontSize: `${responsiveFontSize}px`,
+      // Font size as percentage of container height - NO PIXELS!
+      // This makes text scale perfectly with video/template size on any screen
+      fontSize: `${fontSizePercent}%`,
       fontFamily: styling.font_family || 'Playfair Display',
       fontWeight: styling.font_weight || 'bold',
       color: styling.color || '#ffffff',
@@ -190,13 +210,14 @@ export default function ResponsiveTextOverlay({
       letterSpacing: `${letterSpacingEm}em`,
       // Line height is already a ratio - perfect for responsive design
       lineHeight: styling.line_height || 1.2,
-      textShadow: styling.text_shadow || '0 2px 4px rgba(0,0,0,0.5)',
+      // Text shadow in em units - scales with font size automatically
+      textShadow: textShadowEm,
       // Stroke width in em units - scales with font size automatically
       WebkitTextStroke: styling.stroke?.enabled 
         ? `${strokeWidthEm}em ${styling.stroke.color || '#000000'}` 
         : 'none'
     };
-  }, [overlay.styling, responsiveFontSize, letterSpacingEm, strokeWidthEm]);
+  }, [overlay.styling, fontSizePercent, letterSpacingEm, strokeWidthEm, textShadowEm]);
 
   // Calculate text box dimensions (percentage of container)
   const textBoxStyle = useMemo(() => {
