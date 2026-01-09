@@ -25,6 +25,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 telegram_service = TelegramCDNService()
 
+async def get_fresh_border_url(border: dict) -> str:
+    """
+    Get fresh download URL for border from Telegram using file_id.
+    This ensures the URL is valid even if stored cdn_url is stale.
+    """
+    telegram_file_id = border.get("telegram_file_id")
+    if telegram_file_id:
+        # Get fresh URL from Telegram API
+        fresh_url = await telegram_service.get_file_url(telegram_file_id)
+        if fresh_url:
+            logger.info(f"[FRESH_URL] Got fresh URL for border {border.get('id')}")
+            return fresh_url
+    
+    # Fallback to stored cdn_url if telegram_file_id is not available
+    logger.warning(f"[FRESH_URL] Using stored cdn_url as fallback for border {border.get('id')}")
+    return border.get("cdn_url", "")
+
 # ==================== SECTION CONFIGURATION ====================
 
 @router.get("/weddings/{wedding_id}/sections")
