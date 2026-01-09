@@ -15,7 +15,7 @@ from datetime import datetime
 import time
 
 # Get backend URL from environment (using the configured URL)
-BACKEND_URL = "https://auth-cors-fix-1.preview.emergentagent.com"
+BACKEND_URL = "https://telegram-viewer-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def log_test(message, status="INFO"):
