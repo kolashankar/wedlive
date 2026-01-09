@@ -65,7 +65,8 @@ def telegram_url_to_proxy(telegram_url: Optional[str]) -> Optional[str]:
                      https://api.telegram.org/file/bot<TOKEN>/<file_path>
     
     Returns:
-        Proxied URL like /api/media/proxy?url=<encoded_url>
+        Proxied URL like /api/media/proxy?url=<encoded_url> (relative)
+        OR https://backend.com/api/media/proxy?url=<encoded_url> (absolute if BACKEND_URL set)
         or None if input is None/invalid
     
     Examples:
@@ -84,13 +85,21 @@ def telegram_url_to_proxy(telegram_url: Optional[str]) -> Optional[str]:
     from urllib.parse import quote
     encoded_url = quote(telegram_url, safe='')
     
-    # Return proxy URL using the generic media proxy endpoint
-    # This endpoint handles CORS and streams the file from Telegram
-    proxy_url = f"/api/media/proxy?url={encoded_url}"
+    # Build the proxy path
+    proxy_path = f"/api/media/proxy?url={encoded_url}"
     
-    logger.info(f"Converted Telegram URL to proxy: {telegram_url[:50]}... -> {proxy_url[:80]}...")
+    # Get backend URL from environment
+    backend_url = get_backend_url()
     
-    return proxy_url
+    # If BACKEND_URL is set and not localhost, use absolute URL for cross-origin scenarios
+    if backend_url and "localhost" not in backend_url and "127.0.0.1" not in backend_url:
+        absolute_url = f"{backend_url}{proxy_path}"
+        logger.info(f"Converted Telegram URL to absolute proxy: {telegram_url[:50]}... -> {absolute_url[:80]}...")
+        return absolute_url
+    
+    # For local development, use relative URL
+    logger.info(f"Converted Telegram URL to relative proxy: {telegram_url[:50]}... -> {proxy_path[:80]}...")
+    return proxy_path
 
 def extract_file_path_from_telegram_url(telegram_url: Optional[str]) -> Optional[str]:
     """
