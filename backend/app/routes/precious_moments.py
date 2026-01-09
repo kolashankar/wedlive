@@ -253,9 +253,12 @@ async def upload_precious_moment_photo(
             # Single mask border - use same mask for all slots
             logger.info(f"[PRECIOUS_UPLOAD] Applying auto-crop with single mask")
             
+            # Get fresh border URL from Telegram
+            border_url = await get_fresh_border_url(border)
+            
             cropped_path, message = await auto_crop_service.apply_crop_with_border(
                 photo_url=original_url,
-                border_url=border["cdn_url"],
+                border_url=border_url,
                 mask_data=border["mask"],
                 mirror=False
             )
