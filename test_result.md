@@ -59,6 +59,18 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED: API endpoint working correctly. Returns video template data with text_overlays containing proper wedding data: text_value='Radha & Rajagopal', position={x:960, y:336}, timing={start_time:0, end_time:8.5}. Backend integration is functioning as expected. Fixed missing setuptools dependency that was causing backend startup failure."
 
+  - task: "Test authentication endpoints (register, login, me)"
+    implemented: true
+    working: true
+    file: "/app/backend/app/routes/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ AUTHENTICATION ENDPOINTS FULLY FUNCTIONAL: Comprehensive testing of all authentication endpoints completed successfully. TESTED ENDPOINTS: 1) POST /api/auth/register - Creates new users with proper validation, returns 201 status, generates valid JWT access tokens, stores user data correctly with UUID, email, full_name, role, subscription_plan, storage limits. 2) POST /api/auth/login - Authenticates existing users, returns 200 status, validates credentials properly, generates fresh JWT tokens, returns complete user profile data. 3) GET /api/auth/me - Retrieves current user information using Bearer token authentication, returns 200 status, validates JWT tokens correctly, rejects invalid tokens with 401 status. SECURITY VALIDATION: Invalid token handling working correctly (401 responses), password hashing implemented, JWT token generation and validation functional. DATA INTEGRITY: User registration creates proper database records, login returns matching user data, user info endpoint provides consistent profile data. MINOR ISSUE: CORS headers missing from responses (infrastructure/deployment issue, not functional API problem). All core authentication functionality working perfectly for user registration, login, and profile access."
+
 frontend:
   - task: "Fix text wrapping, alignment, and mobile responsiveness"
     implemented: true
