@@ -22,6 +22,8 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [renderedVideoSize, setRenderedVideoSize] = useState({ width: 0, height: 0, offsetX: 0, offsetY: 0 });
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
 
