@@ -217,6 +217,7 @@ export default function ResponsiveTextOverlay({
       className={`absolute ${className}`}
       style={{
         // Position relative to rendered video (percentage-based)
+        // The position represents the CENTER of the text box
         left: `${positionPercent.x}%`,
         top: `${positionPercent.y}%`,
         transform: `translate(-50%, -50%) ${animState.transform}`,
@@ -226,29 +227,15 @@ export default function ResponsiveTextOverlay({
         // Text box dimensions (percentage of video size)
         ...textBoxStyle,
         
-        // Scaled text styling
-        ...scaledStyling,
-        
-        // Text wrapping and overflow control
-        whiteSpace: 'normal',
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        wordBreak: 'normal',
-        hyphens: 'auto',
-        overflow: 'hidden',
-        
-        // Layout properties
-        display: 'block',
-        boxSizing: 'border-box',
-        margin: 0,
-        padding: 0,
-        
-        // Vertical alignment for multi-line text
+        // Layout properties - use flex for alignment
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: styling.text_align === 'left' ? 'flex-start' : 
                    styling.text_align === 'right' ? 'flex-end' : 'center',
+        boxSizing: 'border-box',
+        margin: 0,
+        padding: 0,
         
         // Performance optimization
         willChange: 'opacity, transform',
@@ -257,7 +244,18 @@ export default function ResponsiveTextOverlay({
     >
       <span style={{ 
         display: 'block',
-        width: '100%'
+        width: '100%',
+        
+        // Scaled text styling - apply to the text span
+        ...scaledStyling,
+        
+        // Text wrapping and overflow control
+        whiteSpace: 'normal',
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        wordBreak: 'normal',
+        hyphens: 'auto',
+        overflow: 'hidden'
       }}>
         {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
       </span>
