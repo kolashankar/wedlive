@@ -326,15 +326,16 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
         />
         
         {/* Text Overlays - Positioned relative to ACTUAL rendered video, not container */}
-        {sortedOverlays.length > 0 && renderedVideoSize.width > 0 && (
+        {sortedOverlays.length > 0 && (renderedVideoSize.width > 0 || (containerSize.width > 0 && containerSize.height > 0)) && (
           <div 
             className="absolute pointer-events-none" 
             style={{ 
               // Position overlay container to match the rendered video exactly
-              left: `${renderedVideoSize.offsetX}px`,
-              top: `${renderedVideoSize.offsetY}px`,
-              width: `${renderedVideoSize.width}px`,
-              height: `${renderedVideoSize.height}px`,
+              // Fallback to container size if video dimensions not yet available
+              left: renderedVideoSize.width > 0 ? `${renderedVideoSize.offsetX}px` : '0px',
+              top: renderedVideoSize.width > 0 ? `${renderedVideoSize.offsetY}px` : '0px',
+              width: renderedVideoSize.width > 0 ? `${renderedVideoSize.width}px` : '100%',
+              height: renderedVideoSize.width > 0 ? `${renderedVideoSize.height}px` : '100%',
               position: 'absolute',
               zIndex: 10,
               // Debug: Uncomment to see overlay container
