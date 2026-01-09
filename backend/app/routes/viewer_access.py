@@ -297,6 +297,13 @@ async def get_wedding_complete_view(wedding_id: str):
                 "text_overlays": populated_overlays
             }
     
+    # Clean invalid placeholder URLs from theme_settings before returning
+    # This prevents 404 errors from /file_XXX.png placeholder images
+    theme_settings = wedding.get("theme_settings")
+    if theme_settings:
+        theme_settings = clean_invalid_telegram_urls(theme_settings)
+        logger.info(f"[VIEWER] Cleaned theme_settings for wedding {wedding_id}")
+    
     return {
         "wedding": {
             "id": wedding["id"],
@@ -339,7 +346,7 @@ async def get_wedding_complete_view(wedding_id: str):
             "available": wedding.get("recording_url") is not None and not is_locked,
             "url": wedding.get("recording_url") if not is_locked else None
         },
-        "theme_settings": wedding.get("theme_settings"),
+        "theme_settings": theme_settings,
         "video_template": template_data,
         "branding": branding_data,
         "access_restricted": is_locked,
