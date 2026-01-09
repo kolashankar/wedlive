@@ -346,11 +346,22 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
             {sortedOverlays.map((overlay, index) => {
               const animStyle = getAnimationStyle(overlay);
               
+              // Use rendered video size if available, otherwise use container size as fallback
+              const effectiveContainerSize = renderedVideoSize.width > 0 
+                ? renderedVideoSize 
+                : { 
+                    width: containerSize.width, 
+                    height: containerSize.height, 
+                    offsetX: 0, 
+                    offsetY: 0 
+                  };
+              
               console.log('[VideoTemplatePlayer] Rendering overlay component:', {
                 overlayId: overlay.id,
                 text: overlay.text_value,
                 animStyle,
-                containerSize: renderedVideoSize
+                containerSize: effectiveContainerSize,
+                usingFallback: renderedVideoSize.width === 0
               });
               
               return (
@@ -359,7 +370,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
                   overlay={overlay}
                   currentTime={currentTime}
                   duration={duration}
-                  containerSize={renderedVideoSize}
+                  containerSize={effectiveContainerSize}
                   referenceResolution={referenceResolution}
                   animationState={animStyle}
                 />
