@@ -312,7 +312,11 @@ export default function ResponsiveTextOverlay({
         // Ensure text is readable
         textRendering: 'optimizeLegibility',
         WebkitFontSmoothing: 'antialiased',
-        MozOsxFontSmoothing: 'grayscale'
+        MozOsxFontSmoothing: 'grayscale',
+        
+        // CRITICAL: Set line-height on span to ensure proper vertical spacing
+        // This works with our percentage-based font sizing
+        boxSizing: 'border-box'
       }}>
         {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
       </span>
