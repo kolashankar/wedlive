@@ -95,8 +95,10 @@ async def update_wedding_backgrounds(
                         detail=f"Background image {backgrounds.layout_page_background_id} not found"
                     )
                 current_backgrounds["layout_page_background_id"] = backgrounds.layout_page_background_id
-                current_backgrounds["layout_page_background_url"] = bg.get("cdn_url", "")
-                logger.info(f"[UPDATE_BACKGROUNDS] Layout background set: {bg.get('name')} -> {bg.get('cdn_url')}")
+                # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URL instead of stale cdn_url
+                proxy_url = telegram_file_id_to_proxy_url(bg.get("telegram_file_id"))
+                current_backgrounds["layout_page_background_url"] = proxy_url or bg.get("cdn_url", "")
+                logger.info(f"[UPDATE_BACKGROUNDS] Layout background set: {bg.get('name')} -> {proxy_url or bg.get('cdn_url')}")
             else:
                 current_backgrounds["layout_page_background_id"] = None
                 current_backgrounds["layout_page_background_url"] = None
@@ -116,8 +118,10 @@ async def update_wedding_backgrounds(
                         detail=f"Background image {backgrounds.stream_page_background_id} not found"
                     )
                 current_backgrounds["stream_page_background_id"] = backgrounds.stream_page_background_id
-                current_backgrounds["stream_page_background_url"] = bg.get("cdn_url", "")
-                logger.info(f"[UPDATE_BACKGROUNDS] Stream background set: {bg.get('name')} -> {bg.get('cdn_url')}")
+                # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URL instead of stale cdn_url
+                proxy_url = telegram_file_id_to_proxy_url(bg.get("telegram_file_id"))
+                current_backgrounds["stream_page_background_url"] = proxy_url or bg.get("cdn_url", "")
+                logger.info(f"[UPDATE_BACKGROUNDS] Stream background set: {bg.get('name')} -> {proxy_url or bg.get('cdn_url')}")
             else:
                 current_backgrounds["stream_page_background_id"] = None
                 current_backgrounds["stream_page_background_url"] = None
