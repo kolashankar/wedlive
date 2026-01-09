@@ -32,11 +32,14 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
   const loadTemplateAssignment = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       // Get the assigned template with populated overlays
       const response = await api.get(`/api/weddings/${weddingId}/template-assignment`);
       
       if (response.data.assignment_id && response.data.template) {
         console.log('[TemplateVideoPlayer] Template assignment loaded:', response.data);
+        console.log('[TemplateVideoPlayer] Video URL:', response.data.template.video_data?.original_url);
+        console.log('[TemplateVideoPlayer] Overlays count:', response.data.populated_overlays?.length || 0);
         setTemplateData(response.data);
       } else {
         console.log('[TemplateVideoPlayer] No template assigned to this wedding');
