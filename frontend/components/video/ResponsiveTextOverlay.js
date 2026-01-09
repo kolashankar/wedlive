@@ -210,12 +210,15 @@ export default function ResponsiveTextOverlay({
     const width = dimensions.width ? `${dimensions.width}%` : 'auto';
     const height = dimensions.height ? `${dimensions.height}%` : 'auto';
     const maxWidth = dimensions.width ? `${dimensions.width}%` : '90%';
+    const minWidth = dimensions.width ? `${Math.max(10, dimensions.width * 0.5)}%` : 'auto'; // At least 10% or half of configured width
     
     console.log('[ResponsiveTextOverlay] Text box dimensions:', {
       overlayId: overlay.id,
+      text: overlay.text_value || overlay.placeholder_text,
       width,
       height,
       maxWidth,
+      minWidth,
       dimensionsConfig: dimensions
     });
     
@@ -223,9 +226,10 @@ export default function ResponsiveTextOverlay({
       width,
       height,
       maxWidth,
+      minWidth,
       minHeight: height !== 'auto' ? height : undefined
     };
-  }, [dimensions, overlay.id]);
+  }, [dimensions, overlay.id, overlay.text_value, overlay.placeholder_text]);
 
   if (!isVisible) return null;
 
