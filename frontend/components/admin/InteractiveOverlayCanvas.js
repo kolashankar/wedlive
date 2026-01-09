@@ -599,11 +599,13 @@ export default function InteractiveOverlayCanvas({
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Filter visible overlays at current time
+    // Filter visible overlays at current time - with floating-point tolerance
     const visibleOverlays = overlays.filter(overlay => {
       const startTime = overlay.timing?.start_time || 0;
       const endTime = overlay.timing?.end_time || duration;
-      return currentTime >= startTime && currentTime <= endTime;
+      // Add small epsilon to handle floating-point precision issues
+      const epsilon = 0.05;
+      return currentTime >= (startTime - epsilon) && currentTime <= (endTime + epsilon);
     });
 
     // Sort by layer index
