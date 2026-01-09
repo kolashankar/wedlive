@@ -165,10 +165,24 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
         loop
         muted
         playsInline
+        crossOrigin="anonymous"
         className="w-full h-full object-contain"
         style={{
           backgroundColor: 'transparent',
           mixBlendMode: 'normal',
+        }}
+        onError={(e) => {
+          console.error('[TemplateVideoPlayer] Video element error:', {
+            videoUrl,
+            error: e.currentTarget.error,
+            networkState: e.currentTarget.networkState
+          });
+        }}
+        onLoadStart={() => {
+          console.log('[TemplateVideoPlayer] Video load started:', videoUrl);
+        }}
+        onCanPlay={() => {
+          console.log('[TemplateVideoPlayer] Video can play');
         }}
       />
 
