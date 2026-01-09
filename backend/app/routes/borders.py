@@ -473,11 +473,14 @@ async def update_border_mask(
         
         logger.info(f"[MASK_UPDATE] Updated mask for border: {border_id}")
         
+        # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URL
+        proxy_url = telegram_file_id_to_proxy_url(updated_border.get("telegram_file_id"))
+        
         from app.models_sections import MaskSlot
         return BorderResponse(
             id=updated_border["id"],
             name=updated_border["name"],
-            cdn_url=updated_border["cdn_url"],
+            cdn_url=proxy_url or updated_border["cdn_url"],  # Fallback to stored URL if proxy fails
             mask_data=MaskData(**updated_border.get("mask", {})),
             mask_slots=[MaskSlot(**slot) for slot in updated_border.get("mask_slots", [])],
             width=updated_border["width"],
