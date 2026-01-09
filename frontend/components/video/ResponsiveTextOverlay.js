@@ -179,12 +179,25 @@ export default function ResponsiveTextOverlay({
 
   // Calculate text box dimensions (percentage of container)
   const textBoxStyle = useMemo(() => {
+    const width = dimensions.width ? `${dimensions.width}%` : 'auto';
+    const height = dimensions.height ? `${dimensions.height}%` : 'auto';
+    const maxWidth = dimensions.width ? `${dimensions.width}%` : '90%';
+    
+    console.log('[ResponsiveTextOverlay] Text box dimensions:', {
+      overlayId: overlay.id,
+      width,
+      height,
+      maxWidth,
+      dimensionsConfig: dimensions
+    });
+    
     return {
-      width: dimensions.width ? `${dimensions.width}%` : 'auto',
-      height: dimensions.height ? `${dimensions.height}%` : 'auto',
-      maxWidth: dimensions.width ? `${dimensions.width}%` : '90%'
+      width,
+      height,
+      maxWidth,
+      minHeight: height !== 'auto' ? height : undefined
     };
-  }, [dimensions]);
+  }, [dimensions, overlay.id]);
 
   if (!isVisible) return null;
 
