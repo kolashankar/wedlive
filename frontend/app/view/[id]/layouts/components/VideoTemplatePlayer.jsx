@@ -169,16 +169,20 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     const isInTimeRange = currentTime >= startTime && currentTime <= endTime;
     const isActive = overlay.is_active !== false;
     
-    console.log('[VideoTemplatePlayer] Overlay visibility check:', {
-      overlayId: overlay.id,
-      text: overlay.text_value || overlay.placeholder_text,
-      currentTime,
-      startTime,
-      endTime,
-      isInTimeRange,
-      isActive,
-      visible: isInTimeRange && isActive
-    });
+    // Enhanced logging to debug timing issues
+    if (currentTime > 5 && currentTime < 9) {
+      console.log('[VideoTemplatePlayer] Overlay visibility check (5-9s range):', {
+        overlayId: overlay.id,
+        text: overlay.text_value || overlay.placeholder_text,
+        currentTime: currentTime.toFixed(2),
+        startTime: startTime.toFixed(2),
+        endTime: endTime.toFixed(2),
+        isInTimeRange,
+        isActive,
+        visible: isInTimeRange && isActive,
+        condition: `${currentTime.toFixed(2)} >= ${startTime.toFixed(2)} && ${currentTime.toFixed(2)} <= ${endTime.toFixed(2)}`
+      });
+    }
     
     return isInTimeRange && isActive;
   });
