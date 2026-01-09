@@ -41,7 +41,7 @@ def check_cors_headers(response):
     
     if missing_headers:
         log_test(f"  ⚠️ Missing CORS headers: {missing_headers}", "WARNING")
-        return False
+        return False, False
     else:
         log_test("  ✅ All required CORS headers present")
         return True
@@ -249,7 +249,7 @@ def test_me_endpoint(login_credentials):
     
     if not login_credentials:
         log_test("❌ No login credentials available", "ERROR")
-        return False
+        return False, False
     
     url = f"{API_BASE}/auth/me"
     headers = {
@@ -271,7 +271,7 @@ def test_me_endpoint(login_credentials):
         if response.status_code != 200:
             log_test(f"❌ Expected status 200, got {response.status_code}", "ERROR")
             log_test(f"Response body: {response.text}", "ERROR")
-            return False
+            return False, False
         
         log_test("✅ Correct status code 200 (OK)")
         
@@ -280,7 +280,7 @@ def test_me_endpoint(login_credentials):
             user_data = response.json()
         except json.JSONDecodeError as e:
             log_test(f"❌ Failed to parse JSON response: {str(e)}", "ERROR")
-            return False
+            return False, False
         
         # Verify user data structure
         user_required_fields = ["id", "email", "full_name", "role"]
@@ -292,16 +292,16 @@ def test_me_endpoint(login_credentials):
         
         if missing_fields:
             log_test(f"❌ Missing required user fields: {missing_fields}", "ERROR")
-            return False
+            return False, False
         
         # Verify user data matches login credentials
         if user_data.get("email") != login_credentials["email"]:
             log_test(f"❌ Email mismatch: expected {login_credentials['email']}, got {user_data.get('email')}", "ERROR")
-            return False
+            return False, False
         
         if user_data.get("id") != login_credentials["user"]["id"]:
             log_test(f"❌ User ID mismatch: expected {login_credentials['user']['id']}, got {user_data.get('id')}", "ERROR")
-            return False
+            return False, False
         
         log_test(f"✅ User info correct: {user_data.get('email')}")
         log_test(f"✅ User ID: {user_data.get('id')}")
@@ -319,10 +319,10 @@ def test_me_endpoint(login_credentials):
         
     except requests.exceptions.RequestException as e:
         log_test(f"❌ Request failed: {str(e)}", "ERROR")
-        return False
+        return False, False
     except Exception as e:
         log_test(f"❌ Unexpected error: {str(e)}", "ERROR")
-        return False
+        return False, False
 
 def test_invalid_token():
     """Test /api/auth/me with invalid token"""
@@ -346,14 +346,14 @@ def test_invalid_token():
             return True
         else:
             log_test(f"❌ Expected 401 for invalid token, got {response.status_code}", "ERROR")
-            return False
+            return False, False
         
     except requests.exceptions.RequestException as e:
         log_test(f"❌ Request failed: {str(e)}", "ERROR")
-        return False
+        return False, False
     except Exception as e:
         log_test(f"❌ Unexpected error: {str(e)}", "ERROR")
-        return False
+        return False, False
 
 def main():
     """Run all authentication endpoint tests"""
