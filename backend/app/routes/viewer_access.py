@@ -10,9 +10,38 @@ from typing import Optional, List
 from datetime import datetime
 from app.services.wedding_data_mapper import WeddingDataMapper
 from app.utils.telegram_url_proxy import telegram_url_to_proxy, telegram_file_id_to_proxy_url
+import re
+import logging
 
 router = APIRouter()
 wedding_mapper = WeddingDataMapper()
+logger = logging.getLogger(__name__)
+
+def clean_invalid_telegram_urls(data):
+    """
+    Recursively clean invalid placeholder Telegram URLs from data structure.
+    Replaces URLs containing /file_XXX.png pattern (placeholder images) with None.
+    These are NOT valid Telegram file_ids and will always return 404.
+    """
+    if isinstance(data, dict):
+        cleaned = {}
+        for key, value in data.items():
+            if isinstance(value, str) and "api.telegram.org" in value:
+                # Check if this is a placeholder URL pattern
+                if re.search(r'/file_\d+\.(png|jpg|jpeg|webp)', value):
+                    logger.warning(f"Removing invalid placeholder URL from {key}: {value}")
+                    cleaned[key] = None  # Replace with None instead of keeping invalid URL
+                else:
+                    cleaned[key] = value
+            elif isinstance(value, (dict, list)):
+                cleaned[key] = clean_invalid_telegram_urls(value)
+            else:
+                cleaned[key] = value
+        return cleaned
+    elif isinstance(data, list):
+        return [clean_invalid_telegram_urls(item) for item in data]
+    else:
+        return data
 
 class WeddingAccessRequest(BaseModel):
     wedding_code: str  # 6-digit code
