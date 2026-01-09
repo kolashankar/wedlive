@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-Backend Authentication API Testing
-Tests the authentication endpoints as requested:
-1. POST /api/auth/register - Create new user
-2. POST /api/auth/login - Login user  
-3. GET /api/auth/me - Get current user info
-4. Verify CORS headers are present
+Backend Video Template Overlay Rendering Testing
+Tests the video template overlay rendering fix for wedding ID: b75e23c9-ca5e-4d10-bf20-065169d1a01e
+
+WHAT TO TEST:
+1. GET /api/viewer/wedding/{wedding_id}/all - Verify video template data structure
+2. Check overlay data structure and content
+3. Verify text_value population with wedding data
+4. Check positioning, timing, and styling data
+5. Validate reference resolution and proxy URLs
 """
 
 import requests
@@ -17,6 +20,9 @@ import time
 # Get backend URL from environment (using the configured URL)
 BACKEND_URL = "https://overlay-fix-3.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
+
+# Wedding ID to test
+WEDDING_ID = "b75e23c9-ca5e-4d10-bf20-065169d1a01e"
 
 def log_test(message, status="INFO"):
     """Log test messages with timestamp"""
