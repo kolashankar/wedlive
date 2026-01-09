@@ -50,6 +50,7 @@ def convert_template_urls_to_proxy(template: dict) -> dict:
         Template with proxied URLs
     """
     template_copy = template.copy()
+    template_id = template_copy.get("id", "unknown")
     
     # Convert video URL
     if "video_data" in template_copy:
@@ -57,17 +58,27 @@ def convert_template_urls_to_proxy(template: dict) -> dict:
         video_file_id = video_data.get("telegram_file_id")
         if video_file_id:
             video_data["original_url"] = telegram_file_id_to_proxy_url(video_file_id, "videos")
+            logger.debug(f"[TEMPLATE_PROXY] {template_id}: Converted video file_id to proxy URL")
         elif video_data.get("original_url"):
             video_data["original_url"] = telegram_url_to_proxy(video_data["original_url"])
+            logger.debug(f"[TEMPLATE_PROXY] {template_id}: Converted video URL to proxy URL")
     
     # Convert thumbnail URL
     if "preview_thumbnail" in template_copy and template_copy["preview_thumbnail"]:
         thumb_data = template_copy["preview_thumbnail"]
         thumb_file_id = thumb_data.get("telegram_file_id")
         if thumb_file_id:
-            thumb_data["url"] = telegram_file_id_to_proxy_url(thumb_file_id, "photos")
+            proxy_url = telegram_file_id_to_proxy_url(thumb_file_id, "photos")
+            thumb_data["url"] = proxy_url
+            logger.info(f"[TEMPLATE_PROXY] {template_id}: Converted thumbnail file_id to proxy URL: {proxy_url}")
         elif thumb_data.get("url"):
-            thumb_data["url"] = telegram_url_to_proxy(thumb_data["url"])
+            proxy_url = telegram_url_to_proxy(thumb_data["url"])
+            thumb_data["url"] = proxy_url
+            logger.info(f"[TEMPLATE_PROXY] {template_id}: Converted thumbnail URL to proxy URL: {proxy_url}")
+        else:
+            logger.warning(f"[TEMPLATE_PROXY] {template_id}: Thumbnail data exists but has no url or file_id: {thumb_data}")
+    else:
+        logger.warning(f"[TEMPLATE_PROXY] {template_id}: No preview_thumbnail data found")
     
     return template_copy
 
