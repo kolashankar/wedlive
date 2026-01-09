@@ -435,7 +435,6 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           loop
           playsInline
           preload="auto"
-          crossOrigin="anonymous"
         />
         
         {/* Text Overlays Container - Positioned to match rendered video */}
