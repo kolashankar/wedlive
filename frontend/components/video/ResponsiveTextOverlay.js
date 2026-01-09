@@ -369,22 +369,28 @@ export default function ResponsiveTextOverlay({
         // Scaled text styling - apply to the text span
         ...scaledStyling,
         
-        // Text wrapping and overflow control
-        whiteSpace: 'normal',
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        wordBreak: 'normal',
-        hyphens: 'auto',
-        overflow: 'visible', // Changed from 'hidden' to 'visible' to ensure text shows
+        // Enhanced text wrapping and overflow control
+        whiteSpace: 'pre-wrap', // Preserve line breaks and wrap text
+        wordWrap: 'break-word', // Break long words if needed
+        overflowWrap: 'break-word', // Modern alternative to word-wrap
+        wordBreak: 'normal', // Break at normal word boundaries
+        hyphens: 'auto', // Auto-hyphenate long words
+        overflow: 'visible', // Ensure text shows even if it slightly exceeds bounds
         
-        // Ensure text is readable
+        // Ensure text is readable with proper rendering
         textRendering: 'optimizeLegibility',
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale',
         
-        // CRITICAL: Set line-height on span to ensure proper vertical spacing
-        // This works with our percentage-based font sizing
-        boxSizing: 'border-box'
+        // Box sizing to include padding in calculations
+        boxSizing: 'border-box',
+        
+        // Add subtle text overflow handling
+        textOverflow: 'clip', // Don't use ellipsis - let text wrap instead
+        
+        // Ensure consistent line box sizing
+        WebkitBoxDecorationBreak: 'clone',
+        boxDecorationBreak: 'clone'
       }}>
         {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
       </span>
