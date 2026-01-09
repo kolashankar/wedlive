@@ -55,13 +55,23 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
     }
   };
 
-  // Monitor video dimensions
+  // Monitor video dimensions and time updates
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleLoadedMetadata = () => {
       setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+      setDuration(video.duration);
+      console.log('[TemplateVideoPlayer] Video metadata loaded:', {
+        width: video.videoWidth,
+        height: video.videoHeight,
+        duration: video.duration
+      });
+    };
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime);
     };
 
     const handleError = (e) => {
@@ -79,10 +89,12 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('error', handleError);
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('error', handleError);
     };
   }, [templateData]);
