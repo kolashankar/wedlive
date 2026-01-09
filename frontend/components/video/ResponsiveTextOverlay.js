@@ -70,7 +70,7 @@ export default function ResponsiveTextOverlay({
     return baseFontSize > 0 ? baseStrokeWidth / baseFontSize : 0.05;
   }, [overlay.styling?.font_size, overlay.styling?.stroke?.width]);
 
-  // Check if overlay should be visible at current time
+  // Check if overlay should be visible at current time with precise frame-sync
   const isVisible = useMemo(() => {
     const startTime = overlay.timing?.start_time ?? 0;
     const endTime = overlay.timing?.end_time ?? duration;
@@ -81,29 +81,21 @@ export default function ResponsiveTextOverlay({
       return true;
     }
     
-    // Add small epsilon (0.05 seconds) to handle floating-point precision issues
-    // This ensures overlays show reliably at their configured times
-    const epsilon = 0.05;
+    // Small epsilon (0.016 seconds ~= 1 frame at 60fps) for floating-point precision
+    // This ensures overlays appear/disappear at exact timestamps
+    const epsilon = 0.016;
     const visible = currentTime >= (startTime - epsilon) && currentTime <= (endTime + epsilon);
     
     if (!visible) {
       console.log('[ResponsiveTextOverlay] Overlay hidden - timing check failed:', {
         overlayId: overlay.id,
-        text: overlay.text_value || overlay.placeholder_text,
+        text: (overlay.text_value || overlay.placeholder_text || '').substring(0, 30),
         currentTime: currentTime.toFixed(3),
         startTime: startTime.toFixed(3),
         endTime: endTime.toFixed(3),
         duration: duration.toFixed(3),
         epsilon,
         reason: currentTime < (startTime - epsilon) ? 'Before start time' : 'After end time'
-      });
-    } else {
-      console.log('[ResponsiveTextOverlay] Overlay visible:', {
-        overlayId: overlay.id,
-        text: overlay.text_value || overlay.placeholder_text,
-        currentTime: currentTime.toFixed(3),
-        startTime: startTime.toFixed(3),
-        endTime
       });
     }
     
