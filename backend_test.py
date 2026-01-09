@@ -394,7 +394,7 @@ def main():
     log_test("TEST 3: GET /api/auth/me")
     if login_success:
         me_cors = test_me_endpoint(login_credentials)
-        me_success = me_cors is not False
+        me_success = me_cors is not False  # me_cors is True/False for CORS, but function returns False only on failure
     else:
         log_test("❌ Skipping me test - login failed", "ERROR")
         me_success = False
