@@ -55,10 +55,32 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
     }
   };
 
-  // Monitor video dimensions and time updates
+  // Monitor video dimensions and time updates with frame-perfect sync
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    let animationFrameId = null;
+    
+    // Use requestAnimationFrame for smooth, frame-synced overlay updates
+    const updateTimeFromVideoFrame = () => {
+      if (video && !video.paused && !video.ended) {
+        setCurrentTime(video.currentTime);
+        animationFrameId = requestAnimationFrame(updateTimeFromVideoFrame);
+      }
+    };
+
+    const handlePlay = () => {
+      animationFrameId = requestAnimationFrame(updateTimeFromVideoFrame);
+    };
+
+    const handlePause = () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      setCurrentTime(video.currentTime);
+    };
 
     const handleLoadedMetadata = () => {
       setVideoSize({ width: video.videoWidth, height: video.videoHeight });
@@ -71,7 +93,10 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
     };
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
+      // Fallback time update for when video is paused or seeking
+      if (video.paused || video.ended) {
+        setCurrentTime(video.currentTime);
+      }
     };
 
     const handleError = (e) => {
@@ -88,11 +113,23 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
       setError('Video failed to load. The video file may be unavailable or the URL is invalid.');
     };
 
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('error', handleError);
 
+    // Start frame tracking if video is already playing
+    if (!video.paused && !video.ended) {
+      animationFrameId = requestAnimationFrame(updateTimeFromVideoFrame);
+    }
+
     return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('error', handleError);
