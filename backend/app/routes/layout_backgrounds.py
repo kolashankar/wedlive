@@ -80,7 +80,7 @@ async def update_wedding_backgrounds(
                     )
                 current_backgrounds["layout_page_background_id"] = backgrounds.layout_page_background_id
                 # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URL instead of stale cdn_url
-                proxy_url = telegram_file_id_to_proxy_url(bg.get("telegram_file_id"))
+                proxy_url = telegram_file_id_to_proxy_url(bg.get("telegram_file_id"), media_type="documents")
                 current_backgrounds["layout_page_background_url"] = proxy_url or bg.get("cdn_url", "")
                 logger.info(f"[UPDATE_BACKGROUNDS] Layout background set: {bg.get('name')} -> {proxy_url or bg.get('cdn_url')}")
             else:
