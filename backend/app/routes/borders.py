@@ -386,10 +386,14 @@ async def list_backgrounds(
         backgrounds = []
         
         async for background in cursor:
+            # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URL instead of stale cdn_url
+            # This ensures the URL always works even if the stored cdn_url is expired
+            proxy_url = telegram_file_id_to_proxy_url(background.get("telegram_file_id"))
+            
             backgrounds.append(BorderResponse(
                 id=background["id"],
                 name=background["name"],
-                cdn_url=background["cdn_url"],
+                cdn_url=proxy_url or background["cdn_url"],  # Fallback to stored URL if proxy fails
                 telegram_file_id=background["telegram_file_id"],
                 orientation=background.get("orientation", "square"),
                 width=background.get("width", 0),
