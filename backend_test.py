@@ -442,10 +442,13 @@ def main():
     
     if cors_results and all(cors_results):
         log_test("✅ CORS headers PASSED - All endpoints have proper CORS headers")
+        cors_overall = True
     elif cors_results and any(cors_results):
         log_test("⚠️ CORS headers PARTIAL - Some endpoints missing CORS headers")
+        cors_overall = False
     else:
         log_test("❌ CORS headers FAILED - Missing CORS headers")
+        cors_overall = False
     
     # Overall result
     overall_success = register_success and login_success and me_success and invalid_token_success
