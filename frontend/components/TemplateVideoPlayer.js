@@ -213,16 +213,27 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
             zIndex: 10
           }}
         >
-          {overlays.map((overlay, index) => (
-            <ResponsiveTextOverlay
-              key={overlay.id || index}
-              overlay={overlay}
-              currentTime={0} // Auto-play mode - always show
-              duration={999}  // Effectively always visible
-              containerSize={renderedVideoSize}
-              referenceResolution={referenceResolution}
-            />
-          ))}
+          {overlays.map((overlay, index) => {
+            console.log('[TemplateVideoPlayer] Rendering overlay:', {
+              id: overlay.id,
+              text_value: overlay.text_value,
+              position: overlay.position,
+              timing: overlay.timing,
+              currentTime,
+              duration
+            });
+            
+            return (
+              <ResponsiveTextOverlay
+                key={overlay.id || index}
+                overlay={overlay}
+                currentTime={currentTime}
+                duration={duration}
+                containerSize={renderedVideoSize}
+                referenceResolution={referenceResolution}
+              />
+            );
+          })}
         </div>
       )}
     </div>
