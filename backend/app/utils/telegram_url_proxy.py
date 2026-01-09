@@ -26,7 +26,8 @@ def telegram_file_id_to_proxy_url(telegram_file_id: str, media_type: str = "phot
         media_type: Type of media - "photos", "videos", or "documents" (default: "photos")
     
     Returns:
-        Proxied URL: "/api/media/telegram-proxy/{media_type}/{file_id}"
+        Proxied URL: "/api/media/telegram-proxy/{media_type}/{file_id}" (relative)
+        OR "https://backend.com/api/media/telegram-proxy/{media_type}/{file_id}" (absolute if BACKEND_URL set)
     
     Example:
         Input:  "BQACAgUAAyEGAATO7nwaAAORaU_lARiYUfa4-Ql7aimRSPI5FiwAAv4cAALG7oBWmnWGZsd6drE2BA"
@@ -39,9 +40,21 @@ def telegram_file_id_to_proxy_url(telegram_file_id: str, media_type: str = "phot
     if not any(telegram_file_id.startswith(prefix) for prefix in ['AgAC', 'BQAC', 'BAAC', 'CgAC', 'AwAC']):
         logger.warning(f"Unusual file_id format: {telegram_file_id[:20]}...")
     
-    # Use our media proxy endpoint which will call Telegram's getFile API with the file_id
-    # and stream the file with proper CORS headers
-    return f"/api/media/telegram-proxy/{media_type}/{telegram_file_id}"
+    # Build the proxy path
+    proxy_path = f"/api/media/telegram-proxy/{media_type}/{telegram_file_id}"
+    
+    # Get backend URL from environment
+    backend_url = get_backend_url()
+    
+    # If BACKEND_URL is set and not localhost, use absolute URL for cross-origin scenarios
+    # This is critical for production where frontend (Vercel) and backend (Render) are on different domains
+    if backend_url and "localhost" not in backend_url and "127.0.0.1" not in backend_url:
+        absolute_url = f"{backend_url}{proxy_path}"
+        logger.debug(f"Generated absolute proxy URL: {absolute_url[:100]}...")
+        return absolute_url
+    
+    # For local development, use relative URL (same-origin)
+    return proxy_path
 
 def telegram_url_to_proxy(telegram_url: Optional[str]) -> Optional[str]:
     """
