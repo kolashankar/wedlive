@@ -17,12 +17,14 @@ MEDIA_RESPONSE_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
     "Access-Control-Allow-Headers": "*",
+    "Access-Control-Expose-Headers": "*",
     "X-Content-Type-Options": "nosniff"
 }
 
 @router.options("/media/proxy")
-async def media_proxy_options():
-    """Handle CORS preflight for media proxy"""
+@router.options("/media/telegram-proxy/{file_path:path}")
+async def media_proxy_options(file_path: str = None):
+    """Handle CORS preflight for all media proxy endpoints"""
     return Response(
         content=None,
         status_code=200,
@@ -30,6 +32,7 @@ async def media_proxy_options():
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
             "Access-Control-Allow-Headers": "*",
+            "Access-Control-Expose-Headers": "*",
             "Access-Control-Max-Age": "86400"
         }
     )
@@ -81,10 +84,7 @@ async def media_proxy(url: str = None, request: Request = None):
                         headers={
                             "Content-Length": response.headers.get("content-length", "0"),
                             "Accept-Ranges": "bytes",
-                            "Access-Control-Allow-Origin": "*",
-                            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-                            "Access-Control-Allow-Headers": "*",
-                            "Cache-Control": "public, max-age=3600"
+                            **MEDIA_RESPONSE_HEADERS
                         }
                     )
                 else:
@@ -99,11 +99,9 @@ async def media_proxy(url: str = None, request: Request = None):
                 content_type = response.headers.get("content-type", "application/octet-stream")
                 content_length = response.headers.get("content-length")
                 
-                # Prepare response headers
+                # Prepare response headers with CORS
                 response_headers = {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-                    "Access-Control-Allow-Headers": "*",
+                    **MEDIA_RESPONSE_HEADERS,
                     "Accept-Ranges": "bytes",
                 }
                 
@@ -145,8 +143,8 @@ async def media_proxy(url: str = None, request: Request = None):
         logger.error(f"Error in media proxy: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.head("/telegram-proxy/{file_path:path}")
-@router.get("/telegram-proxy/{file_path:path}")
+@router.head("/media/telegram-proxy/{file_path:path}")
+@router.get("/media/telegram-proxy/{file_path:path}")
 async def telegram_proxy(file_path: str, request: Request):
     """
     Proxy endpoint for Telegram files to avoid CORS issues
@@ -155,6 +153,7 @@ async def telegram_proxy(file_path: str, request: Request):
     Expected formats:
     - Direct Telegram file_id: AgACAgUAAyEGAATO7nwaAAMhaTrImX_enn...
     - With photos/ prefix: photos/AgACAgUAAyEGAATO7nwaAAMhaTrImX_enn...
+    - With videos/ prefix: videos/BAACAgUAAyEGAATO7nwaAAPHaVoRGteCoQdEz...
     """
     try:
         method = request.method
@@ -171,11 +170,11 @@ async def telegram_proxy(file_path: str, request: Request):
         else:
             file_id = file_path
         
-        # Remove file extension if present (e.g., .jpg, .png)
+        # Remove file extension if present (e.g., .jpg, .png, .mp4)
         if '.' in file_id and not file_id.count('.') > 2:  # Telegram file_ids may contain dots
             # Only remove extension if it's at the end
             possible_ext = file_id.split('.')[-1].lower()
-            if possible_ext in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+            if possible_ext in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'mov', 'webm']:
                 file_id = file_id.rsplit('.', 1)[0]
         
         logger.info(f"Extracted file_id: {file_id}")
@@ -187,16 +186,15 @@ async def telegram_proxy(file_path: str, request: Request):
         
         # Check if this is a temporary/invalid file reference (file_XX format)
         # These are NOT valid Telegram file_ids and indicate placeholder/template images
-        if file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").isdigit():
+        if file_id.startswith("file_") and file_id.replace("file_", "").replace(".jpg", "").replace(".png", "").replace(".mp4", "").isdigit():
             logger.error(f"Invalid temporary file reference: {file_id}. This is a placeholder, not a valid Telegram file_id.")
             
             # Return a proper 404 with clear error message
-            # This prevents retries and shows proper error on frontend
             raise HTTPException(
                 status_code=404, 
                 detail={
-                    "error": "placeholder_image",
-                    "message": f"The image reference '{file_id}' is a placeholder. Please upload actual photos.",
+                    "error": "placeholder_file",
+                    "message": f"The file reference '{file_id}' is a placeholder. Please upload actual media.",
                     "file_id": file_id,
                     "action": "re_upload_required"
                 }
@@ -204,23 +202,9 @@ async def telegram_proxy(file_path: str, request: Request):
         
         # Validate Telegram file_id format (should start with alphanumeric and contain certain patterns)
         # Telegram file_ids are typically base64-like strings with specific prefixes
-        # AgAC = photos, BQAC = documents, BAAC = videos, CgAC = animations/GIFs
+        # AgAC = photos, BQAC/BAAC = documents/videos, CgAC = animations/GIFs
         if not any(file_id.startswith(prefix) for prefix in ['AgAC', 'BQAC', 'BAAC', 'CgAC', 'AwAC']):
             logger.warning(f"Unusual file_id format (doesn't match Telegram patterns): {file_id}. Attempting anyway...")
-        
-        # Optional: Check if file_id exists in database for better logging
-        try:
-            from app.database import get_db
-            db = get_db()
-            
-            media_record = await db.media.find_one({"file_id": file_id})
-            if media_record:
-                logger.info(f"Verified file_id {file_id} exists in database for wedding {media_record.get('wedding_id')}")
-            else:
-                logger.warning(f"File_id {file_id} not found in database, but will attempt to proxy from Telegram")
-        except Exception as e:
-            logger.error(f"Error checking database for file_id {file_id}: {str(e)}")
-            # Continue anyway - file might still be valid on Telegram
         
         # Get the actual file URL from Telegram using getFile API
         logger.info(f"Calling telegram_service.get_file_url for file_id: {file_id}")
@@ -249,11 +233,19 @@ async def telegram_proxy(file_path: str, request: Request):
                 response = await client.head(file_url)
                 
                 if response.status_code == 200:
+                    # Determine content type
+                    content_type = response.headers.get("content-type", "application/octet-stream")
+                    if 'videos' in file_path or '.mp4' in file_url.lower():
+                        content_type = 'video/mp4'
+                    elif '.png' in file_url.lower():
+                        content_type = 'image/png'
+                    
                     return Response(
                         content=None,
-                        media_type=response.headers.get("content-type", "image/jpeg"),
+                        media_type=content_type,
                         headers={
                             "Content-Length": response.headers.get("content-length", "0"),
+                            "Accept-Ranges": "bytes",
                             **MEDIA_RESPONSE_HEADERS
                         }
                     )
@@ -315,7 +307,7 @@ async def telegram_proxy(file_path: str, request: Request):
                             content_type = 'image/jpeg'  # Default for photos
                         logger.info(f"Overriding content-type from octet-stream to {content_type}")
                     
-                    # Build response headers
+                    # Build response headers with CORS
                     response_headers = {
                         "Content-Length": str(content_length),
                         **MEDIA_RESPONSE_HEADERS
@@ -333,7 +325,7 @@ async def telegram_proxy(file_path: str, request: Request):
                     
                     logger.info(f"Streaming file: {file_id}, size: {content_length}, type: {content_type}, status: {response.status_code}")
                     
-                    # Return buffered response
+                    # Return buffered response with CORS headers
                     return Response(
                         content=response.content,
                         status_code=response.status_code,
@@ -392,15 +384,3 @@ async def telegram_proxy(file_path: str, request: Request):
         # Handle any unexpected errors at the top level
         logger.error(f"Unexpected error in telegram_proxy: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
-
-@router.options("/telegram-proxy/photos/{file_path:path}")
-@router.options("/telegram-proxy/videos/{file_path:path}")
-@router.options("/telegram-proxy/documents/{file_path:path}")
-@router.options("/telegram-proxy/{file_path:path}")
-async def telegram_proxy_options(file_path: str):
-    """Handle CORS preflight requests for all telegram proxy paths"""
-    return Response(
-        content=None,
-        status_code=200,
-        headers={**MEDIA_RESPONSE_HEADERS}
-    )
