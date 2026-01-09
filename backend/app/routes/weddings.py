@@ -11,6 +11,7 @@ from app.auth import get_current_user, get_current_creator, get_current_user_opt
 from app.database import get_db
 from app.services.stream_service import StreamService
 from app.utils import generate_short_code
+from app.utils.telegram_url_proxy import telegram_url_to_proxy, telegram_file_id_to_proxy_url
 from datetime import datetime
 from typing import List, Optional
 import uuid
