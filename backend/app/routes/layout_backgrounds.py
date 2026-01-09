@@ -5,6 +5,7 @@ Handles separate backgrounds for Layout Page and Stream Page
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.auth import get_current_user
 from app.database import get_db_dependency
+from app.utils.telegram_url_proxy import telegram_file_id_to_proxy_url
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -12,23 +13,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-def telegram_file_id_to_proxy_url(telegram_file_id: str, media_type: str = "documents") -> str:
-    """
-    Convert a Telegram file_id to a proxied URL through our backend.
-    This ensures files are always accessible even if the direct Telegram URL is stale.
-    
-    Args:
-        telegram_file_id: The Telegram file_id (e.g., "BQACAgUAAyEGAATO...")
-        media_type: Type of media - "photos", "videos", or "documents" (default: "documents" for backgrounds)
-    
-    Returns:
-        Proxied URL: "/api/media/telegram-proxy/{media_type}/{file_id}"
-    """
-    if not telegram_file_id:
-        return None
-    
-    return f"/api/media/telegram-proxy/{media_type}/{telegram_file_id}"
 
 # ==================== REQUEST/RESPONSE MODELS ====================
 
