@@ -106,6 +106,7 @@ export default function ResponsiveTextOverlay({
   }, [currentTime, overlay.timing, duration, overlay.id, overlay.text_value, overlay.placeholder_text]);
 
   // Calculate animation state if not provided
+  // ALL animations use percentage or relative units - NO PIXELS!
   const animState = useMemo(() => {
     if (animationState) return animationState;
     
@@ -127,11 +128,12 @@ export default function ResponsiveTextOverlay({
           break;
         case 'slide-up':
           opacity = progress;
-          transform = `translateY(${(1 - progress) * 50}px)`;
+          // Use percentage units for responsive scaling
+          transform = `translateY(${(1 - progress) * 10}%)`;
           break;
         case 'slide-down':
           opacity = progress;
-          transform = `translateY(${-(1 - progress) * 50}px)`;
+          transform = `translateY(${-(1 - progress) * 10}%)`;
           break;
         case 'scale-up':
         case 'zoom-in':
@@ -149,7 +151,8 @@ export default function ResponsiveTextOverlay({
       opacity = progress;
       
       if (exitAnim.type === 'slide-up') {
-        transform = `translateY(${-(1 - progress) * 50}px)`;
+        // Use percentage units for responsive scaling
+        transform = `translateY(${-(1 - progress) * 10}%)`;
       }
     }
 
