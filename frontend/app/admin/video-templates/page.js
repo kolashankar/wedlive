@@ -217,24 +217,36 @@ export default function VideoTemplatesAdmin() {
                 {/* Thumbnail */}
                 <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900">
                   {template.preview_thumbnail?.url ? (
-                    <img
-                      src={template.preview_thumbnail.url}
-                      alt={template.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Hide broken image and show placeholder
-                        e.target.style.display = 'none';
-                        const placeholder = e.target.nextElementSibling;
-                        if (placeholder) placeholder.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div 
-                    className="flex items-center justify-center h-full absolute inset-0"
-                    style={{ display: template.preview_thumbnail?.url ? 'none' : 'flex' }}
-                  >
-                    <Video className="w-16 h-16 text-gray-500" />
-                  </div>
+                    <>
+                      <img
+                        src={template.preview_thumbnail.url}
+                        alt={template.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Hide broken image and show placeholder
+                          console.error(`[VIDEO_TEMPLATES] Failed to load thumbnail for ${template.name}:`, template.preview_thumbnail.url);
+                          e.target.style.display = 'none';
+                          const placeholder = e.target.parentElement.querySelector('.thumbnail-placeholder');
+                          if (placeholder) placeholder.style.display = 'flex';
+                        }}
+                        onLoad={(e) => {
+                          console.log(`[VIDEO_TEMPLATES] Successfully loaded thumbnail for ${template.name}`);
+                        }}
+                      />
+                      <div 
+                        className="thumbnail-placeholder flex-col items-center justify-center h-full absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"
+                        style={{ display: 'none' }}
+                      >
+                        <Video className="w-16 h-16 text-gray-500 mb-2" />
+                        <p className="text-xs text-gray-500 text-center px-4">Thumbnail unavailable</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <Video className="w-16 h-16 text-gray-500 mb-2" />
+                      <p className="text-xs text-gray-500 text-center px-4">No thumbnail</p>
+                    </div>
+                  )}
                   {template.metadata?.is_featured && (
                     <div className="absolute top-2 right-2">
                       <Badge className="bg-yellow-500 text-white">
