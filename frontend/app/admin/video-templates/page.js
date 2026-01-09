@@ -201,18 +201,26 @@ export default function VideoTemplatesAdmin() {
             {filteredTemplates.map((template) => (
               <Card key={template.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`template-card-${template.id}`}>
                 {/* Thumbnail */}
-                <div className="relative aspect-video bg-gray-900">
+                <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900">
                   {template.preview_thumbnail?.url ? (
                     <img
                       src={template.preview_thumbnail.url}
                       alt={template.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide broken image and show placeholder
+                        e.target.style.display = 'none';
+                        const placeholder = e.target.nextElementSibling;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
                     />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Video className="w-12 h-12 text-gray-600" />
-                    </div>
-                  )}
+                  ) : null}
+                  <div 
+                    className="flex items-center justify-center h-full absolute inset-0"
+                    style={{ display: template.preview_thumbnail?.url ? 'none' : 'flex' }}
+                  >
+                    <Video className="w-16 h-16 text-gray-500" />
+                  </div>
                   {template.metadata?.is_featured && (
                     <div className="absolute top-2 right-2">
                       <Badge className="bg-yellow-500 text-white">
