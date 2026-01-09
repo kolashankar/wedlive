@@ -454,10 +454,13 @@ async def recrop_photo(
         
         logger.info(f"[RECROP] Re-cropping photo {request_data.photo_id} with border {request_data.new_border_id}")
         
+        # Get fresh border URL from Telegram
+        new_border_url = await get_fresh_border_url(new_border)
+        
         # Apply auto-crop with new border
         cropped_path, message = await auto_crop_service.recrop_photo(
             original_photo_url=photo_data["original_url"],
-            new_border_url=new_border["cdn_url"],
+            new_border_url=new_border_url,
             new_mask_data=new_border["mask"],
             mirror=photo_data.get("is_mirrored", False)
         )
