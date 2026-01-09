@@ -168,19 +168,22 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     }
   };
 
-  // Filter visible overlays based on current time - strict timing enforcement
+  // Filter visible overlays based on current time - with floating-point tolerance
   const visibleOverlays = overlays.filter(overlay => {
     const startTime = overlay.timing?.start_time ?? 0;
     const endTime = overlay.timing?.end_time ?? duration;
     
-    // Strict timing check - overlay must be within its time range
-    const isInTimeRange = currentTime >= startTime && currentTime <= endTime;
+    // Add small epsilon (0.05 seconds) to handle floating-point precision issues
+    // This ensures overlays show reliably at their configured times
+    const epsilon = 0.05;
+    const isInTimeRange = currentTime >= (startTime - epsilon) && currentTime <= (endTime + epsilon);
     const isActive = overlay.is_active !== false;
     
     // Enhanced logging to debug timing issues
-    if (currentTime > 5 && currentTime < 9) {
-      console.log('[VideoTemplatePlayer] Overlay visibility check (5-9s range):', {
+    if (currentTime >= 0 && currentTime <= duration) {
+      console.log('[VideoTemplatePlayer] Overlay visibility check:', {
         overlayId: overlay.id,
+        label: overlay.label || overlay.endpoint_key,
         text: overlay.text_value || overlay.placeholder_text,
         currentTime: currentTime.toFixed(2),
         startTime: startTime.toFixed(2),
@@ -188,7 +191,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
         isInTimeRange,
         isActive,
         visible: isInTimeRange && isActive,
-        condition: `${currentTime.toFixed(2)} >= ${startTime.toFixed(2)} && ${currentTime.toFixed(2)} <= ${endTime.toFixed(2)}`
+        condition: `${currentTime.toFixed(2)} >= ${(startTime - epsilon).toFixed(2)} && ${currentTime.toFixed(2)} <= ${(endTime + epsilon).toFixed(2)}`
       });
     }
     
