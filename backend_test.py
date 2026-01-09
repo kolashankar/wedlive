@@ -18,7 +18,7 @@ from datetime import datetime
 import time
 
 # Get backend URL from environment (using the configured URL)
-BACKEND_URL = "https://overlay-sync-fix.preview.emergentagent.com"
+BACKEND_URL = "https://media-stream-fix-6.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Wedding ID to test
