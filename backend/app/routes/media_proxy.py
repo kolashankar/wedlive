@@ -143,8 +143,8 @@ async def media_proxy(url: str = None, request: Request = None):
         logger.error(f"Error in media proxy: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.head("/media/telegram-proxy/{file_path:path}")
-@router.get("/media/telegram-proxy/{file_path:path}")
+@router.head("/telegram-proxy/{file_path:path}")
+@router.get("/telegram-proxy/{file_path:path}")
 async def telegram_proxy(file_path: str, request: Request):
     """
     Proxy endpoint for Telegram files to avoid CORS issues
