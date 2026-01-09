@@ -169,6 +169,17 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
   // Reference resolution for the template (default: 1920x1080)
   const referenceResolution = template.reference_resolution || { width: 1920, height: 1080 };
 
+  // DEBUG: Log critical rendering state
+  console.log('[TemplateVideoPlayer] Render state:', {
+    overlaysCount: overlays.length,
+    renderedVideoSize,
+    videoSize,
+    containerSize,
+    currentTime,
+    duration,
+    canRenderOverlays: overlays.length > 0 && renderedVideoSize.width > 0
+  });
+
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       {/* Video Player - Auto-play, Loop, No Controls */}
