@@ -1346,3 +1346,136 @@ async def download_rendered_video(
             detail="Failed to get download URL"
         )
 
+
+
+@router.post("/admin/video-templates/{template_id}/regenerate-thumbnail")
+async def regenerate_template_thumbnail(
+    template_id: str,
+    current_user: dict = Depends(get_current_admin),
+    db = Depends(get_db_dependency)
+):
+    """
+    Regenerate thumbnail for a video template.
+    Useful when thumbnails are missing or failed to load.
+    """
+    temp_video_path = None
+    temp_thumb_path = None
+    
+    try:
+        # Get template
+        template = await db.video_templates.find_one({"id": template_id})
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Template not found"
+            )
+        
+        video_data = template.get("video_data", {})
+        video_file_id = video_data.get("telegram_file_id")
+        
+        if not video_file_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Template has no video file_id - cannot regenerate thumbnail"
+            )
+        
+        logger.info(f"[REGENERATE_THUMBNAIL] Starting thumbnail regeneration for template {template_id}")
+        
+        # Download video from Telegram
+        file_url = await telegram_service.get_file_url(video_file_id)
+        if not file_url:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Video file not found on Telegram"
+            )
+        
+        # Download video to temp file
+        import httpx
+        temp_video_path = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4').name
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(file_url)
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to download video from Telegram"
+                )
+            
+            async with aiofiles.open(temp_video_path, 'wb') as f:
+                await f.write(response.content)
+        
+        logger.info(f"[REGENERATE_THUMBNAIL] Video downloaded successfully")
+        
+        # Generate thumbnail
+        temp_thumb_path = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg').name
+        thumb_result = await video_service.generate_thumbnail(
+            temp_video_path,
+            temp_thumb_path,
+            timestamp=1.0
+        )
+        
+        if not thumb_result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to generate thumbnail: {thumb_result.get('error')}"
+            )
+        
+        logger.info(f"[REGENERATE_THUMBNAIL] Thumbnail generated successfully")
+        
+        # Upload thumbnail to Telegram CDN
+        thumb_upload_result = await telegram_service.upload_photo(
+            file_path=temp_thumb_path,
+            caption=f"Thumbnail: {template.get('name')}",
+            wedding_id="video_templates"
+        )
+        
+        if not thumb_upload_result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to upload thumbnail: {thumb_upload_result.get('error')}"
+            )
+        
+        logger.info(f"[REGENERATE_THUMBNAIL] Thumbnail uploaded to Telegram successfully")
+        
+        # Update template with new thumbnail
+        thumbnail_data = {
+            "url": thumb_upload_result["cdn_url"],
+            "telegram_file_id": thumb_upload_result["file_id"]
+        }
+        
+        await db.video_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    "preview_thumbnail": thumbnail_data,
+                    "metadata.updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        logger.info(f"[REGENERATE_THUMBNAIL] Template updated with new thumbnail")
+        
+        # Return success with thumbnail URL
+        proxy_url = telegram_file_id_to_proxy_url(thumb_upload_result["file_id"], "photos")
+        
+        return {
+            "success": True,
+            "message": "Thumbnail regenerated successfully",
+            "thumbnail_url": proxy_url,
+            "telegram_file_id": thumb_upload_result["file_id"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[REGENERATE_THUMBNAIL] Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to regenerate thumbnail: {str(e)}"
+        )
+    finally:
+        # Cleanup temp files
+        if temp_video_path and os.path.exists(temp_video_path):
+            os.unlink(temp_video_path)
+        if temp_thumb_path and os.path.exists(temp_thumb_path):
+            os.unlink(temp_thumb_path)
+
