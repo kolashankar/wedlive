@@ -72,6 +72,18 @@ backend:
         comment: "✅ AUTHENTICATION ENDPOINTS FULLY FUNCTIONAL: Comprehensive testing of all authentication endpoints completed successfully. TESTED ENDPOINTS: 1) POST /api/auth/register - Creates new users with proper validation, returns 201 status, generates valid JWT access tokens, stores user data correctly with UUID, email, full_name, role, subscription_plan, storage limits. 2) POST /api/auth/login - Authenticates existing users, returns 200 status, validates credentials properly, generates fresh JWT tokens, returns complete user profile data. 3) GET /api/auth/me - Retrieves current user information using Bearer token authentication, returns 200 status, validates JWT tokens correctly, rejects invalid tokens with 401 status. SECURITY VALIDATION: Invalid token handling working correctly (401 responses), password hashing implemented, JWT token generation and validation functional. DATA INTEGRITY: User registration creates proper database records, login returns matching user data, user info endpoint provides consistent profile data. MINOR ISSUE: CORS headers missing from responses (infrastructure/deployment issue, not functional API problem). All core authentication functionality working perfectly for user registration, login, and profile access."
 
 frontend:
+  - task: "Fix video template loading error and overlay positioning issues"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/routes/video_templates.py, /app/frontend/components/TemplateVideoPlayer.js, /app/frontend/components/video/ResponsiveTextOverlay.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "🔧 VIDEO LOADING & OVERLAY POSITIONING FIX: Fixed two critical issues reported by user: 1) VIDEO LOADING ERROR (MediaError networkState:3): Updated get_wedding_template_assignment endpoint to use convert_template_urls_to_proxy() function instead of manual URL conversion. This ensures video URLs are generated from telegram_file_id for reliability. Added enhanced error logging in TemplateVideoPlayer with video URL tracking, crossOrigin='anonymous' attribute for CORS support, and event handlers (onLoadStart, onCanPlay, onError) for debugging. 2) OVERLAY POSITIONING: Fixed text styling application - moved font styling from container div to inner span element. This ensures container maintains proper dimensions (width%, height%) while text wraps correctly within those constraints. Container uses flexbox for alignment (left/center/right), text span applies all styling (fontSize, letterSpacing, color, etc.). Position uses translate(-50%, -50%) to center text box at configured (x%, y%) position, matching admin canvas behavior. Added comprehensive logging for text box dimensions and positioning. 3) TEXT BOX SIZING: Enhanced textBoxStyle with minHeight property when height is explicitly set, ensuring text auto-scales within configured percentage boundaries. The fixes ensure overlays render at correct positions with proper text sizing and timing as configured in admin panel."
+
   - task: "Fix text wrapping, alignment, and mobile responsiveness"
     implemented: true
     working: true
