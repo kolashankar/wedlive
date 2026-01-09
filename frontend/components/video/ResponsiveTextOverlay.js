@@ -247,11 +247,15 @@ export default function ResponsiveTextOverlay({
                    styling.text_align === 'right' ? 'flex-end' : 'center',
         boxSizing: 'border-box',
         margin: 0,
-        padding: 0,
+        padding: '4px 8px', // Add some padding to prevent text from touching edges
         
         // Performance optimization
         willChange: 'opacity, transform',
-        transition: 'none'
+        transition: 'none',
+        
+        // Debug: Uncomment to see overlay boxes
+        // border: '2px solid red',
+        // backgroundColor: 'rgba(255, 0, 0, 0.1)'
       }}
     >
       <span style={{ 
@@ -267,7 +271,12 @@ export default function ResponsiveTextOverlay({
         overflowWrap: 'break-word',
         wordBreak: 'normal',
         hyphens: 'auto',
-        overflow: 'hidden'
+        overflow: 'visible', // Changed from 'hidden' to 'visible' to ensure text shows
+        
+        // Ensure text is readable
+        textRendering: 'optimizeLegibility',
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale'
       }}>
         {overlay.text_value || overlay.placeholder_text || 'Sample Text'}
       </span>
