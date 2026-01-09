@@ -363,54 +363,65 @@ def test_overlay_timing_and_positioning(data):
         return True
 
 def main():
-    """Run all authentication endpoint tests"""
+    """Run video template overlay rendering tests"""
     log_test("=" * 80)
-    log_test("BACKEND AUTHENTICATION API TESTING")
+    log_test("BACKEND VIDEO TEMPLATE OVERLAY RENDERING TESTING")
     log_test("=" * 80)
     log_test(f"Backend URL: {BACKEND_URL}")
     log_test(f"API Base: {API_BASE}")
+    log_test(f"Wedding ID: {WEDDING_ID}")
     log_test("")
-    log_test("TESTING AUTHENTICATION ENDPOINTS:")
-    log_test("1. POST /api/auth/register - Create new user")
-    log_test("2. POST /api/auth/login - Login user")
-    log_test("3. GET /api/auth/me - Get current user info")
-    log_test("4. Verify CORS headers are present")
-    log_test("")
-    
-    # Test 1: Register endpoint
-    log_test("TEST 1: POST /api/auth/register")
-    test_credentials, register_cors = test_register_endpoint()
-    register_success = test_credentials is not None
-    
+    log_test("TESTING VIDEO TEMPLATE OVERLAY RENDERING FIX:")
+    log_test("1. GET /api/viewer/wedding/{wedding_id}/all - Verify API returns video template data")
+    log_test("2. Check video template structure and required fields")
+    log_test("3. Validate overlay data structure (position, timing, styling, dimensions)")
+    log_test("4. Verify text_value population with actual wedding data")
+    log_test("5. Check for common overlay issues (timing, positioning, styling)")
     log_test("")
     
-    # Test 2: Login endpoint (only if register succeeded)
-    log_test("TEST 2: POST /api/auth/login")
-    if register_success:
-        login_credentials, login_cors = test_login_endpoint(test_credentials)
-        login_success = login_credentials is not None
+    # Test 1: Wedding viewer API
+    log_test("TEST 1: GET /api/viewer/wedding/{wedding_id}/all")
+    wedding_data, api_success = test_wedding_viewer_api()
+    
+    log_test("")
+    
+    # Test 2: Video template structure (only if API succeeded)
+    log_test("TEST 2: Video template structure validation")
+    if api_success and wedding_data:
+        template_structure_success = test_video_template_structure(wedding_data)
     else:
-        log_test("❌ Skipping login test - register failed", "ERROR")
-        login_credentials = None
-        login_success = False
-        login_cors = False
+        log_test("❌ Skipping template structure test - API failed", "ERROR")
+        template_structure_success = False
     
     log_test("")
     
-    # Test 3: Me endpoint (only if login succeeded)
-    log_test("TEST 3: GET /api/auth/me")
-    if login_success:
-        me_success, me_cors = test_me_endpoint(login_credentials)
+    # Test 3: Overlay data structure (only if template structure is valid)
+    log_test("TEST 3: Overlay data structure validation")
+    if template_structure_success:
+        overlay_structure_success = test_overlay_data_structure(wedding_data)
     else:
-        log_test("❌ Skipping me test - login failed", "ERROR")
-        me_success = False
-        me_cors = False
+        log_test("❌ Skipping overlay structure test - template structure invalid", "ERROR")
+        overlay_structure_success = False
     
     log_test("")
     
-    # Test 4: Invalid token test
-    log_test("TEST 4: GET /api/auth/me with invalid token")
-    invalid_token_success = test_invalid_token()
+    # Test 4: Overlay content population (only if overlay structure is valid)
+    log_test("TEST 4: Overlay content population with wedding data")
+    if overlay_structure_success:
+        content_population_success = test_overlay_content_population(wedding_data)
+    else:
+        log_test("❌ Skipping content population test - overlay structure invalid", "ERROR")
+        content_population_success = False
+    
+    log_test("")
+    
+    # Test 5: Timing and positioning validation
+    log_test("TEST 5: Overlay timing and positioning validation")
+    if overlay_structure_success:
+        timing_positioning_success = test_overlay_timing_and_positioning(wedding_data)
+    else:
+        log_test("❌ Skipping timing/positioning test - overlay structure invalid", "ERROR")
+        timing_positioning_success = False
     
     log_test("")
     log_test("=" * 80)
@@ -418,75 +429,60 @@ def main():
     log_test("=" * 80)
     
     # Summary of results
-    if register_success:
-        log_test("✅ User registration PASSED")
+    if api_success:
+        log_test("✅ Wedding viewer API PASSED")
     else:
-        log_test("❌ User registration FAILED")
+        log_test("❌ Wedding viewer API FAILED")
         
-    if login_success:
-        log_test("✅ User login PASSED")
+    if template_structure_success:
+        log_test("✅ Video template structure PASSED")
     else:
-        log_test("❌ User login FAILED")
+        log_test("❌ Video template structure FAILED")
         
-    if me_success:
-        log_test("✅ User info retrieval PASSED")
+    if overlay_structure_success:
+        log_test("✅ Overlay data structure PASSED")
     else:
-        log_test("❌ User info retrieval FAILED")
+        log_test("❌ Overlay data structure FAILED")
         
-    if invalid_token_success:
-        log_test("✅ Invalid token handling PASSED")
+    if content_population_success:
+        log_test("✅ Overlay content population PASSED")
     else:
-        log_test("❌ Invalid token handling FAILED")
-    
-    # CORS summary
-    cors_results = []
-    if register_success:
-        cors_results.append(register_cors)
-    if login_success:
-        cors_results.append(login_cors)
-    if me_success:
-        cors_results.append(me_cors)
-    
-    if cors_results and all(cors_results):
-        log_test("✅ CORS headers PASSED - All endpoints have proper CORS headers")
-        cors_overall = True
-    elif cors_results and any(cors_results):
-        log_test("⚠️ CORS headers PARTIAL - Some endpoints missing CORS headers")
-        cors_overall = False
+        log_test("❌ Overlay content population FAILED")
+        
+    if timing_positioning_success:
+        log_test("✅ Overlay timing and positioning PASSED")
     else:
-        log_test("❌ CORS headers FAILED - Missing CORS headers")
-        cors_overall = False
+        log_test("❌ Overlay timing and positioning FAILED")
     
     # Overall result
-    overall_success = register_success and login_success and me_success and invalid_token_success
+    overall_success = (api_success and template_structure_success and 
+                      overlay_structure_success and content_population_success and 
+                      timing_positioning_success)
     
     if overall_success:
-        log_test("🎉 OVERALL RESULT: ALL AUTHENTICATION TESTS PASSED")
+        log_test("🎉 OVERALL RESULT: ALL VIDEO TEMPLATE OVERLAY TESTS PASSED")
         log_test("")
         log_test("KEY FINDINGS:")
-        log_test("- User registration endpoint working correctly (201 status)")
-        log_test("- User login endpoint working correctly (200 status)")
-        log_test("- User info endpoint working correctly with Bearer token")
-        log_test("- Invalid token properly rejected (401 status)")
-        log_test("- All endpoints return proper JSON responses")
-        if cors_overall:
-            log_test("- All endpoints have proper CORS headers")
-        else:
-            log_test("- CORS headers are missing from responses (minor issue)")
+        log_test("- Wedding viewer API returns complete video template data")
+        log_test("- Video template has all required fields (video_url, overlays, reference_resolution)")
+        log_test("- Text overlays have proper structure (position, timing, styling, dimensions)")
+        log_test("- Overlays are populated with actual wedding data (bride/groom names)")
+        log_test("- No critical timing, positioning, or styling issues found")
+        log_test("- Video URLs are using proxy format for reliability")
     else:
-        log_test("💥 OVERALL RESULT: SOME AUTHENTICATION TESTS FAILED")
+        log_test("💥 OVERALL RESULT: SOME VIDEO TEMPLATE OVERLAY TESTS FAILED")
         log_test("")
         log_test("ISSUES FOUND:")
-        if not register_success:
-            log_test("- User registration endpoint has issues")
-        if not login_success:
-            log_test("- User login endpoint has issues")
-        if not me_success:
-            log_test("- User info endpoint has issues")
-        if not invalid_token_success:
-            log_test("- Invalid token handling has issues")
-        if cors_results and not all(cors_results):
-            log_test("- Some endpoints missing CORS headers")
+        if not api_success:
+            log_test("- Wedding viewer API has issues or wedding not found")
+        if not template_structure_success:
+            log_test("- Video template structure is missing required fields")
+        if not overlay_structure_success:
+            log_test("- Overlay data structure has validation errors")
+        if not content_population_success:
+            log_test("- Overlays are not populated with wedding data (still showing placeholders)")
+        if not timing_positioning_success:
+            log_test("- Overlays have timing, positioning, or styling issues")
         
     return overall_success
 
