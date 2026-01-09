@@ -64,7 +64,21 @@ export default function VideoTemplatesAdmin() {
         }
       });
       // Backend returns array directly, not {templates: []}
-      setTemplates(response.data || []);
+      const templates = response.data || [];
+      console.log('[VIDEO_TEMPLATES] Loaded templates:', templates.length);
+      
+      // Debug: Log first template thumbnail info
+      if (templates.length > 0) {
+        const firstTemplate = templates[0];
+        console.log('[VIDEO_TEMPLATES] First template thumbnail:', {
+          name: firstTemplate.name,
+          has_thumbnail: !!firstTemplate.preview_thumbnail,
+          thumbnail_url: firstTemplate.preview_thumbnail?.url,
+          thumbnail_file_id: firstTemplate.preview_thumbnail?.telegram_file_id
+        });
+      }
+      
+      setTemplates(templates);
     } catch (error) {
       console.error('Failed to load templates:', error);
       toast({
