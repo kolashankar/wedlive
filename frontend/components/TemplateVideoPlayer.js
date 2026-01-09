@@ -227,7 +227,7 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
         loop
         muted
         playsInline
-        crossOrigin="anonymous"
+        preload="auto"
         className="w-full h-full object-contain"
         style={{
           backgroundColor: 'transparent',
