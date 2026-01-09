@@ -332,11 +332,21 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
               width: `${renderedVideoSize.width}px`,
               height: `${renderedVideoSize.height}px`,
               position: 'absolute',
-              zIndex: 10
+              zIndex: 10,
+              // Debug: Uncomment to see overlay container
+              // border: '3px solid blue',
+              // backgroundColor: 'rgba(0, 0, 255, 0.1)'
             }}
           >
             {sortedOverlays.map((overlay, index) => {
               const animStyle = getAnimationStyle(overlay);
+              
+              console.log('[VideoTemplatePlayer] Rendering overlay component:', {
+                overlayId: overlay.id,
+                text: overlay.text_value,
+                animStyle,
+                containerSize: renderedVideoSize
+              });
               
               return (
                 <ResponsiveTextOverlay
