@@ -81,23 +81,28 @@ export default function ResponsiveTextOverlay({
       return true;
     }
     
-    const visible = currentTime >= startTime && currentTime <= endTime;
+    // Add small epsilon (0.05 seconds) to handle floating-point precision issues
+    // This ensures overlays show reliably at their configured times
+    const epsilon = 0.05;
+    const visible = currentTime >= (startTime - epsilon) && currentTime <= (endTime + epsilon);
     
     if (!visible) {
       console.log('[ResponsiveTextOverlay] Overlay hidden - timing check failed:', {
         overlayId: overlay.id,
         text: overlay.text_value || overlay.placeholder_text,
-        currentTime,
-        startTime,
-        endTime,
-        duration
+        currentTime: currentTime.toFixed(3),
+        startTime: startTime.toFixed(3),
+        endTime: endTime.toFixed(3),
+        duration: duration.toFixed(3),
+        epsilon,
+        reason: currentTime < (startTime - epsilon) ? 'Before start time' : 'After end time'
       });
     } else {
       console.log('[ResponsiveTextOverlay] Overlay visible:', {
         overlayId: overlay.id,
         text: overlay.text_value || overlay.placeholder_text,
-        currentTime,
-        startTime,
+        currentTime: currentTime.toFixed(3),
+        startTime: startTime.toFixed(3),
         endTime
       });
     }
