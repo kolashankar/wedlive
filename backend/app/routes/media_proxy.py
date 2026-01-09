@@ -393,9 +393,12 @@ async def telegram_proxy(file_path: str, request: Request):
         logger.error(f"Unexpected error in telegram_proxy: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.options("/api/media/telegram-proxy/photos/{file_path:path}")
+@router.options("/telegram-proxy/photos/{file_path:path}")
+@router.options("/telegram-proxy/videos/{file_path:path}")
+@router.options("/telegram-proxy/documents/{file_path:path}")
+@router.options("/telegram-proxy/{file_path:path}")
 async def telegram_proxy_options(file_path: str):
-    """Handle CORS preflight requests"""
+    """Handle CORS preflight requests for all telegram proxy paths"""
     return Response(
         content=None,
         status_code=200,
