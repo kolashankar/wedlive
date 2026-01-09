@@ -273,9 +273,20 @@ async def get_wedding_complete_view(wedding_id: str):
             populated_overlays = []
             for overlay in text_overlays:
                 text_value = wedding_mapper.populate_overlay_text(overlay, wedding_data_mapped)
+                
+                # Override timing to ensure overlays are visible throughout the video
+                # Fix: All overlays should start at 0 seconds and play until their configured end_time
+                # This ensures overlays are visible from the beginning of the video
+                overlay_timing = overlay.get("timing", {})
+                fixed_timing = {
+                    "start_time": 0,  # Always start at beginning
+                    "end_time": overlay_timing.get("end_time", 8.5)  # Keep original end time
+                }
+                
                 populated_overlays.append({
                     **overlay,
-                    "text_value": text_value
+                    "text_value": text_value,
+                    "timing": fixed_timing
                 })
             
             # CRITICAL FIX: Use telegram_file_id to generate fresh proxy URLs
