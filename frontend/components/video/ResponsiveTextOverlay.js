@@ -286,7 +286,8 @@ export default function ResponsiveTextOverlay({
                    styling.text_align === 'right' ? 'flex-end' : 'center',
         boxSizing: 'border-box',
         margin: 0,
-        padding: '4px 8px', // Add some padding to prevent text from touching edges
+        // Use em units for padding - scales with text size
+        padding: '0.2em 0.4em',
         
         // Performance optimization
         willChange: 'opacity, transform',
