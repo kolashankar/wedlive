@@ -259,58 +259,81 @@ async def telegram_proxy(file_path: str, request: Request):
         max_retries = 2
         last_exception = None
         
+        # Check for Range header for video streaming
+        range_header = request.headers.get("Range") if request else None
+        
         for attempt in range(max_retries):
             try:
+                # Build request headers for Telegram
+                request_headers = {
+                    'User-Agent': 'WedLive-Media-Proxy/1.0',
+                }
+                
+                # If client requested a Range, pass it to Telegram
+                if range_header:
+                    request_headers['Range'] = range_header
+                    logger.info(f"Range request for {file_id}: {range_header}")
+                
                 async with httpx.AsyncClient(
-                    timeout=30.0,
+                    timeout=60.0,  # Increased timeout for videos
                     follow_redirects=True,
-                    headers={
-                        'User-Agent': 'WedLive-Media-Proxy/1.0',
-                        'Accept': 'image/*'
-                    }
+                    headers=request_headers
                 ) as client:
                     logger.info(f"Proxy attempt {attempt + 1}/{max_retries} for file_id: {file_id}")
                     
-                    # Fetch the file content fully before creating streaming response
+                    # Fetch the file content
                     response = await client.get(file_url)
                     
-                    if response.status_code != 200:
+                    if response.status_code not in [200, 206]:  # OK or Partial Content
                         raise httpx.HTTPStatusError(f"HTTP {response.status_code}: {response.reason_phrase}", request=None, response=response)
                     
                     # Get content type and length
-                    content_type = response.headers.get('content-type', 'image/jpeg')
+                    content_type = response.headers.get('content-type', 'application/octet-stream')
                     content_length = len(response.content)
                     
-                    # Validate content type
-                    # Note: Telegram sometimes returns 'application/octet-stream' for images
-                    # We allow this and default to 'image/jpeg' for such cases
-                    if not content_type.startswith('image/') and content_type != 'application/octet-stream':
-                        raise ValueError(f"Invalid content type: {content_type}")
-                    
-                    # Override content-type if it's octet-stream (Telegram quirk)
+                    # Validate and fix content type
                     if content_type == 'application/octet-stream':
-                        # Try to guess from file path or default to jpeg
-                        if '.png' in file_url.lower():
+                        # Try to guess from file URL or default based on media type
+                        if 'videos' in file_path or '.mp4' in file_url.lower():
+                            content_type = 'video/mp4'
+                        elif '.mov' in file_url.lower():
+                            content_type = 'video/quicktime'
+                        elif '.webm' in file_url.lower():
+                            content_type = 'video/webm'
+                        elif '.png' in file_url.lower():
                             content_type = 'image/png'
                         elif '.webp' in file_url.lower():
                             content_type = 'image/webp'
                         elif '.gif' in file_url.lower():
                             content_type = 'image/gif'
                         else:
-                            content_type = 'image/jpeg'  # Default to JPEG
+                            content_type = 'image/jpeg'  # Default for photos
                         logger.info(f"Overriding content-type from octet-stream to {content_type}")
                     
-                    logger.info(f"Streaming file: {file_id}, size: {content_length}, type: {content_type}")
+                    # Build response headers
+                    response_headers = {
+                        "Content-Length": str(content_length),
+                        **MEDIA_RESPONSE_HEADERS
+                    }
                     
-                    # Return buffered response to avoid stream closing issues
+                    # Add Accept-Ranges for video streaming
+                    if content_type.startswith('video/'):
+                        response_headers["Accept-Ranges"] = "bytes"
+                        # Add Content-Range if this was a range request
+                        if response.status_code == 206:
+                            content_range = response.headers.get("content-range")
+                            if content_range:
+                                response_headers["Content-Range"] = content_range
+                                logger.info(f"Returning partial content for video: {content_range}")
+                    
+                    logger.info(f"Streaming file: {file_id}, size: {content_length}, type: {content_type}, status: {response.status_code}")
+                    
+                    # Return buffered response
                     return Response(
                         content=response.content,
-                        status_code=200,
+                        status_code=response.status_code,
                         media_type=content_type,
-                        headers={
-                            "Content-Length": str(content_length),
-                            **MEDIA_RESPONSE_HEADERS
-                        }
+                        headers=response_headers
                     )
                         
             except httpx.TimeoutException as e:
