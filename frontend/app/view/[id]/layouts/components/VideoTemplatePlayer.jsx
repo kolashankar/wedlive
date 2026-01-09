@@ -188,7 +188,19 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     (a.layer_index || 0) - (b.layer_index || 0)
   );
 
-  console.log('VideoTemplatePlayer - sortedOverlays:', sortedOverlays);
+  console.log('[VideoTemplatePlayer] Rendering overlays:', {
+    totalOverlays: overlays.length,
+    visibleOverlays: visibleOverlays.length,
+    sortedOverlays: sortedOverlays.map(o => ({
+      id: o.id,
+      text: o.text_value || o.placeholder_text,
+      position: o.position,
+      timing: o.timing,
+      layer_index: o.layer_index
+    })),
+    currentTime,
+    duration
+  });
 
   // Calculate animation style for overlay based on video time
   const getAnimationStyle = (overlay) => {
