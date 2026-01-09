@@ -64,8 +64,13 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
       console.error('[TemplateVideoPlayer] Error details:', {
         error: e.target.error,
         networkState: e.target.networkState,
-        readyState: e.target.readyState
+        readyState: e.target.readyState,
+        currentSrc: e.target.currentSrc,
+        src: e.target.src
       });
+      
+      // Set error state to show user-friendly message
+      setError('Video failed to load. The video file may be unavailable or the URL is invalid.');
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
