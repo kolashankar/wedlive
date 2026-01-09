@@ -204,7 +204,8 @@ async def telegram_proxy(file_path: str, request: Request):
         
         # Validate Telegram file_id format (should start with alphanumeric and contain certain patterns)
         # Telegram file_ids are typically base64-like strings with specific prefixes
-        if not any(file_id.startswith(prefix) for prefix in ['AgAC', 'BQAc', 'BAAC', 'CgAC']):
+        # AgAC = photos, BQAC = documents, BAAC = videos, CgAC = animations/GIFs
+        if not any(file_id.startswith(prefix) for prefix in ['AgAC', 'BQAC', 'BAAC', 'CgAC', 'AwAC']):
             logger.warning(f"Unusual file_id format (doesn't match Telegram patterns): {file_id}. Attempting anyway...")
         
         # Optional: Check if file_id exists in database for better logging
