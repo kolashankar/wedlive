@@ -29,28 +29,84 @@ def log_test(message, status="INFO"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{timestamp}] [{status}] {message}")
 
-def check_cors_headers(response):
-    """Check if CORS headers are present in response"""
-    cors_headers = {
-        'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
-        'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
-        'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers'),
-        'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials')
-    }
+def log_overlay_details(overlay, index):
+    """Log detailed overlay information"""
+    log_test(f"  Overlay {index + 1}:")
+    log_test(f"    ID: {overlay.get('id', 'MISSING')}")
+    log_test(f"    Text Value: '{overlay.get('text_value', 'MISSING')}'")
     
-    missing_headers = []
-    for header, value in cors_headers.items():
-        if not value:
-            missing_headers.append(header)
-        else:
-            log_test(f"  ✅ {header}: {value}")
+    # Position details
+    position = overlay.get('position', {})
+    log_test(f"    Position: x={position.get('x', 'MISSING')}, y={position.get('y', 'MISSING')}")
     
-    if missing_headers:
-        log_test(f"  ⚠️ Missing CORS headers: {missing_headers}", "WARNING")
-        return False, False
+    # Timing details
+    timing = overlay.get('timing', {})
+    log_test(f"    Timing: start={timing.get('start_time', 'MISSING')}s, end={timing.get('end_time', 'MISSING')}s")
+    
+    # Styling details
+    styling = overlay.get('styling', {})
+    log_test(f"    Font: {styling.get('font_family', 'MISSING')}, size={styling.get('font_size', 'MISSING')}")
+    log_test(f"    Color: {styling.get('color', 'MISSING')}")
+    
+    # Dimensions
+    dimensions = overlay.get('dimensions', {})
+    log_test(f"    Dimensions: {dimensions.get('width', 'MISSING')}% x {dimensions.get('height', 'MISSING')}%")
+    
+    # Layer index
+    log_test(f"    Layer Index: {overlay.get('layer_index', 'MISSING')}")
+
+def validate_overlay_structure(overlay, index):
+    """Validate overlay has required structure and return issues"""
+    issues = []
+    
+    # Required fields
+    required_fields = ['id', 'text_value', 'position', 'timing', 'styling', 'dimensions']
+    for field in required_fields:
+        if field not in overlay:
+            issues.append(f"Overlay {index + 1}: Missing required field '{field}'")
+    
+    # Validate position
+    position = overlay.get('position', {})
+    if 'x' not in position or 'y' not in position:
+        issues.append(f"Overlay {index + 1}: Position missing x or y coordinates")
     else:
-        log_test("  ✅ All required CORS headers present")
-        return True
+        x, y = position.get('x'), position.get('y')
+        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+            issues.append(f"Overlay {index + 1}: Position coordinates must be numbers")
+        elif x < 0 or x > 100 or y < 0 or y > 100:
+            issues.append(f"Overlay {index + 1}: Position coordinates should be 0-100% (x={x}, y={y})")
+    
+    # Validate timing
+    timing = overlay.get('timing', {})
+    if 'start_time' not in timing or 'end_time' not in timing:
+        issues.append(f"Overlay {index + 1}: Timing missing start_time or end_time")
+    else:
+        start, end = timing.get('start_time'), timing.get('end_time')
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            issues.append(f"Overlay {index + 1}: Timing values must be numbers")
+        elif start < 0:
+            issues.append(f"Overlay {index + 1}: start_time should be >= 0 (got {start})")
+        elif end <= start:
+            issues.append(f"Overlay {index + 1}: end_time should be > start_time (start={start}, end={end})")
+    
+    # Validate styling
+    styling = overlay.get('styling', {})
+    required_style_fields = ['font_size', 'font_family', 'color']
+    for field in required_style_fields:
+        if field not in styling:
+            issues.append(f"Overlay {index + 1}: Styling missing '{field}'")
+    
+    # Check font size
+    font_size = styling.get('font_size')
+    if font_size is not None and (not isinstance(font_size, (int, float)) or font_size <= 0):
+        issues.append(f"Overlay {index + 1}: font_size should be positive number (got {font_size})")
+    
+    # Validate text_value is not empty
+    text_value = overlay.get('text_value', '')
+    if not text_value or text_value.strip() == '':
+        issues.append(f"Overlay {index + 1}: text_value is empty or missing")
+    
+    return issues
 
 def test_register_endpoint():
     """Test POST /api/auth/register endpoint"""
