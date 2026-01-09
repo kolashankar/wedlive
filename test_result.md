@@ -218,6 +218,18 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ STILL FAILING: Admin template editor page (/admin/video-templates/9a601269-e7e3-4263-96be-de243ea5eede) continues to show 404 error despite API configuration fix. The page displays '404 - This page could not be found' indicating the route or API endpoint is not accessible. The centralized API configuration change did not resolve the underlying routing issue. This suggests the problem may be with the backend API endpoint /api/video-templates/{id} not being available or requiring authentication that is not being provided."
+  
+  - task: "Fix video template thumbnails not loading (showing as black/dark areas)"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/app/admin/video-templates/page.js, /app/backend/app/routes/video_templates.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ VIDEO TEMPLATE THUMBNAIL FIX APPLIED: Fixed issue where video template thumbnails were showing as black/dark areas on admin video templates page. ROOT CAUSE: Thumbnails could be missing, have invalid URLs, or fail to load from Telegram proxy. FIXES IMPLEMENTED: 1) FRONTEND ERROR HANDLING: Added onError handler to detect failed image loads, graceful fallback to placeholder icon with 'Thumbnail unavailable' message, enhanced logging to identify problematic templates (logs template count, thumbnail URLs, load success/failure). 2) IMPROVED PLACEHOLDER DISPLAY: Shows video icon with gradient background when thumbnails missing, maintains visual consistency with proper styling, displays clear messages ('No thumbnail' vs 'Thumbnail unavailable'). 3) BACKEND LOGGING ENHANCEMENTS: Added detailed logging in convert_template_urls_to_proxy() function, logs successful URL conversions and warnings for missing thumbnail data, helps identify templates with incomplete thumbnail information. 4) NEW REGENERATION ENDPOINT: Created POST /api/admin/video-templates/{template_id}/regenerate-thumbnail endpoint that downloads original video from Telegram, generates new thumbnail from video, uploads to Telegram CDN, updates template with new thumbnail data. This allows admins to fix templates with missing/broken thumbnails. TECHNICAL DETAILS: Frontend uses gradient background (from-gray-800 to-gray-900) instead of solid black, onError handler hides broken img and shows placeholder div, console logs help debug which specific templates have issues. Backend proxy URL conversion uses telegram_file_id for reliability, absolute URLs generated for production (BACKEND_URL set), warnings logged for templates without thumbnail data. BENEFITS: No more confusing black thumbnail areas, clear visual feedback for missing/broken thumbnails, admins can identify and fix problematic templates, enhanced debugging through comprehensive logging. Documentation created in /app/VIDEO_TEMPLATE_THUMBNAIL_FIX.md. Both frontend and backend restarted successfully."
 
 
 metadata:
