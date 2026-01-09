@@ -315,7 +315,7 @@ def test_me_endpoint(login_credentials):
         if "created_at" in user_data:
             log_test(f"✅ Created at: {user_data.get('created_at')}")
         
-        return cors_ok
+        return True, cors_ok
         
     except requests.exceptions.RequestException as e:
         log_test(f"❌ Request failed: {str(e)}", "ERROR")
