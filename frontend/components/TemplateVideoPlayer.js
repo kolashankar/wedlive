@@ -212,40 +212,82 @@ export default function TemplateVideoPlayer({ weddingId, className = '' }) {
       />
 
       {/* Dynamic Overlays - Positioned relative to rendered video */}
-      {overlays.length > 0 && renderedVideoSize.width > 0 && (
-        <div 
-          className="absolute pointer-events-none"
-          style={{
-            left: `${renderedVideoSize.offsetX}px`,
-            top: `${renderedVideoSize.offsetY}px`,
-            width: `${renderedVideoSize.width}px`,
-            height: `${renderedVideoSize.height}px`,
-            position: 'absolute',
-            zIndex: 10
-          }}
-        >
-          {overlays.map((overlay, index) => {
-            console.log('[TemplateVideoPlayer] Rendering overlay:', {
-              id: overlay.id,
-              text_value: overlay.text_value,
-              position: overlay.position,
-              timing: overlay.timing,
-              currentTime,
-              duration
-            });
-            
-            return (
-              <ResponsiveTextOverlay
-                key={overlay.id || index}
-                overlay={overlay}
-                currentTime={currentTime}
-                duration={duration}
-                containerSize={renderedVideoSize}
-                referenceResolution={referenceResolution}
-              />
-            );
-          })}
-        </div>
+      {overlays.length > 0 && (
+        renderedVideoSize.width > 0 ? (
+          // Normal rendering with calculated video size
+          <div 
+            className="absolute pointer-events-none"
+            style={{
+              left: `${renderedVideoSize.offsetX}px`,
+              top: `${renderedVideoSize.offsetY}px`,
+              width: `${renderedVideoSize.width}px`,
+              height: `${renderedVideoSize.height}px`,
+              position: 'absolute',
+              zIndex: 10
+            }}
+          >
+            {overlays.map((overlay, index) => {
+              console.log('[TemplateVideoPlayer] Rendering overlay:', {
+                id: overlay.id,
+                text_value: overlay.text_value,
+                position: overlay.position,
+                timing: overlay.timing,
+                currentTime,
+                duration
+              });
+              
+              return (
+                <ResponsiveTextOverlay
+                  key={overlay.id || index}
+                  overlay={overlay}
+                  currentTime={currentTime}
+                  duration={duration}
+                  containerSize={renderedVideoSize}
+                  referenceResolution={referenceResolution}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          // Fallback: render overlays using full container size if video size not calculated yet
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              position: 'absolute',
+              zIndex: 10,
+              width: '100%',
+              height: '100%'
+            }}
+          >
+            {overlays.map((overlay, index) => {
+              console.log('[TemplateVideoPlayer] Rendering overlay (fallback mode):', {
+                id: overlay.id,
+                text_value: overlay.text_value,
+                currentTime,
+                duration
+              });
+              
+              // Use container size as fallback
+              const fallbackSize = {
+                width: containerSize.width || 720,
+                height: containerSize.height || 1280,
+                offsetX: 0,
+                offsetY: 0
+              };
+              
+              return (
+                <ResponsiveTextOverlay
+                  key={overlay.id || index}
+                  overlay={overlay}
+                  currentTime={currentTime}
+                  duration={duration}
+                  containerSize={fallbackSize}
+                  referenceResolution={referenceResolution}
+                />
+              );
+            })}
+          </div>
+        )
       )}
     </div>
   );
