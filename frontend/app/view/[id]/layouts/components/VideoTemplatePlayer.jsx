@@ -70,6 +70,12 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
     };
+    
+    const handleSeeked = () => {
+      // Update currentTime immediately when seeking is complete
+      setCurrentTime(video.currentTime);
+      console.log('[VideoTemplatePlayer] Video seeked to:', video.currentTime);
+    };
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
@@ -106,12 +112,14 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     };
 
     video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('seeked', handleSeeked);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('resize', handleResize);
     video.addEventListener('error', handleError);
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('seeked', handleSeeked);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('resize', handleResize);
       video.removeEventListener('error', handleError);
