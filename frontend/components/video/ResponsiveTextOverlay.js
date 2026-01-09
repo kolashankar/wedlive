@@ -40,26 +40,19 @@ export default function ResponsiveTextOverlay({
     const baseFontSize = overlay.styling?.font_size || 48;
     const refHeight = referenceResolution.height || 1080;
     // Convert base font size to percentage of reference height
-    return (baseFontSize / refHeight) * 100;
-  }, [overlay.styling?.font_size, referenceResolution.height]);
-
-  // Calculate actual responsive font size in pixels based on container height
-  const responsiveFontSize = useMemo(() => {
-    if (!containerSize.height) return 16; // fallback
-    // Calculate font size as percentage of container height
-    const calculatedSize = (fontSizePercent / 100) * containerSize.height;
+    const percent = (baseFontSize / refHeight) * 100;
     
     // Debug logging
     console.log('[ResponsiveTextOverlay] Font size calculation:', {
-      baseFontSize: overlay.styling?.font_size || 48,
-      referenceHeight: referenceResolution.height,
-      fontSizePercent: fontSizePercent.toFixed(2) + '%',
+      baseFontSize,
+      referenceHeight: refHeight,
+      fontSizePercent: percent.toFixed(4) + '%',
       containerHeight: containerSize.height,
-      calculatedFontSize: calculatedSize.toFixed(2) + 'px'
+      formula: `${baseFontSize}px / ${refHeight}px * 100 = ${percent.toFixed(4)}%`
     });
     
-    return calculatedSize;
-  }, [fontSizePercent, containerSize.height, overlay.styling?.font_size, referenceResolution.height]);
+    return percent;
+  }, [overlay.styling?.font_size, referenceResolution.height, containerSize.height]);
 
   // Convert letter spacing from pixels to em units for responsive scaling
   const letterSpacingEm = useMemo(() => {
