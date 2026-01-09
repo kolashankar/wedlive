@@ -206,10 +206,49 @@ export default function ResponsiveTextOverlay({
   const scaledStyling = useMemo(() => {
     const styling = overlay.styling || {};
     
+    // Calculate responsive font size with device-specific constraints
+    // Ensures text remains readable on all screen sizes
+    let finalFontSizePercent = fontSizePercent;
+    
+    // Apply device-specific scaling limits
+    if (typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      const containerHeightPx = containerSize.height;
+      
+      // Calculate what the actual font size would be in pixels
+      const calculatedFontSizePx = (fontSizePercent / 100) * containerHeightPx;
+      
+      // Mobile devices (< 768px): ensure minimum 12px, maximum based on screen
+      if (screenWidth < 768) {
+        const minFontSizePx = 12;
+        const maxFontSizePx = screenWidth * 0.08; // Max 8% of screen width
+        
+        if (calculatedFontSizePx < minFontSizePx) {
+          finalFontSizePercent = (minFontSizePx / containerHeightPx) * 100;
+        } else if (calculatedFontSizePx > maxFontSizePx) {
+          finalFontSizePercent = (maxFontSizePx / containerHeightPx) * 100;
+        }
+      }
+      // Tablet devices (768px - 1024px): ensure minimum 14px
+      else if (screenWidth >= 768 && screenWidth < 1024) {
+        const minFontSizePx = 14;
+        if (calculatedFontSizePx < minFontSizePx) {
+          finalFontSizePercent = (minFontSizePx / containerHeightPx) * 100;
+        }
+      }
+      // Desktop (>= 1024px): ensure minimum 16px
+      else {
+        const minFontSizePx = 16;
+        if (calculatedFontSizePx < minFontSizePx) {
+          finalFontSizePercent = (minFontSizePx / containerHeightPx) * 100;
+        }
+      }
+    }
+    
     return {
       // Font size as percentage of container height - NO PIXELS!
       // This makes text scale perfectly with video/template size on any screen
-      fontSize: `${fontSizePercent}%`,
+      fontSize: `${finalFontSizePercent}%`,
       fontFamily: styling.font_family || 'Playfair Display',
       fontWeight: styling.font_weight || 'bold',
       color: styling.color || '#ffffff',
@@ -225,7 +264,7 @@ export default function ResponsiveTextOverlay({
         ? `${strokeWidthEm}em ${styling.stroke.color || '#000000'}` 
         : 'none'
     };
-  }, [overlay.styling, fontSizePercent, letterSpacingEm, strokeWidthEm, textShadowEm]);
+  }, [overlay.styling, fontSizePercent, letterSpacingEm, strokeWidthEm, textShadowEm, containerSize.height]);
 
   // Calculate text box dimensions (percentage of container)
   const textBoxStyle = useMemo(() => {
