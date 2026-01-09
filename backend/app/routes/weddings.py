@@ -87,9 +87,25 @@ async def resolve_theme_asset_urls(db, theme_assets: dict) -> dict:
         try:
             asset = await db[collection].find_one({"id": asset_id})
             if asset:
-                url = asset.get("cdn_url", "")
-                logger.info(f"[RESOLVE_ASSET] {collection}/{asset_id} -> {url}")
-                return url
+                cdn_url = asset.get("cdn_url", "")
+                telegram_file_id = asset.get("telegram_file_id", "")
+                
+                # Prefer telegram_file_id for more reliable URL generation
+                if telegram_file_id:
+                    # Determine media type based on collection
+                    media_type = "documents" if collection == "photo_borders" else "photos"
+                    proxy_url = telegram_file_id_to_proxy_url(telegram_file_id, media_type)
+                    logger.info(f"[RESOLVE_ASSET] {collection}/{asset_id} -> {proxy_url} (via file_id)")
+                    return proxy_url
+                
+                # Fallback to cdn_url with proxy conversion
+                if cdn_url:
+                    proxy_url = telegram_url_to_proxy(cdn_url)
+                    logger.info(f"[RESOLVE_ASSET] {collection}/{asset_id} -> {proxy_url} (via cdn_url)")
+                    return proxy_url
+                
+                logger.warning(f"[RESOLVE_ASSET] No URL available for {collection}/{asset_id} ({asset_name})")
+                return None
             else:
                 logger.warning(f"[RESOLVE_ASSET] Asset not found: {collection}/{asset_id} ({asset_name})")
                 missing_assets.append({
