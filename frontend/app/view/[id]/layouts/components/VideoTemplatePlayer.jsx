@@ -203,6 +203,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
   });
 
   // Calculate animation style for overlay based on video time
+  // ALL animations use percentage or relative units - NO PIXELS!
   const getAnimationStyle = (overlay) => {
     const startTime = overlay.timing?.start_time || 0;
     const endTime = overlay.timing?.end_time || duration;
@@ -213,6 +214,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
     let transform = '';
 
     // Entrance animation - synced to video time
+    // Using percentage-based transforms for responsive scaling
     if (currentTime < startTime + entranceAnim.duration) {
       const progress = Math.max(0, Math.min(1, (currentTime - startTime) / entranceAnim.duration));
       const animType = entranceAnim.type;
@@ -223,19 +225,20 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           break;
         case 'slide-up':
           opacity = progress;
-          transform = `translateY(${(1 - progress) * 50}px)`;
+          // Use percentage units - scales with container size
+          transform = `translateY(${(1 - progress) * 10}%)`;
           break;
         case 'slide-down':
           opacity = progress;
-          transform = `translateY(${-(1 - progress) * 50}px)`;
+          transform = `translateY(${-(1 - progress) * 10}%)`;
           break;
         case 'slide-left':
           opacity = progress;
-          transform = `translateX(${(1 - progress) * 50}px)`;
+          transform = `translateX(${(1 - progress) * 10}%)`;
           break;
         case 'slide-right':
           opacity = progress;
-          transform = `translateX(${-(1 - progress) * 50}px)`;
+          transform = `translateX(${-(1 - progress) * 10}%)`;
           break;
         case 'scale-up':
         case 'zoom-in':
@@ -245,12 +248,12 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           break;
         case 'bounce-in':
           opacity = progress;
-          const bounce = Math.abs(Math.sin(progress * Math.PI * 2)) * (1 - progress) * 10;
-          transform = `translateY(${-bounce}px)`;
+          const bounce = Math.abs(Math.sin(progress * Math.PI * 2)) * (1 - progress) * 2; // % units
+          transform = `translateY(${-bounce}%)`;
           break;
         case 'fade-slide-up':
           opacity = progress;
-          transform = `translateY(${(1 - progress) * 40}px)`;
+          transform = `translateY(${(1 - progress) * 8}%)`;
           break;
         case 'scale-fade':
           opacity = progress;
@@ -262,6 +265,7 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
       }
     }
     // Exit animation - synced to video time
+    // Using percentage-based transforms for responsive scaling
     else if (currentTime > endTime - exitAnim.duration) {
       const progress = 1 - Math.max(0, Math.min(1, (currentTime - (endTime - exitAnim.duration)) / exitAnim.duration));
       const animType = exitAnim.type;
@@ -272,11 +276,11 @@ export default function VideoTemplatePlayer({ videoTemplate, className = "" }) {
           break;
         case 'slide-up':
           opacity = progress;
-          transform = `translateY(${-(1 - progress) * 50}px)`;
+          transform = `translateY(${-(1 - progress) * 10}%)`;
           break;
         case 'slide-down':
           opacity = progress;
-          transform = `translateY(${(1 - progress) * 50}px)`;
+          transform = `translateY(${(1 - progress) * 10}%)`;
           break;
         default:
           opacity = progress;
