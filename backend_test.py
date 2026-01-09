@@ -440,6 +440,8 @@ def main():
     if me_success:
         cors_results.append(me_cors)
     
+    log_test(f"DEBUG: CORS results: {cors_results}")
+    
     if cors_results and all(cors_results):
         log_test("✅ CORS headers PASSED - All endpoints have proper CORS headers")
         cors_overall = True
