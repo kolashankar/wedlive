@@ -81,20 +81,36 @@ export default function ResponsiveTextOverlay({
   const isVisible = useMemo(() => {
     const startTime = overlay.timing?.start_time ?? 0;
     const endTime = overlay.timing?.end_time ?? duration;
+    
+    // If duration is not set yet, show the overlay (video loading)
+    if (duration === 0) {
+      console.log('[ResponsiveTextOverlay] Duration not set, showing overlay:', overlay.id);
+      return true;
+    }
+    
     const visible = currentTime >= startTime && currentTime <= endTime;
     
     if (!visible) {
       console.log('[ResponsiveTextOverlay] Overlay hidden - timing check failed:', {
         overlayId: overlay.id,
+        text: overlay.text_value || overlay.placeholder_text,
         currentTime,
         startTime,
         endTime,
         duration
       });
+    } else {
+      console.log('[ResponsiveTextOverlay] Overlay visible:', {
+        overlayId: overlay.id,
+        text: overlay.text_value || overlay.placeholder_text,
+        currentTime,
+        startTime,
+        endTime
+      });
     }
     
     return visible;
-  }, [currentTime, overlay.timing, duration, overlay.id]);
+  }, [currentTime, overlay.timing, duration, overlay.id, overlay.text_value, overlay.placeholder_text]);
 
   // Calculate animation state if not provided
   const animState = useMemo(() => {
