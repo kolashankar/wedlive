@@ -21,8 +21,8 @@ MEDIA_RESPONSE_HEADERS = {
     "X-Content-Type-Options": "nosniff"
 }
 
-@router.options("/media/proxy")
-@router.options("/media/telegram-proxy/{file_path:path}")
+@router.options("/proxy")
+@router.options("/telegram-proxy/{file_path:path}")
 async def media_proxy_options(file_path: str = None):
     """Handle CORS preflight for all media proxy endpoints"""
     return Response(
@@ -37,8 +37,8 @@ async def media_proxy_options(file_path: str = None):
         }
     )
 
-@router.head("/media/proxy")
-@router.get("/media/proxy")
+@router.head("/proxy")
+@router.get("/proxy")
 async def media_proxy(url: str = None, request: Request = None):
     """
     Generic media proxy endpoint to handle external URLs (images and videos)
