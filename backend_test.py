@@ -462,8 +462,10 @@ def main():
         log_test("- User info endpoint working correctly with Bearer token")
         log_test("- Invalid token properly rejected (401 status)")
         log_test("- All endpoints return proper JSON responses")
-        if cors_results and all(cors_results):
+        if cors_overall:
             log_test("- All endpoints have proper CORS headers")
+        else:
+            log_test("- CORS headers are missing from responses (minor issue)")
     else:
         log_test("💥 OVERALL RESULT: SOME AUTHENTICATION TESTS FAILED")
         log_test("")
