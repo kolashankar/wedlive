@@ -589,7 +589,7 @@ async def get_border(
         return BorderResponse(
             id=border["id"],
             name=border["name"],
-            cdn_url=telegram_file_id_to_proxy_url(border.get("telegram_file_id")) or border["cdn_url"],
+            cdn_url=telegram_file_id_to_proxy_url(border.get("telegram_file_id"), media_type="documents") or border["cdn_url"],
             mask_data=MaskData(**border.get("mask", {})),
             mask_slots=[MaskSlot(**slot) for slot in border.get("mask_slots", [])],
             width=border["width"],
