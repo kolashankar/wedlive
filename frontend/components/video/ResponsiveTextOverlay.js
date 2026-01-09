@@ -266,12 +266,29 @@ export default function ResponsiveTextOverlay({
     };
   }, [overlay.styling, fontSizePercent, letterSpacingEm, strokeWidthEm, textShadowEm, containerSize.height]);
 
-  // Calculate text box dimensions (percentage of container)
+  // Calculate text box dimensions (percentage of container) with responsive constraints
   const textBoxStyle = useMemo(() => {
-    const width = dimensions.width ? `${dimensions.width}%` : 'auto';
-    const height = dimensions.height ? `${dimensions.height}%` : 'auto';
-    const maxWidth = dimensions.width ? `${dimensions.width}%` : '90%';
-    const minWidth = dimensions.width ? `${Math.max(10, dimensions.width * 0.5)}%` : 'auto'; // At least 10% or half of configured width
+    // Base dimensions from configuration
+    let width = dimensions.width ? `${dimensions.width}%` : 'auto';
+    let height = dimensions.height ? `${dimensions.height}%` : 'auto';
+    
+    // Calculate responsive constraints based on screen size
+    let maxWidth = '90%'; // Default max width
+    let minWidth = 'auto';
+    
+    if (dimensions.width) {
+      maxWidth = `${dimensions.width}%`;
+      minWidth = `${Math.max(10, dimensions.width * 0.5)}%`; // At least 10% or half of configured width
+      
+      // On mobile devices, allow text box to use more screen space if needed
+      if (typeof window !== 'undefined') {
+        const screenWidth = window.innerWidth;
+        if (screenWidth < 768) {
+          // Mobile: allow up to 95% width for better readability
+          maxWidth = `${Math.min(95, dimensions.width * 1.1)}%`;
+        }
+      }
+    }
     
     console.log('[ResponsiveTextOverlay] Text box dimensions:', {
       overlayId: overlay.id,
@@ -280,7 +297,8 @@ export default function ResponsiveTextOverlay({
       height,
       maxWidth,
       minWidth,
-      dimensionsConfig: dimensions
+      dimensionsConfig: dimensions,
+      screenWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown'
     });
     
     return {
@@ -288,7 +306,9 @@ export default function ResponsiveTextOverlay({
       height,
       maxWidth,
       minWidth,
-      minHeight: height !== 'auto' ? height : undefined
+      minHeight: height !== 'auto' ? height : undefined,
+      // Add box-sizing to ensure padding is included in width/height
+      boxSizing: 'border-box'
     };
   }, [dimensions, overlay.id, overlay.text_value, overlay.placeholder_text]);
 
