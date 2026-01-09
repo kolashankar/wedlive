@@ -502,14 +502,28 @@ export default function OverlayConfigurator({ overlay, duration, currentTime, on
                 <Input
                   type="color"
                   value={formData.styling.color}
-                  onChange={(e) => handleUpdate('styling.color', e.target.value)}
+                  onChange={(e) => {
+                    handleUpdate('styling.color', e.target.value);
+                    // Force immediate save for color changes
+                    setTimeout(() => handleSave(), 10);
+                  }}
+                  onInput={(e) => {
+                    // Also handle onInput for immediate feedback during color picker drag
+                    handleUpdate('styling.color', e.target.value);
+                  }}
                   className="w-20 h-10 p-1"
                   data-testid="text-color-input"
                 />
                 <Input
                   type="text"
                   value={formData.styling.color}
-                  onChange={(e) => handleUpdate('styling.color', e.target.value)}
+                  onChange={(e) => {
+                    handleUpdate('styling.color', e.target.value);
+                  }}
+                  onBlur={() => {
+                    // Save immediately when user finishes typing
+                    handleSave();
+                  }}
                   placeholder="#ffffff"
                   className="flex-1"
                 />
