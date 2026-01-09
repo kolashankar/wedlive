@@ -108,41 +108,24 @@ def validate_overlay_structure(overlay, index):
     
     return issues
 
-def test_register_endpoint():
-    """Test POST /api/auth/register endpoint"""
-    log_test("Testing POST /api/auth/register endpoint")
+def test_wedding_viewer_api():
+    """Test GET /api/viewer/wedding/{wedding_id}/all endpoint"""
+    log_test(f"Testing GET /api/viewer/wedding/{WEDDING_ID}/all endpoint")
     
-    # Create unique test user with timestamp
-    timestamp = int(time.time())
-    test_email = f"test-user-{timestamp}@example.com"
-    test_password = "Test123!"
-    test_full_name = "Test User"
-    
-    url = f"{API_BASE}/auth/register"
-    payload = {
-        "email": test_email,
-        "password": test_password,
-        "full_name": test_full_name
-    }
-    
-    log_test(f"Making POST request to: {url}")
-    log_test(f"Test user email: {test_email}")
+    url = f"{API_BASE}/viewer/wedding/{WEDDING_ID}/all"
+    log_test(f"Making GET request to: {url}")
     
     try:
-        response = requests.post(url, json=payload, timeout=30)
+        response = requests.get(url, timeout=30)
         log_test(f"Response status: {response.status_code}")
         
-        # Check CORS headers
-        log_test("Checking CORS headers:")
-        cors_ok = check_cors_headers(response)
-        
-        # Check status code (should be 201 for register)
-        if response.status_code != 201:
-            log_test(f"❌ Expected status 201, got {response.status_code}", "ERROR")
+        # Check status code (should be 200)
+        if response.status_code != 200:
+            log_test(f"❌ Expected status 200, got {response.status_code}", "ERROR")
             log_test(f"Response body: {response.text}", "ERROR")
             return None, False
         
-        log_test("✅ Correct status code 201 (Created)")
+        log_test("✅ Correct status code 200 (OK)")
         
         # Parse response
         try:
@@ -152,7 +135,7 @@ def test_register_endpoint():
             return None, False
         
         # Verify response structure
-        required_fields = ["access_token", "user"]
+        required_fields = ["wedding", "video_template"]
         missing_fields = []
         
         for field in required_fields:
@@ -163,49 +146,16 @@ def test_register_endpoint():
             log_test(f"❌ Missing required fields in response: {missing_fields}", "ERROR")
             return None, False
         
-        # Verify access_token
-        access_token = data.get("access_token")
-        if not access_token or len(access_token) < 10:
-            log_test(f"❌ Invalid access_token: {access_token}", "ERROR")
-            return None, False
+        log_test("✅ Response has required top-level fields")
         
-        log_test(f"✅ Valid access_token received (length: {len(access_token)})")
+        # Check wedding data
+        wedding = data.get("wedding", {})
+        log_test(f"Wedding ID: {wedding.get('id')}")
+        log_test(f"Wedding Title: {wedding.get('title')}")
+        log_test(f"Bride: {wedding.get('bride_name')}")
+        log_test(f"Groom: {wedding.get('groom_name')}")
         
-        # Verify user object
-        user = data.get("user", {})
-        user_required_fields = ["id", "email", "full_name", "role"]
-        user_missing_fields = []
-        
-        for field in user_required_fields:
-            if field not in user:
-                user_missing_fields.append(field)
-        
-        if user_missing_fields:
-            log_test(f"❌ Missing required user fields: {user_missing_fields}", "ERROR")
-            return None, False
-        
-        # Verify user data matches input
-        if user.get("email") != test_email:
-            log_test(f"❌ User email mismatch: expected {test_email}, got {user.get('email')}", "ERROR")
-            return None, False
-        
-        if user.get("full_name") != test_full_name:
-            log_test(f"❌ User full_name mismatch: expected {test_full_name}, got {user.get('full_name')}", "ERROR")
-            return None, False
-        
-        log_test(f"✅ User object correct: {user.get('email')}, {user.get('full_name')}")
-        log_test(f"✅ User ID: {user.get('id')}")
-        log_test(f"✅ User role: {user.get('role')}")
-        
-        # Return test credentials and success status
-        test_credentials = {
-            "email": test_email,
-            "password": test_password,
-            "access_token": access_token,
-            "user": user
-        }
-        
-        return test_credentials, cors_ok
+        return data, True
         
     except requests.exceptions.RequestException as e:
         log_test(f"❌ Request failed: {str(e)}", "ERROR")
@@ -214,208 +164,203 @@ def test_register_endpoint():
         log_test(f"❌ Unexpected error: {str(e)}", "ERROR")
         return None, False
 
-def test_login_endpoint(test_credentials):
-    """Test POST /api/auth/login endpoint"""
-    log_test("Testing POST /api/auth/login endpoint")
+def test_video_template_structure(data):
+    """Test video template structure and overlay data"""
+    log_test("Testing video template structure and overlay data")
     
-    if not test_credentials:
-        log_test("❌ No test credentials available from register test", "ERROR")
-        return None, False
+    if not data:
+        log_test("❌ No data to test", "ERROR")
+        return False
     
-    url = f"{API_BASE}/auth/login"
-    payload = {
-        "email": test_credentials["email"],
-        "password": test_credentials["password"]
-    }
+    video_template = data.get("video_template")
+    if not video_template:
+        log_test("❌ No video_template in response", "ERROR")
+        return False
     
-    log_test(f"Making POST request to: {url}")
-    log_test(f"Login email: {test_credentials['email']}")
+    log_test("✅ video_template object exists")
     
-    try:
-        response = requests.post(url, json=payload, timeout=30)
-        log_test(f"Response status: {response.status_code}")
-        
-        # Check CORS headers
-        log_test("Checking CORS headers:")
-        cors_ok = check_cors_headers(response)
-        
-        # Check status code (should be 200 for login)
-        if response.status_code != 200:
-            log_test(f"❌ Expected status 200, got {response.status_code}", "ERROR")
-            log_test(f"Response body: {response.text}", "ERROR")
-            return None, False
-        
-        log_test("✅ Correct status code 200 (OK)")
-        
-        # Parse response
-        try:
-            data = response.json()
-        except json.JSONDecodeError as e:
-            log_test(f"❌ Failed to parse JSON response: {str(e)}", "ERROR")
-            return None, False
-        
-        # Verify response structure (same as register)
-        required_fields = ["access_token", "user"]
-        missing_fields = []
-        
-        for field in required_fields:
-            if field not in data:
-                missing_fields.append(field)
-        
-        if missing_fields:
-            log_test(f"❌ Missing required fields in response: {missing_fields}", "ERROR")
-            return None, False
-        
-        # Verify access_token
-        access_token = data.get("access_token")
-        if not access_token or len(access_token) < 10:
-            log_test(f"❌ Invalid access_token: {access_token}", "ERROR")
-            return None, False
-        
-        log_test(f"✅ Valid access_token received (length: {len(access_token)})")
-        
-        # Verify user object
-        user = data.get("user", {})
-        if user.get("email") != test_credentials["email"]:
-            log_test(f"❌ User email mismatch: expected {test_credentials['email']}, got {user.get('email')}", "ERROR")
-            return None, False
-        
-        # Verify user ID matches (should be same user)
-        if user.get("id") != test_credentials["user"]["id"]:
-            log_test(f"❌ User ID mismatch: expected {test_credentials['user']['id']}, got {user.get('id')}", "ERROR")
-            return None, False
-        
-        log_test(f"✅ Login successful for user: {user.get('email')}")
-        log_test(f"✅ User ID matches: {user.get('id')}")
-        
-        # Return updated credentials with new token
-        login_credentials = {
-            "email": test_credentials["email"],
-            "password": test_credentials["password"],
-            "access_token": access_token,
-            "user": user
-        }
-        
-        return login_credentials, cors_ok
-        
-    except requests.exceptions.RequestException as e:
-        log_test(f"❌ Request failed: {str(e)}", "ERROR")
-        return None, False
-    except Exception as e:
-        log_test(f"❌ Unexpected error: {str(e)}", "ERROR")
-        return None, False
+    # Check required video template fields
+    required_template_fields = ["id", "name", "video_url", "text_overlays", "reference_resolution"]
+    missing_template_fields = []
+    
+    for field in required_template_fields:
+        if field not in video_template:
+            missing_template_fields.append(field)
+    
+    if missing_template_fields:
+        log_test(f"❌ Missing video template fields: {missing_template_fields}", "ERROR")
+        return False
+    
+    log_test("✅ Video template has all required fields")
+    
+    # Log video template details
+    log_test(f"Template ID: {video_template.get('id')}")
+    log_test(f"Template Name: {video_template.get('name')}")
+    log_test(f"Video URL: {video_template.get('video_url')}")
+    log_test(f"Duration: {video_template.get('duration')} seconds")
+    log_test(f"Resolution: {video_template.get('resolution')}")
+    
+    # Check reference resolution
+    ref_res = video_template.get("reference_resolution", {})
+    log_test(f"Reference Resolution: {ref_res.get('width')}x{ref_res.get('height')}")
+    
+    # Check video URL is proxy URL
+    video_url = video_template.get("video_url", "")
+    if "/api/media/telegram-proxy/" in video_url:
+        log_test("✅ Video URL is using proxy format")
+    else:
+        log_test(f"⚠️ Video URL may not be proxy format: {video_url}", "WARNING")
+    
+    return True
 
-def test_me_endpoint(login_credentials):
-    """Test GET /api/auth/me endpoint"""
-    log_test("Testing GET /api/auth/me endpoint")
+def test_overlay_data_structure(data):
+    """Test overlay data structure and content"""
+    log_test("Testing overlay data structure and content")
     
-    if not login_credentials:
-        log_test("❌ No login credentials available", "ERROR")
-        return False, False
+    if not data:
+        log_test("❌ No data to test", "ERROR")
+        return False
     
-    url = f"{API_BASE}/auth/me"
-    headers = {
-        "Authorization": f"Bearer {login_credentials['access_token']}"
-    }
+    video_template = data.get("video_template", {})
+    text_overlays = video_template.get("text_overlays", [])
     
-    log_test(f"Making GET request to: {url}")
-    log_test("Using Authorization header with Bearer token")
+    if not text_overlays:
+        log_test("❌ No text_overlays found in video template", "ERROR")
+        return False
     
-    try:
-        response = requests.get(url, headers=headers, timeout=30)
-        log_test(f"Response status: {response.status_code}")
+    log_test(f"✅ Found {len(text_overlays)} text overlays")
+    
+    all_issues = []
+    
+    # Test each overlay
+    for i, overlay in enumerate(text_overlays):
+        log_overlay_details(overlay, i)
         
-        # Check CORS headers
-        log_test("Checking CORS headers:")
-        cors_ok = check_cors_headers(response)
-        
-        # Check status code (should be 200)
-        if response.status_code != 200:
-            log_test(f"❌ Expected status 200, got {response.status_code}", "ERROR")
-            log_test(f"Response body: {response.text}", "ERROR")
-            return False, False
-        
-        log_test("✅ Correct status code 200 (OK)")
-        
-        # Parse response
-        try:
-            user_data = response.json()
-        except json.JSONDecodeError as e:
-            log_test(f"❌ Failed to parse JSON response: {str(e)}", "ERROR")
-            return False, False
-        
-        # Verify user data structure
-        user_required_fields = ["id", "email", "full_name", "role"]
-        missing_fields = []
-        
-        for field in user_required_fields:
-            if field not in user_data:
-                missing_fields.append(field)
-        
-        if missing_fields:
-            log_test(f"❌ Missing required user fields: {missing_fields}", "ERROR")
-            return False, False
-        
-        # Verify user data matches login credentials
-        if user_data.get("email") != login_credentials["email"]:
-            log_test(f"❌ Email mismatch: expected {login_credentials['email']}, got {user_data.get('email')}", "ERROR")
-            return False, False
-        
-        if user_data.get("id") != login_credentials["user"]["id"]:
-            log_test(f"❌ User ID mismatch: expected {login_credentials['user']['id']}, got {user_data.get('id')}", "ERROR")
-            return False, False
-        
-        log_test(f"✅ User info correct: {user_data.get('email')}")
-        log_test(f"✅ User ID: {user_data.get('id')}")
-        log_test(f"✅ Full name: {user_data.get('full_name')}")
-        log_test(f"✅ Role: {user_data.get('role')}")
-        
-        # Check additional fields
-        if "subscription_plan" in user_data:
-            log_test(f"✅ Subscription plan: {user_data.get('subscription_plan')}")
-        
-        if "created_at" in user_data:
-            log_test(f"✅ Created at: {user_data.get('created_at')}")
-        
-        return True, cors_ok
-        
-    except requests.exceptions.RequestException as e:
-        log_test(f"❌ Request failed: {str(e)}", "ERROR")
-        return False, False
-    except Exception as e:
-        log_test(f"❌ Unexpected error: {str(e)}", "ERROR")
-        return False, False
+        # Validate overlay structure
+        issues = validate_overlay_structure(overlay, i)
+        all_issues.extend(issues)
+    
+    # Report issues
+    if all_issues:
+        log_test("❌ Overlay validation issues found:", "ERROR")
+        for issue in all_issues:
+            log_test(f"  - {issue}", "ERROR")
+        return False
+    else:
+        log_test("✅ All overlays have valid structure")
+        return True
 
-def test_invalid_token():
-    """Test /api/auth/me with invalid token"""
-    log_test("Testing GET /api/auth/me with invalid token")
+def test_overlay_content_population(data):
+    """Test that overlays are populated with actual wedding data"""
+    log_test("Testing overlay content population with wedding data")
     
-    url = f"{API_BASE}/auth/me"
-    headers = {
-        "Authorization": "Bearer invalid_token_12345"
-    }
+    if not data:
+        log_test("❌ No data to test", "ERROR")
+        return False
     
-    log_test(f"Making GET request to: {url}")
-    log_test("Using invalid Authorization token")
+    wedding = data.get("wedding", {})
+    video_template = data.get("video_template", {})
+    text_overlays = video_template.get("text_overlays", [])
     
-    try:
-        response = requests.get(url, headers=headers, timeout=30)
-        log_test(f"Response status: {response.status_code}")
+    bride_name = wedding.get("bride_name", "")
+    groom_name = wedding.get("groom_name", "")
+    
+    log_test(f"Wedding data - Bride: '{bride_name}', Groom: '{groom_name}'")
+    
+    populated_overlays = 0
+    placeholder_overlays = 0
+    
+    for i, overlay in enumerate(text_overlays):
+        text_value = overlay.get("text_value", "")
         
-        # Should return 401 Unauthorized
-        if response.status_code == 401:
-            log_test("✅ Correctly rejected invalid token with 401 status")
-            return True
+        # Check if text contains actual wedding data
+        has_bride = bride_name.lower() in text_value.lower() if bride_name else False
+        has_groom = groom_name.lower() in text_value.lower() if groom_name else False
+        
+        # Check for common placeholder patterns
+        is_placeholder = any(placeholder in text_value.lower() for placeholder in [
+            "bride name", "groom name", "wedding date", "venue name", 
+            "placeholder", "sample", "example", "{{", "}}"
+        ])
+        
+        if has_bride or has_groom:
+            log_test(f"  ✅ Overlay {i + 1}: Contains wedding data - '{text_value}'")
+            populated_overlays += 1
+        elif is_placeholder:
+            log_test(f"  ⚠️ Overlay {i + 1}: Contains placeholder text - '{text_value}'", "WARNING")
+            placeholder_overlays += 1
         else:
-            log_test(f"❌ Expected 401 for invalid token, got {response.status_code}", "ERROR")
-            return False, False
+            log_test(f"  ℹ️ Overlay {i + 1}: Static text - '{text_value}'")
+    
+    if populated_overlays > 0:
+        log_test(f"✅ Found {populated_overlays} overlays with wedding data")
+        return True
+    elif placeholder_overlays > 0:
+        log_test(f"⚠️ Found {placeholder_overlays} overlays with placeholder text", "WARNING")
+        return False
+    else:
+        log_test("ℹ️ All overlays appear to be static text")
+        return True
+
+def test_overlay_timing_and_positioning(data):
+    """Test overlay timing and positioning for common issues"""
+    log_test("Testing overlay timing and positioning for common issues")
+    
+    if not data:
+        log_test("❌ No data to test", "ERROR")
+        return False
+    
+    video_template = data.get("video_template", {})
+    text_overlays = video_template.get("text_overlays", [])
+    video_duration = video_template.get("duration", 0)
+    
+    log_test(f"Video duration: {video_duration} seconds")
+    
+    issues_found = []
+    
+    for i, overlay in enumerate(text_overlays):
+        timing = overlay.get("timing", {})
+        position = overlay.get("position", {})
+        styling = overlay.get("styling", {})
         
-    except requests.exceptions.RequestException as e:
-        log_test(f"❌ Request failed: {str(e)}", "ERROR")
-        return False, False
-    except Exception as e:
-        log_test(f"❌ Unexpected error: {str(e)}", "ERROR")
-        return False, False
+        start_time = timing.get("start_time", 0)
+        end_time = timing.get("end_time", 0)
+        
+        # Check timing issues
+        if start_time > 0:
+            issues_found.append(f"Overlay {i + 1}: start_time > 0 ({start_time}s) - won't show at video start")
+        
+        if video_duration > 0 and end_time > video_duration:
+            issues_found.append(f"Overlay {i + 1}: end_time ({end_time}s) > video duration ({video_duration}s)")
+        
+        # Check positioning issues
+        x = position.get("x", 0)
+        y = position.get("y", 0)
+        
+        if x < 0 or x > 100:
+            issues_found.append(f"Overlay {i + 1}: x position ({x}%) out of bounds (0-100%)")
+        
+        if y < 0 or y > 100:
+            issues_found.append(f"Overlay {i + 1}: y position ({y}%) out of bounds (0-100%)")
+        
+        # Check styling issues
+        font_size = styling.get("font_size", 0)
+        color = styling.get("color", "")
+        
+        if font_size <= 0:
+            issues_found.append(f"Overlay {i + 1}: font_size ({font_size}) is too small or zero")
+        
+        if color.lower() in ["#ffffff", "#fff", "white"] and not styling.get("stroke_width", 0):
+            issues_found.append(f"Overlay {i + 1}: white text without stroke may not be visible")
+    
+    if issues_found:
+        log_test("⚠️ Potential overlay issues found:", "WARNING")
+        for issue in issues_found:
+            log_test(f"  - {issue}", "WARNING")
+        return False
+    else:
+        log_test("✅ No obvious timing or positioning issues found")
+        return True
 
 def main():
     """Run all authentication endpoint tests"""
