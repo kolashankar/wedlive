@@ -651,8 +651,8 @@ export default function InteractiveOverlayCanvas({
     const visibleOverlays = overlays.filter(overlay => {
       const startTime = overlay.timing?.start_time || 0;
       const endTime = overlay.timing?.end_time || duration;
-      // Add small epsilon to handle floating-point precision issues
-      const epsilon = 0.05;
+      // Small epsilon (0.016 seconds ~= 1 frame at 60fps) for precise timing
+      const epsilon = 0.016;
       return currentTime >= (startTime - epsilon) && currentTime <= (endTime + epsilon);
     }).sort((a, b) => (b.layer_index || 0) - (a.layer_index || 0));
 
