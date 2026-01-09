@@ -43,7 +43,7 @@ async def register(user_data: UserCreate):
     user = {
         "id": user_id,
         "email": user_data.email,
-        "password": hash_password(user_data.password),
+        "password_hash": hash_password(user_data.password),
         "full_name": user_data.full_name,
         "role": role.value,
         "subscription_plan": SubscriptionPlan.FREE.value,
