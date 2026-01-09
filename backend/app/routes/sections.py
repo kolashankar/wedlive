@@ -231,10 +231,13 @@ async def upload_cover_photo(
             # Determine if mirroring needed (groom photos in separate mode)
             mirror = (category == "groom")
             
+            # Get fresh border URL from Telegram
+            border_url = await get_fresh_border_url(border)
+            
             # Apply auto-crop
             cropped_path, message = await auto_crop_service.apply_crop_with_border(
                 photo_url=original_url,
-                border_url=border["cdn_url"],
+                border_url=border_url,
                 mask_data=border["mask"],
                 mirror=mirror
             )
