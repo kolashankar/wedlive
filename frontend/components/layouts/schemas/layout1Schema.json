@@ -1,0 +1,80 @@
+{
+  "layout_id": "layout_1",
+  "name": "Classic Split Hero",
+  "description": "Modern split-screen editorial design. Sticky hero image on left, scrolling narrative content on right. High impact and readable.",
+  "version": "2.0",
+  "thumbnail": "/layout-previews/layout1.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Main sticky hero image (left side)",
+        "supports_border": true,
+        "aspect_ratio": "portrait"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 8,
+        "description": "Grid gallery in content area",
+        "supports_border": true
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "Featured video in content stream",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 50,
+        "description": "Top tagline"
+      },
+      "description": {
+        "required": false,
+        "max_length": 500,
+        "description": "Main narrative text"
+      }
+    },
+    
+    "border_slots": {
+      "coupleBorder": {
+        "applies_to": ["couplePhoto"],
+        "required": false,
+        "description": "Border for main hero image"
+      },
+      "preciousMomentsBorder": {
+        "applies_to": ["preciousMoments"],
+        "required": false,
+        "description": "Border for gallery images"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "Playfair Display",
+      "description": "Primary font family"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#1e3a8a",
+      "description": "Primary accent color"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "split_screen_container",
+      "sticky_hero_left",
+      "scrolling_content_right"
+    ]
+  }
+}

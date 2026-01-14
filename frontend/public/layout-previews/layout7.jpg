@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>
+  <rect fill='#ffe4e6' width='400' height='300'/>
+  <text x='50%' y='45%' dominant-baseline='middle' text-anchor='middle' fill='#be123c' font-size='28' font-family='Arial, sans-serif' font-weight='bold'>Layout 7</text>
+  <text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='#9f1239' font-size='16' font-family='Arial, sans-serif'>Romantic Rose</text>
+</svg>

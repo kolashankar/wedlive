@@ -1,0 +1,925 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Palette, Image as ImageIcon, Type, Upload, X, Building2, Loader2, Eye, Play, Layout as LayoutIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import api from '@/lib/api';
+import MediaSelector from '@/components/MediaSelector';
+import { useFont } from '@/contexts/FontContext';
+import { useBorder } from '@/contexts/BorderContext';
+import { getAllLayouts, getLayoutSchema } from '@/components/layouts';
+import { 
+  layoutSupportsSlot, 
+  getSupportedPhotoSlots, 
+  getPhotoSlotMaxCount,
+  getRandomLayoutAssets,
+  getLayoutInfo 
+} from '@/lib/layoutHelpers';
+import { getYouTubeEmbedUrl, isYouTubeUrl } from '@/lib/youtubeParser';
+
+const FONT_OPTIONS = [
+  { name: 'Inter', fontFamily: 'Inter, sans-serif', googleFont: 'Inter:wght@400;600;700' },
+  { name: 'Great Vibes', fontFamily: "'Great Vibes', cursive", googleFont: 'Great+Vibes' },
+  { name: 'Playfair Display', fontFamily: "'Playfair Display', serif", googleFont: 'Playfair+Display:wght@400;600;700' },
+  { name: 'Cinzel', fontFamily: "'Cinzel', serif", googleFont: 'Cinzel:wght@400;600;700' },
+  { name: 'Montserrat', fontFamily: "'Montserrat', sans-serif", googleFont: 'Montserrat:wght@400;600;700' },
+  { name: 'Lato', fontFamily: "'Lato', sans-serif", googleFont: 'Lato:wght@400;700' },
+  { name: 'Caveat', fontFamily: "'Caveat', cursive", googleFont: 'Caveat:wght@400;700' },
+  { name: 'Bebas Neue', fontFamily: "'Bebas Neue', cursive", googleFont: 'Bebas+Neue' },
+  { name: 'Rozha One', fontFamily: "'Rozha One', serif", googleFont: 'Rozha+One' },
+  { name: 'Pinyon Script', fontFamily: "'Pinyon Script', cursive", googleFont: 'Pinyon+Script' }
+];
+
+export default function NewThemeManager({ weddingId, wedding }) {
+  const { updateFont } = useFont();
+  const { updateBorder, updateAllBorders } = useBorder();
+  const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState(null);
+  const [showMediaSelector, setShowMediaSelector] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  
+  // Theme assets state
+  const [availableBorders, setAvailableBorders] = useState([]);
+  const [availableBackgrounds, setAvailableBackgrounds] = useState([]);
+  const [loadingAssets, setLoadingAssets] = useState(true);
+  
+  // Selected layout state
+  const [selectedLayoutId, setSelectedLayoutId] = useState('layout_1');
+  const [randomAssetsApplied, setRandomAssetsApplied] = useState(false);
+
+  useEffect(() => {
+    loadThemeSettings();
+    loadThemeAssets();
+    loadGoogleFonts();
+  }, [weddingId]);
+
+  const loadGoogleFonts = () => {
+    const fontsToLoad = FONT_OPTIONS.map(f => f.googleFont).join('&family=');
+    const link = document.createElement('link');
+    link.href = `https://fonts.googleapis.com/css2?family=${fontsToLoad}&display=swap`;
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  };
+
+  const loadThemeSettings = async () => {
+    try {
+      const response = await api.get(`/api/weddings/${weddingId}/theme`);
+      
+      if (!response.data || typeof response.data !== 'object') {
+        console.error('Invalid theme settings response:', response.data);
+        toast.error('Invalid theme settings received');
+        return;
+      }
+      
+      const themeData = response.data;
+      
+      // Check if layout_id exists, otherwise default to layout_1
+      const layoutId = themeData.layout_id || themeData.theme_id || 'layout_1';
+      setSelectedLayoutId(layoutId);
+      
+      // Set default theme structure
+      setTheme({
+        layout_id: layoutId,
+        custom_font: themeData.custom_font || 'Great Vibes',
+        primary_color: themeData.primary_color || '#f43f5e',
+        secondary_color: themeData.secondary_color || '#a855f7',
+        pre_wedding_video: themeData.pre_wedding_video || '',
+        cover_photos: Array.isArray(themeData.cover_photos) ? themeData.cover_photos : [],
+        studio_details: themeData.studio_details || {
+          studio_id: '',
+          logo_url: '',
+        },
+        custom_messages: themeData.custom_messages || {
+          welcome_text: 'Welcome to our big day',
+          description: ''
+        },
+        theme_assets: themeData.theme_assets || {
+          borders: {},
+          background_image_id: null
+        }
+      });
+    } catch (error) {
+      console.error('Error loading theme:', error);
+      toast.error('Failed to load theme settings');
+      
+      // Set default theme
+      setTheme({
+        layout_id: 'layout_1',
+        custom_font: 'Great Vibes',
+        primary_color: '#f43f5e',
+        secondary_color: '#a855f7',
+        pre_wedding_video: '',
+        cover_photos: [],
+        studio_details: { studio_id: '', logo_url: '' },
+        custom_messages: { welcome_text: 'Welcome to our big day', description: '' },
+        theme_assets: { borders: {}, background_image_id: null }
+      });
+    }
+  };
+
+  const loadThemeAssets = async () => {
+    try {
+      setLoadingAssets(true);
+      const [bordersRes, backgroundsRes] = await Promise.all([
+        api.get('/api/theme-assets/borders'),
+        api.get('/api/theme-assets/backgrounds')
+      ]);
+      
+      setAvailableBorders(bordersRes.data || []);
+      setAvailableBackgrounds(backgroundsRes.data || []);
+    } catch (error) {
+      console.error('Error loading theme assets:', error);
+    } finally {
+      setLoadingAssets(false);
+    }
+  };
+
+  const handleLayoutChange = async (newLayoutId) => {
+    try {
+      setLoading(true);
+      setSelectedLayoutId(newLayoutId);
+      
+      // Apply random assets if not already applied
+      if (!randomAssetsApplied) {
+        const randomAssets = getRandomLayoutAssets(
+          newLayoutId, 
+          weddingId, 
+          availableBorders, 
+          availableBackgrounds
+        );
+        
+        const updates = {
+          layout_id: newLayoutId,
+          custom_font: randomAssets.font,
+          theme_assets: {
+            borders: {
+              couple_border_id: randomAssets.border?.id || null,
+              bride_groom_border_id: randomAssets.border?.id || null,
+              precious_moments_border_id: randomAssets.border?.id || null
+            },
+            background_image_id: randomAssets.background?.id || null
+          }
+        };
+        
+        await api.put(`/api/weddings/${weddingId}/theme`, updates);
+        setRandomAssetsApplied(true);
+        updateFont(randomAssets.font);
+        toast.success('Layout changed with random styling!');
+      } else {
+        await api.put(`/api/weddings/${weddingId}/theme`, { layout_id: newLayoutId });
+        toast.success('Layout changed!');
+      }
+      
+      loadThemeSettings();
+    } catch (error) {
+      console.error('Error changing layout:', error);
+      toast.error('Failed to change layout');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateTheme = async (updates) => {
+    try {
+      setLoading(true);
+      await api.put(`/api/weddings/${weddingId}/theme`, updates);
+      toast.success('Settings updated!');
+      
+      // Mark that user has customized (no more random)
+      if (updates.custom_font || updates.theme_assets) {
+        setRandomAssetsApplied(true);
+      }
+      
+      loadThemeSettings();
+    } catch (error) {
+      console.error('Error updating theme:', error);
+      toast.error('Failed to update settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMediaSelect = (selectedMedia) => {
+    if (!selectedCategory) return;
+    
+    const newPhotos = selectedMedia.map(media => ({
+      url: media.cdn_url || media.file_url || media.url,
+      category: selectedCategory,
+      type: media.file_type?.includes('video') ? 'video' : 'photo'
+    }));
+    
+    const currentPhotos = theme?.cover_photos || [];
+    const filteredPhotos = currentPhotos.filter(p => p.category !== selectedCategory);
+    
+    handleUpdateTheme({
+      cover_photos: [...filteredPhotos, ...newPhotos]
+    });
+    
+    setShowMediaSelector(false);
+    setSelectedCategory(null);
+  };
+
+  const removeCategorizedPhoto = (photoToRemove, category) => {
+    const currentPhotos = theme?.cover_photos || [];
+    const updatedPhotos = currentPhotos.filter(photo => 
+      !(photo.category === category && (photo.url === photoToRemove.url || photo === photoToRemove))
+    );
+    
+    handleUpdateTheme({ cover_photos: updatedPhotos });
+  };
+
+  // Safe theme accessor
+  const safeTheme = theme || {
+    layout_id: 'layout_1',
+    custom_font: 'Great Vibes',
+    primary_color: '#f43f5e',
+    secondary_color: '#a855f7',
+    pre_wedding_video: '',
+    cover_photos: [],
+    studio_details: { studio_id: '', logo_url: '' },
+    custom_messages: { welcome_text: 'Welcome to our big day', description: '' },
+    theme_assets: { borders: {}, background_image_id: null }
+  };
+
+  // Get current layout schema
+  const currentLayoutSchema = getLayoutSchema(selectedLayoutId);
+  const supportedPhotoSlots = getSupportedPhotoSlots(selectedLayoutId);
+
+  if (!theme) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+      </div>
+    );
+  }
+
+  const layouts = getAllLayouts();
+
+  return (
+    <div className="space-y-6">
+      {/* Layout Selection Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LayoutIcon className="w-5 h-5" />
+            Wedding Layout
+          </CardTitle>
+          <CardDescription>
+            Choose a layout structure for your wedding page
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {layouts.map((layout) => {
+              const isSelected = layout.layout_id === selectedLayoutId;
+              const layoutInfo = getLayoutInfo(layout.layout_id);
+              
+              return (
+                <button
+                  key={layout.layout_id}
+                  onClick={() => handleLayoutChange(layout.layout_id)}
+                  disabled={loading}
+                  className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+                    isSelected 
+                      ? 'border-rose-500 bg-rose-50' 
+                      : 'border-gray-200 hover:border-rose-300'
+                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {/* Preview thumbnail */}
+                  <div className="mb-3 aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded overflow-hidden">
+                    {layout.thumbnail ? (
+                      <img 
+                        src={layout.thumbnail} 
+                        alt={layout.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <LayoutIcon className="w-12 h-12 text-gray-300" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="font-semibold text-sm">{layout.name}</div>
+                  <div className="text-xs text-gray-500 mt-1">{layout.description}</div>
+                  
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-rose-500 rounded-full flex items-center justify-center">
+                      <Eye className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Font & Colors Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Type className="w-5 h-5" />
+            Typography & Colors
+          </CardTitle>
+          <CardDescription>
+            Customize fonts and color scheme
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Font Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Type className="w-4 h-4" />
+              Font Family
+            </Label>
+            <Select
+              value={safeTheme.custom_font}
+              onValueChange={(value) => {
+                handleUpdateTheme({ custom_font: value });
+                updateFont(value);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FONT_OPTIONS.map(font => (
+                  <SelectItem key={font.name} value={font.name}>
+                    <span style={{ fontFamily: font.fontFamily }} className="text-lg">
+                      {font.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="p-3 bg-gray-50 rounded-md border">
+              <p className="text-xs text-gray-500 mb-1">Preview:</p>
+              <p 
+                className="text-3xl"
+                style={{ fontFamily: FONT_OPTIONS.find(f => f.name === safeTheme.custom_font)?.fontFamily || 'Inter' }}
+              >
+                {wedding?.bride_name || 'Bride'} & {wedding?.groom_name || 'Groom'}
+              </p>
+            </div>
+          </div>
+
+          {/* Color Customization */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Primary Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={safeTheme.primary_color}
+                  onChange={(e) => handleUpdateTheme({ primary_color: e.target.value })}
+                  className="w-12 h-10 rounded border cursor-pointer"
+                  disabled={loading}
+                />
+                <Input
+                  value={safeTheme.primary_color}
+                  onChange={(e) => handleUpdateTheme({ primary_color: e.target.value })}
+                  className="flex-1"
+                  placeholder="#f43f5e"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Secondary Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={safeTheme.secondary_color}
+                  onChange={(e) => handleUpdateTheme({ secondary_color: e.target.value })}
+                  className="w-12 h-10 rounded border cursor-pointer"
+                  disabled={loading}
+                />
+                <Input
+                  value={safeTheme.secondary_color}
+                  onChange={(e) => handleUpdateTheme({ secondary_color: e.target.value })}
+                  className="flex-1"
+                  placeholder="#a855f7"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content & Messages Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Welcome Message & Description</CardTitle>
+          <CardDescription>
+            Customize the text content for your wedding page
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Welcome Message</Label>
+            <Input
+              value={safeTheme.custom_messages?.welcome_text || ''}
+              onChange={(e) => handleUpdateTheme({ 
+                custom_messages: { 
+                  ...safeTheme.custom_messages, 
+                  welcome_text: e.target.value 
+                } 
+              })}
+              placeholder="Welcome to our big day"
+              disabled={loading}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea
+              value={safeTheme.custom_messages?.description || ''}
+              onChange={(e) => handleUpdateTheme({ 
+                custom_messages: { 
+                  ...safeTheme.custom_messages, 
+                  description: e.target.value 
+                } 
+              })}
+              placeholder="Share your love story..."
+              rows={4}
+              disabled={loading}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pre-Wedding Video Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Play className="w-5 h-5" />
+            Pre-Wedding Video
+          </CardTitle>
+          <CardDescription>
+            Add a YouTube video (any format supported)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>YouTube URL</Label>
+            <Input
+              value={safeTheme.pre_wedding_video || ''}
+              onChange={(e) => {
+                const url = e.target.value;
+                // Convert to embed URL if it's a valid YouTube URL
+                const embedUrl = isYouTubeUrl(url) ? getYouTubeEmbedUrl(url) : url;
+                handleUpdateTheme({ pre_wedding_video: embedUrl || url });
+              }}
+              placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
+              disabled={loading}
+            />
+            <p className="text-xs text-gray-500">
+              Supports: youtube.com/watch?v=, youtu.be/, and embed URLs
+            </p>
+          </div>
+          
+          {safeTheme.pre_wedding_video && isYouTubeUrl(safeTheme.pre_wedding_video) && (
+            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              <iframe
+                src={getYouTubeEmbedUrl(safeTheme.pre_wedding_video)}
+                title="Pre-wedding video preview"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Photo Selection Card - Schema Driven */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="w-5 h-5" />
+            Photos
+          </CardTitle>
+          <CardDescription>
+            Upload photos based on your selected layout
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Layout Requirements Info */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-800">
+              <span className="font-semibold">Selected Layout:</span> {currentLayoutSchema?.name}
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              {currentLayoutSchema?.description}
+            </p>
+          </div>
+          
+          {/* Dynamic Photo Selection Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Bride Photo - Only if supported */}
+            {supportedPhotoSlots.bridePhoto && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('bride');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-pink-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 transition-colors bg-pink-50"
+              >
+                <ImageIcon className="w-6 h-6 text-pink-400 mb-1" />
+                <span className="text-xs text-pink-600 font-medium">Bride Photo</span>
+                {supportedPhotoSlots.bridePhoto.required && (
+                  <span className="text-[10px] text-pink-500">Required</span>
+                )}
+              </button>
+            )}
+            
+            {/* Groom Photo - Only if supported */}
+            {supportedPhotoSlots.groomPhoto && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('groom');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-blue-50"
+              >
+                <ImageIcon className="w-6 h-6 text-blue-400 mb-1" />
+                <span className="text-xs text-blue-600 font-medium">Groom Photo</span>
+                {supportedPhotoSlots.groomPhoto.required && (
+                  <span className="text-[10px] text-blue-500">Required</span>
+                )}
+              </button>
+            )}
+            
+            {/* Couple Photo - Only if supported */}
+            {supportedPhotoSlots.couplePhoto && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('couple');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50"
+              >
+                <ImageIcon className="w-6 h-6 text-purple-400 mb-1" />
+                <span className="text-xs text-purple-600 font-medium">Couple Photo</span>
+                {supportedPhotoSlots.couplePhoto.required && (
+                  <span className="text-[10px] text-purple-500">Required</span>
+                )}
+              </button>
+            )}
+            
+            {/* Precious Moments - Only if supported */}
+            {supportedPhotoSlots.preciousMoments && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('moment');
+                  setShowMediaSelector(true);
+                }}
+                className="aspect-square border-2 border-dashed border-green-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors bg-green-50"
+              >
+                <ImageIcon className="w-6 h-6 text-green-400 mb-1" />
+                <span className="text-xs text-green-600 font-medium text-center px-1">Gallery</span>
+                <span className="text-[10px] text-green-500 mt-0.5">
+                  (Up to {getPhotoSlotMaxCount(selectedLayoutId, 'preciousMoments')})
+                </span>
+              </button>
+            )}
+          </div>
+          
+          {/* Display Selected Photos by Category */}
+          {safeTheme.cover_photos?.length > 0 && (
+            <div className="space-y-4 pt-4 border-t">
+              {/* Bride Photos */}
+              {safeTheme.cover_photos.filter(p => p.category === 'bride').length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-pink-600 mb-2">Bride Photos</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {safeTheme.cover_photos.filter(p => p.category === 'bride').map((photo, idx) => (
+                      <div key={`bride-${idx}`} className="relative group aspect-square">
+                        <img
+                          src={photo.url || photo}
+                          alt="Bride"
+                          className="w-full h-full object-cover rounded-lg border border-pink-200"
+                        />
+                        <button
+                          onClick={() => removeCategorizedPhoto(photo, 'bride')}
+                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Groom Photos */}
+              {safeTheme.cover_photos.filter(p => p.category === 'groom').length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-blue-600 mb-2">Groom Photos</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {safeTheme.cover_photos.filter(p => p.category === 'groom').map((photo, idx) => (
+                      <div key={`groom-${idx}`} className="relative group aspect-square">
+                        <img
+                          src={photo.url || photo}
+                          alt="Groom"
+                          className="w-full h-full object-cover rounded-lg border border-blue-200"
+                        />
+                        <button
+                          onClick={() => removeCategorizedPhoto(photo, 'groom')}
+                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Couple Photos */}
+              {safeTheme.cover_photos.filter(p => p.category === 'couple').length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-purple-600 mb-2">Couple Photos</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {safeTheme.cover_photos.filter(p => p.category === 'couple').map((photo, idx) => (
+                      <div key={`couple-${idx}`} className="relative group aspect-square">
+                        <img
+                          src={photo.url || photo}
+                          alt="Couple"
+                          className="w-full h-full object-cover rounded-lg border border-purple-200"
+                        />
+                        <button
+                          onClick={() => removeCategorizedPhoto(photo, 'couple')}
+                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Gallery/Precious Moments */}
+              {safeTheme.cover_photos.filter(p => p.category === 'moment').length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-green-600 mb-2">Gallery Photos</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {safeTheme.cover_photos.filter(p => p.category === 'moment').map((photo, idx) => (
+                      <div key={`moment-${idx}`} className="relative group aspect-square">
+                        {photo.type === 'video' ? (
+                          <div className="relative w-full h-full">
+                            <video
+                              src={photo.url || photo}
+                              className="w-full h-full object-cover rounded-lg border border-green-200"
+                              muted
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                              <Play className="w-6 h-6 text-white" fill="white" />
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={photo.url || photo}
+                            alt="Gallery"
+                            className="w-full h-full object-cover rounded-lg border border-green-200"
+                          />
+                        )}
+                        <button
+                          onClick={() => removeCategorizedPhoto(photo, 'moment')}
+                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Photo Borders & Backgrounds Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="w-5 h-5" />
+            Borders & Backgrounds
+          </CardTitle>
+          <CardDescription>
+            Customize photo borders and background images
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {loadingAssets ? (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading assets...
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Photo Borders */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Photo Borders</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Couple Border */}
+                  <div className="space-y-2 p-3 bg-purple-50 rounded-lg border">
+                    <Label className="text-xs font-medium text-purple-700">Couple Border</Label>
+                    <Select
+                      value={safeTheme.theme_assets?.borders?.couple_border_id || 'none'}
+                      onValueChange={(value) => {
+                        handleUpdateTheme({
+                          theme_assets: {
+                            ...safeTheme.theme_assets,
+                            borders: {
+                              ...safeTheme.theme_assets?.borders,
+                              couple_border_id: value === 'none' ? null : value
+                            }
+                          }
+                        });
+                        updateBorder('couple_border_id', value === 'none' ? null : value);
+                      }}
+                    >
+                      <SelectTrigger className="text-xs bg-white">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            {border.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Bride/Groom Border */}
+                  <div className="space-y-2 p-3 bg-pink-50 rounded-lg border">
+                    <Label className="text-xs font-medium text-pink-700">Bride/Groom Border</Label>
+                    <Select
+                      value={safeTheme.theme_assets?.borders?.bride_groom_border_id || 'none'}
+                      onValueChange={(value) => {
+                        handleUpdateTheme({
+                          theme_assets: {
+                            ...safeTheme.theme_assets,
+                            borders: {
+                              ...safeTheme.theme_assets?.borders,
+                              bride_groom_border_id: value === 'none' ? null : value
+                            }
+                          }
+                        });
+                        updateBorder('bride_groom_border_id', value === 'none' ? null : value);
+                      }}
+                    >
+                      <SelectTrigger className="text-xs bg-white">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            {border.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Gallery Border */}
+                  <div className="space-y-2 p-3 bg-green-50 rounded-lg border">
+                    <Label className="text-xs font-medium text-green-700">Gallery Border</Label>
+                    <Select
+                      value={safeTheme.theme_assets?.borders?.precious_moments_border_id || 'none'}
+                      onValueChange={(value) => {
+                        handleUpdateTheme({
+                          theme_assets: {
+                            ...safeTheme.theme_assets,
+                            borders: {
+                              ...safeTheme.theme_assets?.borders,
+                              precious_moments_border_id: value === 'none' ? null : value
+                            }
+                          }
+                        });
+                        updateBorder('precious_moments_border_id', value === 'none' ? null : value);
+                      }}
+                    >
+                      <SelectTrigger className="text-xs bg-white">
+                        <SelectValue placeholder="Select border" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {availableBorders.map(border => (
+                          <SelectItem key={border.id} value={border.id}>
+                            {border.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Background Image */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Hero Background</Label>
+                <Select
+                  value={safeTheme.theme_assets?.background_image_id || 'none'}
+                  onValueChange={(value) => {
+                    handleUpdateTheme({
+                      theme_assets: {
+                        ...safeTheme.theme_assets,
+                        background_image_id: value === 'none' ? null : value
+                      }
+                    });
+                  }}
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select background" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {availableBackgrounds.map(bg => (
+                      <SelectItem key={bg.id} value={bg.id}>
+                        {bg.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Studio Details Card - Simplified */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            Studio Partner
+          </CardTitle>
+          <CardDescription>
+            Add studio logo/photo (optional)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Studio Logo/Photo URL</Label>
+            <Input
+              value={safeTheme.studio_details?.logo_url || ''}
+              onChange={(e) => handleUpdateTheme({
+                studio_details: {
+                  ...safeTheme.studio_details,
+                  logo_url: e.target.value
+                }
+              })}
+              placeholder="https://..."
+              disabled={loading}
+            />
+            <p className="text-xs text-gray-500">
+              Only the logo/photo will be displayed on the wedding page
+            </p>
+          </div>
+          
+          {safeTheme.studio_details?.logo_url && (
+            <div className="p-4 bg-gray-50 rounded-lg border">
+              <img
+                src={safeTheme.studio_details.logo_url}
+                alt="Studio logo preview"
+                className="max-h-24 mx-auto object-contain"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Media Selector Modal */}
+      {showMediaSelector && (
+        <MediaSelector
+          weddingId={weddingId}
+          onSelect={handleMediaSelect}
+          onClose={() => {
+            setShowMediaSelector(false);
+            setSelectedCategory(null);
+          }}
+          multiSelect={selectedCategory === 'moment'}
+          maxSelection={selectedCategory === 'moment' ? getPhotoSlotMaxCount(selectedLayoutId, 'preciousMoments') : 1}
+        />
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,83 @@
+{
+  "layout_id": "layout_4",
+  "name": "Modern Scrapbook",
+  "description": "A warm, personal layout designed like a handcrafted scrapbook. Features taped photos, handwritten fonts, stickers, and a textured paper feel.",
+  "version": "2.0",
+  "thumbnail": "/layout-previews/layout4.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Main Polaroid Photo",
+        "supports_border": true,
+        "aspect_ratio": "portrait"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 12,
+        "description": "Scattered polaroid photos",
+        "supports_border": true
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "Video tape style embed",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 60,
+        "description": "Notebook header"
+      },
+      "description": {
+        "required": false,
+        "max_length": 800,
+        "description": "Handwritten note"
+      }
+    },
+    
+    "border_slots": {
+      "coupleBorder": {
+        "applies_to": ["couplePhoto"],
+        "required": false,
+        "description": "Border for main photo"
+      },
+      "preciousMomentsBorder": {
+        "applies_to": ["preciousMoments"],
+        "required": false,
+        "description": "Border for gallery photos"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "Indie Flower",
+      "description": "Handwriting font family"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#44403c",
+      "description": "Ink color"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "polaroid_hero",
+      "notebook_story",
+      "ticket_stubs_details",
+      "scattered_gallery",
+      "video_tape",
+      "footer"
+    ]
+  }
+}

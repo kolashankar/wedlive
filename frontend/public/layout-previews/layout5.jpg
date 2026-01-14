@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>
+  <rect fill='#dcfce7' width='400' height='300'/>
+  <text x='50%' y='45%' dominant-baseline='middle' text-anchor='middle' fill='#166534' font-size='28' font-family='Arial, sans-serif' font-weight='bold'>Layout 5</text>
+  <text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='#14532d' font-size='16' font-family='Arial, sans-serif'>Garden Party</text>
+</svg>

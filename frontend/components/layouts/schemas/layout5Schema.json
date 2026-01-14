@@ -1,0 +1,108 @@
+{
+  "layout_id": "layout_5",
+  "name": "Minimalist Card",
+  "description": "Ultra-clean card-based design with emphasis on negative space and elegant simplicity. Modern minimalist aesthetic.",
+  "version": "2.0",
+  "thumbnail": "/layout-previews/layout5.jpg",
+  
+  "supported_slots": {
+    "photos": {
+      "couplePhoto": {
+        "required": true,
+        "description": "Main couple photo in card",
+        "supports_border": true,
+        "default_position": "center",
+        "aspect_ratio": "landscape"
+      },
+      "preciousMoments": {
+        "required": false,
+        "type": "array",
+        "max_count": 9,
+        "description": "Minimal gallery (3x3 grid)",
+        "supports_border": false,
+        "layout_style": ["grid"]
+      },
+      "studioImage": {
+        "required": false,
+        "description": "Studio logo minimal",
+        "supports_border": false
+      }
+    },
+    
+    "videos": {
+      "preWeddingVideo": {
+        "required": false,
+        "description": "Video in clean card",
+        "embed_type": "youtube"
+      }
+    },
+    
+    "text_content": {
+      "welcomeMessage": {
+        "required": true,
+        "max_length": 80,
+        "description": "Brief welcome text"
+      },
+      "description": {
+        "required": false,
+        "max_length": 300,
+        "description": "Short description only"
+      }
+    },
+    
+    "studio_info": {
+      "studioName": {
+        "required": false,
+        "description": "Studio name"
+      }
+    },
+    
+    "backgrounds": {
+      "heroBackground": {
+        "required": false,
+        "description": "Subtle background"
+      }
+    }
+  },
+  
+  "style_inputs": {
+    "font": {
+      "required": true,
+      "default": "Montserrat",
+      "description": "Clean modern font"
+    },
+    "primaryColor": {
+      "required": true,
+      "default": "#000000",
+      "description": "Primary color (typically black/dark)"
+    },
+    "secondaryColor": {
+      "required": true,
+      "default": "#737373",
+      "description": "Secondary gray tone"
+    }
+  },
+  
+  "border_slots": {
+    "coupleBorder": {
+      "applies_to": ["couplePhoto"],
+      "required": false,
+      "description": "Border style for couple photo"
+    }
+  },
+  
+  "layout_structure": {
+    "sections": [
+      "hero_card",
+      "info_card",
+      "gallery_card",
+      "live_card",
+      "footer_card"
+    ],
+    "responsive_breakpoints": {
+      "mobile": "640px",
+      "tablet": "768px",
+      "desktop": "1024px"
+    }
+  }
+}
