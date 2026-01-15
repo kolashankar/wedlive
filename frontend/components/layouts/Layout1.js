@@ -58,19 +58,34 @@ export default function Layout1({
   // Detect video aspect ratio dynamically
   useEffect(() => {
     if (hasTemplateVideo) {
-      const video = document.querySelector('video');
-      if (video) {
-        video.addEventListener('loadedmetadata', () => {
-          const aspectRatio = video.videoWidth / video.videoHeight;
-          if (aspectRatio < 1) {
-            setVideoAspectRatio('9:16'); // Portrait
+      const checkVideo = () => {
+        const video = document.querySelector('video');
+        if (video) {
+          const handleMetadata = () => {
+            const aspectRatio = video.videoWidth / video.videoHeight;
+            console.log('[Layout1] Video dimensions:', video.videoWidth, 'x', video.videoHeight, 'Aspect:', aspectRatio);
+            if (aspectRatio < 1) {
+              setVideoAspectRatio('9:16'); // Portrait
+            } else {
+              setVideoAspectRatio('16:9'); // Landscape
+            }
+          };
+          
+          if (video.readyState >= 1) {
+            handleMetadata();
           } else {
-            setVideoAspectRatio('16:9'); // Landscape
+            video.addEventListener('loadedmetadata', handleMetadata);
           }
-        });
-      }
+        }
+      };
+      
+      // Check immediately and with a delay to catch late-loading videos
+      checkVideo();
+      const timer = setTimeout(checkVideo, 500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [hasTemplateVideo]);
+  }, [hasTemplateVideo, templateVideoWeddingId]);
 
   if (!isMounted) return null;
 
