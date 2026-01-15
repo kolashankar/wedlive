@@ -1,0 +1,1 @@
+"use strict";exports.id=941,exports.ids=[941],exports.modules={941:(e,s,t)=>{t.d(s,{Z:()=>d});let d=(0,t(62881).Z)("chevron-down",[["path",{d:"m6 9 6 6 6-6",key:"qrunsl"}]])}};
