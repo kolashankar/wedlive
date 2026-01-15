@@ -25,8 +25,8 @@
   "/webhooks/page": "app/webhooks/page.js",
   "/weddings/[id]/page": "app/weddings/[id]/page.js",
   "/weddings/[id]/sections/page": "app/weddings/[id]/sections/page.js",
-  "/weddings/manage/[id]/page": "app/weddings/manage/[id]/page.js",
   "/weddings/page": "app/weddings/page.js",
+  "/weddings/manage/[id]/page": "app/weddings/manage/[id]/page.js",
   "/youtube/callback/page": "app/youtube/callback/page.js",
   "/api/[[...path]]/route": "app/api/[[...path]]/route.js"
 }

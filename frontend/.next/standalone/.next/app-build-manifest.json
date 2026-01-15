@@ -13,7 +13,7 @@
       "static/chunks/7023-3d0bddd2627a22f7.js",
       "static/chunks/main-app-b56364f70b27a961.js",
       "static/css/3558b1288bb4ae2f.css",
-      "static/css/e3ae6361474179a7.css",
+      "static/css/8f43aec9d3b566e8.css",
       "static/chunks/9767-3879d471f90bd9fe.js",
       "static/chunks/4868-2501a63d5ac8b5f9.js",
       "static/chunks/7776-14fcde8f45f11645.js",
@@ -313,6 +313,23 @@
       "static/chunks/4868-2501a63d5ac8b5f9.js",
       "static/chunks/app/weddings/[id]/sections/page-75af75bbb6c26b4a.js"
     ],
+    "/weddings/page": [
+      "static/chunks/webpack-cb87a75c69996819.js",
+      "static/chunks/fd9d1056-f6c2a22a88a0c85e.js",
+      "static/chunks/7023-3d0bddd2627a22f7.js",
+      "static/chunks/main-app-b56364f70b27a961.js",
+      "static/chunks/9767-3879d471f90bd9fe.js",
+      "static/chunks/4868-2501a63d5ac8b5f9.js",
+      "static/chunks/7776-14fcde8f45f11645.js",
+      "static/chunks/7515-761bde853bc6cf7c.js",
+      "static/chunks/2889-dfa9af292c4b2526.js",
+      "static/chunks/7999-de750e612421e1ac.js",
+      "static/chunks/9879-0e1e24d82215463b.js",
+      "static/chunks/6046-1d5371fb955a075e.js",
+      "static/chunks/9178-dfcdf2c91b3525bf.js",
+      "static/chunks/2645-76d8703230942bf7.js",
+      "static/chunks/app/weddings/page-22d66dea2f6d9485.js"
+    ],
     "/weddings/manage/[id]/page": [
       "static/chunks/webpack-cb87a75c69996819.js",
       "static/chunks/fd9d1056-f6c2a22a88a0c85e.js",
@@ -342,24 +359,7 @@
       "static/chunks/508-c1e3ad39ae8cca52.js",
       "static/chunks/9036-d4f22f789ac00847.js",
       "static/chunks/8209-7b59e82a34f42002.js",
-      "static/chunks/app/weddings/manage/[id]/page-3c46bb127051cb02.js"
-    ],
-    "/weddings/page": [
-      "static/chunks/webpack-cb87a75c69996819.js",
-      "static/chunks/fd9d1056-f6c2a22a88a0c85e.js",
-      "static/chunks/7023-3d0bddd2627a22f7.js",
-      "static/chunks/main-app-b56364f70b27a961.js",
-      "static/chunks/9767-3879d471f90bd9fe.js",
-      "static/chunks/4868-2501a63d5ac8b5f9.js",
-      "static/chunks/7776-14fcde8f45f11645.js",
-      "static/chunks/7515-761bde853bc6cf7c.js",
-      "static/chunks/2889-dfa9af292c4b2526.js",
-      "static/chunks/7999-de750e612421e1ac.js",
-      "static/chunks/9879-0e1e24d82215463b.js",
-      "static/chunks/6046-1d5371fb955a075e.js",
-      "static/chunks/9178-dfcdf2c91b3525bf.js",
-      "static/chunks/2645-76d8703230942bf7.js",
-      "static/chunks/app/weddings/page-22d66dea2f6d9485.js"
+      "static/chunks/app/weddings/manage/[id]/page-a8d6aa4015ae2aa4.js"
     ],
     "/youtube/callback/page": [
       "static/chunks/webpack-cb87a75c69996819.js",
