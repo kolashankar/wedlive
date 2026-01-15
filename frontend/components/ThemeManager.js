@@ -245,31 +245,33 @@ export default function ThemeManager({ weddingId, wedding }) {
   // NEW - Task 2.4: Load backgrounds from new API
   const loadBackgrounds = async () => {
     try {
-      console.log('[FIX 3] Loading backgrounds for wedding:', weddingId);
+      console.log('[LOAD_BACKGROUNDS] Loading backgrounds for wedding:', weddingId);
       
       const response = await api.get(`/api/weddings/${weddingId}/backgrounds`);
       
-      console.log('[FIX 3] Backgrounds loaded from API:', response.data);
+      console.log('[LOAD_BACKGROUNDS] API Response:', response.data);
       
-      setBackgrounds({
+      const newBackgrounds = {
         layout_page_background_id: response.data.layout_page_background_id || null,
         stream_page_background_id: response.data.stream_page_background_id || null,
         layout_page_background_url: response.data.layout_page_background_url || null,
         stream_page_background_url: response.data.stream_page_background_url || null
-      });
+      };
       
-      console.log('[FIX 3] Backgrounds state updated:', {
-        layout_id: response.data.layout_page_background_id,
-        layout_url: response.data.layout_page_background_url,
-        stream_id: response.data.stream_page_background_id,
-        stream_url: response.data.stream_page_background_url
-      });
+      setBackgrounds(newBackgrounds);
+      
+      console.log('[LOAD_BACKGROUNDS] State updated:', newBackgrounds);
+      console.log('[LOAD_BACKGROUNDS] Layout preview URL:', newBackgrounds.layout_page_background_url);
+      console.log('[LOAD_BACKGROUNDS] Stream preview URL:', newBackgrounds.stream_page_background_url);
       
     } catch (error) {
-      console.error('[FIX 3] Error loading backgrounds:', error);
+      console.error('[LOAD_BACKGROUNDS] Error:', error);
+      console.error('[LOAD_BACKGROUNDS] Error details:', error.response?.data || error.message);
       setBackgrounds({
         layout_page_background_id: null,
-        stream_page_background_id: null
+        stream_page_background_id: null,
+        layout_page_background_url: null,
+        stream_page_background_url: null
       });
     }
   };
