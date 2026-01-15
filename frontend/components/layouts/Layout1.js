@@ -23,7 +23,7 @@ export default function Layout1({
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll();
   
-  /// Pre-compute transform values to avoid hooks in JSX
+  // Pre-compute transform values to avoid hooks in JSX
   const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
   
   useEffect(() => {
