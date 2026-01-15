@@ -1429,16 +1429,31 @@ export default function ThemeManager({ weddingId, wedding }) {
                     ))}
                   </SelectContent>
                 </Select>
-                {backgrounds.layout_page_background_url && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-2">Preview:</p>
-                    <img 
-                      src={backgrounds.layout_page_background_url} 
-                      alt="Layout Background"
-                      className="w-full h-32 object-cover rounded"
-                    />
-                  </div>
-                )}
+                {/* Preview Section - Debug */}
+                <div className="mt-2">
+                  {backgrounds.layout_page_background_id && !backgrounds.layout_page_background_url && (
+                    <div className="p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+                      Background selected but URL not loaded. Check console for details.
+                    </div>
+                  )}
+                  {backgrounds.layout_page_background_url && (
+                    <div className="p-2 bg-gray-50 rounded-lg border">
+                      <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                      <img 
+                        src={backgrounds.layout_page_background_url} 
+                        alt="Layout Background"
+                        className="w-full h-32 object-cover rounded"
+                        onError={(e) => {
+                          console.error('[BACKGROUND_IMAGE_ERROR] Failed to load:', backgrounds.layout_page_background_url);
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1 break-all">
+                        URL: {backgrounds.layout_page_background_url}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Stream Page Background */}
