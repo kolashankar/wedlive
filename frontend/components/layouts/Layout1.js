@@ -96,17 +96,17 @@ export default function Layout1({
     >
       {/* Section 1: Template Video with Invitation Card Style */}
       {hasTemplateVideo && templateVideoWeddingId && (
-        <section className="w-full flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 p-4 md:p-8">
+        <section className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-purple-100 p-4 md:p-8">
           <div 
-            className={`w-full max-w-4xl mx-auto ${
+            className={`w-full mx-auto transition-all duration-300 ${
               videoAspectRatio === '9:16' 
-                ? 'aspect-[9/16] max-w-md' 
-                : 'aspect-[16/9]'
+                ? 'max-w-md aspect-[9/16]' 
+                : 'max-w-6xl aspect-[16/9]'
             }`}
           >
             <TemplateVideoPlayer 
               weddingId={templateVideoWeddingId}
-              className="w-full h-full rounded-lg shadow-2xl"
+              className="w-full h-full"
             />
           </div>
         </section>
