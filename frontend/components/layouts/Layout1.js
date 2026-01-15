@@ -138,13 +138,13 @@ export default function Layout1({
 
       {/* Section 3: YouTube Video Embed */}
       {preWeddingVideo && (
-        <section className="w-full bg-gradient-to-br from-gray-900 to-black py-8 md:py-16">
+        <section className="w-full min-h-[50vh] md:min-h-[60vh] bg-gradient-to-br from-gray-900 to-black py-8 md:py-16 flex items-center justify-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            className="w-full max-w-4xl mx-auto px-4 md:px-8"
+            className="w-full max-w-6xl mx-auto px-4 md:px-8"
           >
             <div className="aspect-video w-full bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
               <iframe
@@ -152,6 +152,7 @@ export default function Layout1({
                 className="w-full h-full"
                 allowFullScreen
                 title="Wedding Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               />
             </div>
           </motion.div>
