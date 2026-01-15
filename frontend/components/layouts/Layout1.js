@@ -114,22 +114,22 @@ export default function Layout1({
 
       {/* Section 2: Couple Photo with Border */}
       {couplePhoto?.url && (
-        <section className="w-full bg-black py-8 md:py-16">
+        <section className="w-full min-h-[50vh] md:min-h-[60vh] bg-black py-8 md:py-16 flex items-center justify-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            className="w-full max-w-4xl mx-auto px-4 md:px-8"
+            className="w-full max-w-6xl mx-auto px-4 md:px-8"
           >
-            <div className="relative w-full aspect-[16/9] md:aspect-[21/9]">
+            <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden">
               <PhotoFrame
                 src={couplePhoto.url}
                 alt="Couple"
                 maskUrl={borders?.couple}
                 maskData={borderMasks?.couple}
                 aspectRatio="custom"
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover"
               />
             </div>
           </motion.div>
