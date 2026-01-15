@@ -161,24 +161,24 @@ export default function Layout1({
 
       {/* Section 4: Studio Image/Branding */}
       {studioDetails?.logo_url && (
-        <section className="w-full bg-gradient-to-br from-blue-900 to-purple-900 py-12 md:py-20">
+        <section className="w-full min-h-[40vh] md:min-h-[50vh] bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 py-12 md:py-20 flex items-center justify-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            className="w-full max-w-4xl mx-auto px-4 md:px-8 text-center"
+            className="w-full max-w-5xl mx-auto px-4 md:px-8 text-center"
           >
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 md:p-12">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 md:p-16 shadow-2xl border border-white/20">
               <img 
                 src={studioDetails.logo_url} 
-                className="h-16 md:h-24 mx-auto mb-6" 
+                className="h-20 md:h-32 mx-auto mb-6 filter drop-shadow-lg" 
                 alt="Studio" 
               />
-              <p className="text-white text-sm md:text-base uppercase tracking-widest">
+              <h3 className="text-white text-xl md:text-2xl lg:text-3xl font-bold uppercase tracking-widest mb-4">
                 Stand Out With World-Class Video Production
-              </p>
-              <p className="text-white/80 text-xs md:text-sm mt-2">
+              </h3>
+              <p className="text-white/90 text-sm md:text-base lg:text-lg font-light">
                 Your Story Deserves To Be Heard
               </p>
             </div>
