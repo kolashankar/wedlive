@@ -188,33 +188,40 @@ export default function Layout1({
 
       {/* Section 5: Precious Moments Gallery */}
       {preciousMoments?.length > 0 && (
-        <section className="w-full bg-gradient-to-br from-pink-50 to-white py-8 md:py-16">
+        <section className="w-full min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 py-12 md:py-20">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            className="w-full max-w-6xl mx-auto px-4 md:px-8"
+            className="w-full max-w-7xl mx-auto px-4 md:px-8"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12" style={{ color: primaryColor }}>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 md:mb-16" style={{ color: primaryColor }}>
               Precious Moments
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
               {preciousMoments.map((photo, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="aspect-square overflow-hidden rounded-lg shadow-lg"
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className="relative group"
                 >
-                  <PhotoFrame 
-                    src={photo.url}
-                    maskUrl={borders?.preciousMoments}
-                    maskData={borderMasks?.preciousMoments}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    aspectRatio="1:1"
-                  />
+                  {/* Polaroid-style frame */}
+                  <div className="bg-white p-3 md:p-4 shadow-xl rounded-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div className="aspect-square overflow-hidden bg-gray-100">
+                      <PhotoFrame 
+                        src={photo.url}
+                        maskUrl={borders?.preciousMoments}
+                        maskData={borderMasks?.preciousMoments}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        aspectRatio="1:1"
+                      />
+                    </div>
+                    {/* Bottom caption area (polaroid style) */}
+                    <div className="h-8 md:h-10 bg-white"></div>
+                  </div>
                 </motion.div>
               ))}
             </div>
