@@ -1,45 +1,46 @@
 {
   "layout_id": "layout_1",
-  "name": "Classic Split Hero",
-  "description": "Modern split-screen editorial design. Sticky hero image on left, scrolling narrative content on right. High impact and readable.",
-  "version": "2.0",
+  "name": "Vertical Wedding Invitation",
+  "description": "Single-column vertical layout with dynamic video template (9:16 or 16:9), couple photo with border, YouTube video, studio branding, and precious moments gallery. Fully mobile responsive.",
+  "version": "3.0",
   "thumbnail": "/layout-previews/layout1.jpg",
   
   "supported_slots": {
     "photos": {
       "couplePhoto": {
         "required": true,
-        "description": "Main sticky hero image (left side)",
+        "description": "Couple photo with decorative border (Section 2)",
         "supports_border": true,
-        "aspect_ratio": "portrait"
+        "aspect_ratio": "landscape"
       },
       "preciousMoments": {
         "required": false,
         "type": "array",
-        "max_count": 8,
-        "description": "Grid gallery in content area",
+        "max_count": 12,
+        "description": "Polaroid-style photo gallery (Section 5)",
         "supports_border": true
       }
     },
     
     "videos": {
+      "templateVideo": {
+        "required": false,
+        "description": "Dynamic template video with overlays (Section 1)",
+        "aspect_ratio": "dynamic",
+        "supports_overlays": true
+      },
       "preWeddingVideo": {
         "required": false,
-        "description": "Featured video in content stream",
+        "description": "YouTube video embed (Section 3)",
         "embed_type": "youtube"
       }
     },
     
-    "text_content": {
-      "welcomeMessage": {
-        "required": true,
-        "max_length": 50,
-        "description": "Top tagline"
-      },
-      "description": {
+    "branding": {
+      "studioDetails": {
         "required": false,
-        "max_length": 500,
-        "description": "Main narrative text"
+        "description": "Studio branding section (Section 4)",
+        "includes": ["logo_url", "tagline"]
       }
     },
     
@@ -47,7 +48,7 @@
       "coupleBorder": {
         "applies_to": ["couplePhoto"],
         "required": false,
-        "description": "Border for main hero image"
+        "description": "Border for couple photo"
       },
       "preciousMomentsBorder": {
         "applies_to": ["preciousMoments"],
@@ -72,9 +73,14 @@
   
   "layout_structure": {
     "sections": [
-      "split_screen_container",
-      "sticky_hero_left",
-      "scrolling_content_right"
-    ]
+      "template_video_section",
+      "couple_photo_section",
+      "youtube_video_section",
+      "studio_branding_section",
+      "precious_moments_gallery"
+    ],
+    "orientation": "vertical",
+    "responsive": true,
+    "dynamic_aspect_ratio": true
   }
 }
