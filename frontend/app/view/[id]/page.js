@@ -145,8 +145,25 @@ function ViewerContent({ weddingId }) {
     );
   }
 
+  const playAlbum = async (albumId) => {
+      try {
+          const res = await api.get(`/api/albums/detail/${albumId}`);
+          setSelectedAlbum(res.data);
+      } catch (e) {
+          toast.error("Could not load album");
+      }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+      {/* Slideshow Player Overlay */}
+      {selectedAlbum && (
+        <SlideshowPlayer 
+            album={selectedAlbum} 
+            onClose={() => setSelectedAlbum(null)} 
+        />
+      )}
+
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
