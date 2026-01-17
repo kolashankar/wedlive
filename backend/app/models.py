@@ -93,7 +93,18 @@ class MultiCamera(BaseModel):
     name: str
     stream_key: str
     status: CameraStatus = CameraStatus.WAITING
+    hls_url: Optional[str] = None
     created_at: datetime
+
+class CameraSwitchEvent(BaseModel):
+    from_camera_id: Optional[str] = None
+    to_camera_id: str
+    switched_at: datetime
+
+class CompositionConfig(BaseModel):
+    active: bool = False
+    ffmpeg_pid: Optional[int] = None
+    output_hls_url: Optional[str] = None
 
 class AddCameraRequest(BaseModel):
     wedding_id: str
