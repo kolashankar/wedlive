@@ -18,6 +18,7 @@ import re
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+from app.services.camera_websocket import ws_manager
 
 # Quality resolution mapping
 QUALITY_RESOLUTIONS = {
