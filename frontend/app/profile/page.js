@@ -527,9 +527,9 @@ export default function ProfilePage() {
               />
             </div>
             
-            {/* Studio Photo Upload */}
+            {/* Studio Image Upload */}
             <div className="space-y-2">
-              <Label htmlFor="studio_photo">Studio Photo</Label>
+              <Label htmlFor="studio_photo">Studio Image</Label>
               <div className="flex items-center gap-4">
                 {studioPhotoPreview && (
                   <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
@@ -542,7 +542,7 @@ export default function ProfilePage() {
                     className="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    {studioPhotoPreview ? 'Change Photo' : 'Upload Photo'}
+                    {studioPhotoPreview ? 'Change Image' : 'Upload Image'}
                   </Label>
                   <input
                     id="studio_photo_upload"
@@ -551,7 +551,7 @@ export default function ProfilePage() {
                     onChange={handleStudioPhotoSelect}
                     className="hidden"
                   />
-                  <p className="text-xs text-gray-500 mt-1">JPG, PNG (max 5MB)</p>
+                  <p className="text-xs text-gray-500 mt-1">This image will be displayed in wedding layouts</p>
                 </div>
               </div>
             </div>
