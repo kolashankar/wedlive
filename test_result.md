@@ -15,6 +15,18 @@
         comment: "✅ FIXED TEXT FITTING & WRAPPING: 1) Implemented AUTO-SCALE logic in ResponsiveTextOverlay.js using useLayoutEffect. Text now shrinks to fit inside the defined percentage box (width/height) instead of overflowing or forcing huge vertical expansion. 2) Changed overflowWrap from 'break-word' to 'normal' to prevent names like 'Radha' from being split vertically (R a d h a) on small screens."
 
 backend:
+  - task: "Implement Core Multi-Camera Services (FFmpeg & WebSocket)"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/services/ffmpeg_composition.py, /app/backend/app/services/camera_websocket.py, /app/backend/app/routes/rtmp_webhooks.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ PHASE 1.3-1.5 COMPLETE: 1) Implemented FFmpegCompositionService for dynamic HLS switching. 2) Created CameraWebSocketManager and /ws/camera-control endpoint. 3) Updated RTMP webhooks (on-publish/done) to handle camera streams, auto-activation, and fallback switching. 4) Integrated all components."
+
   - task: "Implement Multi-Camera Switching API (Phase 1)"
     implemented: true
     working: "pending_test"
