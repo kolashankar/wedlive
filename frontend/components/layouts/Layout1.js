@@ -188,7 +188,7 @@ export default function Layout1({
 
       {/* Section 5: Precious Moments Gallery */}
       {preciousMoments?.length > 0 && (
-        <section className="w-full min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 py-12 md:py-20">
+        <section className="w-full min-h-screen backdrop-blur-sm py-12 md:py-20">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -196,7 +196,7 @@ export default function Layout1({
             variants={fadeInUp}
             className="w-full max-w-7xl mx-auto px-4 md:px-8"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 md:mb-16" style={{ color: primaryColor }}>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 md:mb-16 text-white drop-shadow-lg" style={{ color: primaryColor }}>
               Precious Moments
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
@@ -209,7 +209,7 @@ export default function Layout1({
                   className="relative group"
                 >
                   {/* Polaroid-style frame */}
-                  <div className="bg-white p-3 md:p-4 shadow-xl rounded-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                  <div className="bg-white/95 backdrop-blur-md p-3 md:p-4 shadow-xl rounded-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                     <div className="aspect-square overflow-hidden bg-gray-100">
                       <PhotoFrame 
                         src={photo.url}
@@ -230,7 +230,7 @@ export default function Layout1({
       )}
 
       {/* Footer */}
-      <footer className="w-full bg-gray-900 text-white py-8 text-center">
+      <footer className="w-full bg-black/50 backdrop-blur-md text-white py-8 text-center">
         <p className="text-sm md:text-base">© 2025 - Crafted with ❤️</p>
       </footer>
     </div>
