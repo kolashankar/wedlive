@@ -383,7 +383,7 @@ async def get_wedding_complete_view(wedding_id: str):
     
 
             "is_live": wedding["status"] == "live" and not is_locked,
-            "playback_url": wedding.get("playback_url") if not is_locked else None,
+            "playback_url": playback_url,
             "stream_call_id": wedding.get("stream_call_id") if not is_locked else None,
             "viewers_count": wedding.get("viewers_count", 0)
         },
