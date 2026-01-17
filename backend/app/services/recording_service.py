@@ -174,10 +174,30 @@ class RecordingService:
             duration_seconds = int((completed_at - started_at).total_seconds())
             
             # Generate recording file path
-            # NGINX-RTMP saves as: {stream_key}-{timestamp}.flv
-            stream_key = f"live_{wedding_id}"
-            recording_filename = f"{stream_key}.flv"
-            recording_url = f"{self.hls_server_url}/recordings/{recording_filename}"
+            recording_url = None
+            
+            if recording.get("is_multi_camera") and recording.get("record_type") == "composed":
+                # Use the composed recording file path
+                output_file = recording.get("output_file")
+                if output_file and os.path.exists(output_file):
+                    # Get file size
+                    file_size = os.path.getsize(output_file)
+                    # Construct URL for serving the file
+                    recording_filename = os.path.basename(output_file)
+                    recording_url = f"{self.hls_server_url}/recordings/{wedding_id}/{recording_filename}"
+                    logger.info(f"🎬 Composed recording saved: {recording_url} ({file_size} bytes)")
+                else:
+                    logger.error(f"❌ Composed recording file not found: {output_file}")
+                    recording_url = None
+            else:
+                # NGINX-RTMP saves as: {stream_key}-{timestamp}.flv
+                stream_key = f"live_{wedding_id}"
+                recording_filename = f"{stream_key}.flv"
+                recording_url = f"{self.hls_server_url}/recordings/{recording_filename}"
+            
+            file_size = 0
+            if recording.get("output_file") and os.path.exists(recording.get("output_file")):
+                file_size = os.path.getsize(recording.get("output_file"))
             
             # Encode to MP4 format
             try:
