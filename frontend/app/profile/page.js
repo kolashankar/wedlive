@@ -38,6 +38,7 @@ export default function ProfilePage() {
   });
   const [studioPhotoFile, setStudioPhotoFile] = useState(null);
   const [studioPhotoPreview, setStudioPhotoPreview] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
