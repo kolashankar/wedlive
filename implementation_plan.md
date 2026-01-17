@@ -110,27 +110,27 @@ This document outlines the complete implementation plan for adding professional 
 5. **Recording Service**: FFmpeg-based HLS recording
 6. **MongoDB**: Stores camera configs, switching events, metadata
 
-### Technology Stack
+### Technology Stack (NGINX-RTMP Based)
 
 **Backend:**
-- FastAPI (Python 3.11+) - Existing
-- Stream.io Video SDK - Existing, extend for multi-participant calls
-- MongoDB - Store camera configs, switching events, recordings
-- WebSocket - Real-time camera switching commands
-- FFmpeg - Video processing, recording, composition
+- FastAPI (Python 3.11+) - Existing ✅
+- NGINX with RTMP module - Existing ✅
+- FFmpeg - Video processing, recording, composition ✅
+- MongoDB - Camera configs, switching events, recordings ✅
+- WebSocket (FastAPI native) - Real-time camera switching commands
+- asyncio - Asynchronous FFmpeg process management
 
 **Frontend:**
-- React 18+ - Existing
-- HLS.js - Video playback - Existing
-- Socket.io-client - Real-time updates
-- Tailwind CSS - Professional UI - Existing
-- MediaRecorder API - Browser-side backup recording
+- React 18+ - Existing ✅
+- HLS.js - Video playback - Existing ✅
+- WebSocket (native) - Real-time updates
+- Tailwind CSS - Professional UI - Existing ✅
 
 **Streaming Infrastructure:**
-- Stream.io RTMP Ingestion - Multiple simultaneous streams
-- Stream.io Call Participants - Each camera as a participant
-- WebRTC Composition - Real-time video mixing
-- HLS Output - Low-latency viewer delivery
+- NGINX-RTMP (Port 1935) - Multiple simultaneous RTMP streams ✅
+- NGINX HTTP (Port 8080) - HLS delivery ✅
+- FFmpeg Composition - Real-time video mixing (NEW)
+- HLS Output - Low-latency viewer delivery ✅
 
 ---
 
