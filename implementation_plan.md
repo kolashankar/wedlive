@@ -877,21 +877,9 @@ async def stop_ffmpeg_composition(wedding_id: str):
     )
 ```
 
-**Alternative Advanced Approach** (for seamless switching without interruption):
-```python
-# Use FFmpeg filter_complex with sendcmd to switch inputs dynamically
-# This is more complex but provides seamless switching
-# Implementation would use named pipes and dynamic filter switching
-```
+#### 1.5 Real-Time Camera Switching with WebSocket (NEW)
 
-**Tasks:**
-- [ ] Create FFmpegCompositionService class
-- [ ] Implement start_composition method
-- [ ] Implement switch_camera method (with restart approach)
-- [ ] Implement stop_composition method
-- [ ] Add process monitoring and auto-restart on failure
-- [ ] Test switching latency
-- [ ] (Optional) Implement seamless switching with filter graphs
+**File:** `/app/backend/app/services/camera_websocket.py` (NEW)
 
 **WebSocket Events:**
 ```python
