@@ -348,6 +348,25 @@ async def get_wedding_complete_view(wedding_id: str):
         else:
             processed_layout_photos[placeholder_name] = photo_data
     
+    # Resolve playback URL (Composed stream vs Standard)
+    playback_url = wedding.get("playback_url")
+    cameras = wedding.get("multi_cameras", [])
+    has_multi_camera = len(cameras) > 0
+    
+    if wedding["status"] == "live" and not is_locked:
+        # Check if multi-camera composition is active
+        active_camera_id = wedding.get("active_camera_id")
+        
+        # If multi-camera is configured and we have an active camera, use composed stream
+        if has_multi_camera and active_camera_id:
+            # Use the composed stream output from FFmpeg
+            composed_url = f"/hls_output/output_{wedding_id}/output.m3u8"
+            playback_url = composed_url
+            logger.info(f"[VIEWER] Using composed stream for wedding {wedding_id}: {composed_url}")
+        else:
+            # Use standard single-camera stream
+            logger.info(f"[VIEWER] Using standard stream for wedding {wedding_id}: {playback_url}")
+    
     return {
         "wedding": {
             "id": wedding["id"],
@@ -362,30 +381,16 @@ async def get_wedding_complete_view(wedding_id: str):
             "bride_photo": wedding.get("bride_photo"),
             "groom_photo": wedding.get("groom_photo"),
             "status": wedding["status"],
-            "is_locked": is_locked
+            "is_locked": is_locked,
+            "has_multi_camera": has_multi_camera
         },
         "live_stream": {
-    
-    # Resolve playback URL (Composed stream vs Standard)
-    playback_url = wedding.get("playback_url")
-    if wedding["status"] == "live" and not is_locked:
-        # Check if composition is active
-        comp_config = wedding.get("composition_config", {})
-        # If we have an active composition, we should prioritize its output URL
-        # The composition URL is typically /hls_output/output_{id}/output.m3u8
-        # But we only use it if composition is actually running/active
-        # OR if we want to enforce it for multi-camera weddings
-        if comp_config.get("active") or wedding.get("active_camera_id"):
-             # If multi-camera is involved, we likely want the composed stream
-             # Assuming standard path
-             composed_url = f"/hls_output/output_{wedding_id}/output.m3u8"
-             playback_url = composed_url
-    
-
             "is_live": wedding["status"] == "live" and not is_locked,
             "playback_url": playback_url,
             "stream_call_id": wedding.get("stream_call_id") if not is_locked else None,
-            "viewers_count": wedding.get("viewers_count", 0)
+            "viewers_count": wedding.get("viewers_count", 0),
+            "has_multi_camera": has_multi_camera,
+            "active_camera_id": wedding.get("active_camera_id") if not is_locked else None
         },
         "media": {
             "total_count": media_count if not is_locked else 0,
