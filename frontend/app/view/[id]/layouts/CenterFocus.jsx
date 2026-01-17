@@ -6,7 +6,7 @@ import VideoTemplatePlayer from './components/VideoTemplatePlayer';
 export default function CenterFocus({ wedding, themeSettings, media, videoTemplate }) {
   const primaryColor = themeSettings?.primary_color || '#d4af37'; 
   const secondaryColor = themeSettings?.secondary_color || '#1a1a1a'; 
-  const studioLogo = themeSettings?.studio_details?.logo_url || wedding?.branding?.logo_url;
+  const studioImage = themeSettings?.studio_details?.default_image_url || wedding?.branding?.default_image_url;
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
