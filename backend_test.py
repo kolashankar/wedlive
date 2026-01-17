@@ -659,7 +659,7 @@ class MultiCameraAPITester:
         if not self.setup_authentication():
             return False
         
-        if not self.create_test_wedding():
+        if not self.setup_test_wedding():
             return False
         
         # Core multi-camera tests
