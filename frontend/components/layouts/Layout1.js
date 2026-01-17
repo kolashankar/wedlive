@@ -91,12 +91,12 @@ export default function Layout1({
 
   return (
     <div 
-      className="min-h-screen bg-white"
+      className="min-h-screen"
       style={{ fontFamily: font, color: primaryColor }}
     >
       {/* Section 1: Template Video with Invitation Card Style */}
       {hasTemplateVideo && templateVideoWeddingId && (
-        <section className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-purple-100 p-4 md:p-8">
+        <section className="w-full min-h-screen flex items-center justify-center backdrop-blur-sm p-4 md:p-8">
           <div 
             className={`w-full mx-auto transition-all duration-300 ${
               videoAspectRatio === '9:16' 
@@ -114,7 +114,7 @@ export default function Layout1({
 
       {/* Section 2: Couple Photo with Border */}
       {couplePhoto?.url && (
-        <section className="w-full min-h-[50vh] md:min-h-[60vh] bg-black py-8 md:py-16 flex items-center justify-center">
+        <section className="w-full min-h-[50vh] md:min-h-[60vh] py-8 md:py-16 flex items-center justify-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
