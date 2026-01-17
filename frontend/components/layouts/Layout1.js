@@ -138,7 +138,7 @@ export default function Layout1({
 
       {/* Section 3: YouTube Video Embed */}
       {preWeddingVideo && (
-        <section className="w-full min-h-[50vh] md:min-h-[60vh] bg-gradient-to-br from-gray-900 to-black py-8 md:py-16 flex items-center justify-center">
+        <section className="w-full min-h-[50vh] md:min-h-[60vh] backdrop-blur-sm py-8 md:py-16 flex items-center justify-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -146,7 +146,7 @@ export default function Layout1({
             variants={fadeInUp}
             className="w-full max-w-6xl mx-auto px-4 md:px-8"
           >
-            <div className="aspect-video w-full bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
+            <div className="aspect-video w-full bg-black/30 rounded-lg overflow-hidden shadow-2xl">
               <iframe
                 src={preWeddingVideo}
                 className="w-full h-full"
@@ -161,7 +161,7 @@ export default function Layout1({
 
       {/* Section 4: Studio Image/Branding */}
       {studioDetails?.logo_url && (
-        <section className="w-full min-h-[40vh] md:min-h-[50vh] bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 py-12 md:py-20 flex items-center justify-center">
+        <section className="w-full min-h-[40vh] md:min-h-[50vh] backdrop-blur-sm py-12 md:py-20 flex items-center justify-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
