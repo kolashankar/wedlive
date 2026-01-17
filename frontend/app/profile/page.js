@@ -138,10 +138,10 @@ export default function ProfilePage() {
           await api.post(`/api/profile/studios/${studioId}/logo`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
-          toast.success('Studio photo uploaded!');
+          toast.success('Studio image uploaded!');
         } catch (uploadError) {
-          console.error('Error uploading studio photo:', uploadError);
-          toast.error('Studio saved but photo upload failed');
+          console.error('Error uploading studio image:', uploadError);
+          toast.error('Studio saved but image upload failed');
         }
       }
       
