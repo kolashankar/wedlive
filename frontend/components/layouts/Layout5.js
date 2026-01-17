@@ -349,9 +349,9 @@ export default function Layout5({
           </motion.div>
           
           {/* Studio Info (Minimal) */}
-          {studioDetails?.logo_url && (
+          {studioDetails?.default_image_url && (
              <div className="border-t border-gray-200 pt-8 text-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
-                <img src={studioDetails.logo_url} className="h-8 mx-auto mb-2" alt="Studio" />
+                <img src={studioDetails.default_image_url} className="w-32 h-32 mx-auto mb-2 rounded object-cover" alt="Studio" />
                 <p className="text-[10px] uppercase">{studioDetails.name}</p>
              </div>
           )}
