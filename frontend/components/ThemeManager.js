@@ -1639,16 +1639,7 @@ export default function ThemeManager({ weddingId, wedding }) {
                       </div>
                     )}
                     
-                    {/* Logo */}
-                    {safeLayout.studio_details?.logo_url && (
-                      <div className="mb-3">
-                        <img
-                          src={safeLayout.studio_details.logo_url}
-                          alt={safeLayout.studio_details.name || 'Studio logo'}
-                          className="h-16 mx-auto object-contain"
-                        />
-                      </div>
-                    )}
+                    {/* Logo - REMOVED as per user request - only studio image is needed */}
                     
                     {/* Studio Details */}
                     {safeLayout.studio_details?.show_details && (
