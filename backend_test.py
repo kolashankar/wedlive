@@ -119,31 +119,31 @@ class MultiCameraAPITester:
             return False
     
     def setup_test_wedding(self) -> bool:
-        """Setup test wedding (use existing or upgrade user to premium)"""
+        """Setup test wedding (create new wedding since user is now premium)"""
         print("\n💒 SETTING UP TEST WEDDING")
         print("=" * 50)
         
+        wedding_data = {
+            "title": "Multi-Camera Test Wedding",
+            "bride_name": "TestBride",
+            "groom_name": "TestGroom",
+            "scheduled_date": "2024-12-31T18:00:00Z",
+            "location": "Test Venue",
+            "description": "Test wedding for multi-camera functionality"
+        }
+        
         try:
-            # First, try to upgrade user to premium for multi-camera access
-            print("  🔄 Attempting to upgrade user to premium...")
+            response = self.session.post(f"{self.base_url}/weddings", json=wedding_data)
             
-            # Get existing weddings first
-            response = self.session.get(f"{self.base_url}/weddings")
-            
-            if response.status_code == 200:
-                weddings = response.json()
-                if weddings:
-                    # Use the first available wedding
-                    self.test_wedding_id = weddings[0]["id"]
-                    wedding_title = weddings[0].get("title", "Unknown")
-                    self.log_test_result("Setup Test Wedding", True, f"Using existing wedding: {wedding_title} (ID: {self.test_wedding_id})")
+            if response.status_code == 201:
+                data = response.json()
+                self.test_wedding_id = data.get("id")
+                if self.test_wedding_id:
+                    self.log_test_result("Setup Test Wedding", True, f"Created wedding ID: {self.test_wedding_id}")
                     return True
-                else:
-                    self.log_test_result("Setup Test Wedding", False, "No existing weddings found")
-                    return False
-            else:
-                self.log_test_result("Setup Test Wedding", False, f"Failed to get weddings: {response.status_code}")
-                return False
+            
+            self.log_test_result("Setup Test Wedding", False, f"Failed: {response.status_code} - {response.text}")
+            return False
             
         except Exception as e:
             self.log_test_result("Setup Test Wedding", False, f"Error: {str(e)}")
