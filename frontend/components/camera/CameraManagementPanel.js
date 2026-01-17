@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Loader2, Camera, RefreshCw, AlertTriangle } from 'lucide-react';
 import CameraCard from './CameraCard';
 import ActiveCameraPlayer from './ActiveCameraPlayer';
