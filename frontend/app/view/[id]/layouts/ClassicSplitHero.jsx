@@ -7,7 +7,7 @@ export default function ClassicSplitHero({ wedding, themeSettings, media, videoT
   const primaryColor = themeSettings?.primary_color || '#d4af37'; 
   const secondaryColor = themeSettings?.secondary_color || '#8b0000'; 
   
-  const studioLogo = themeSettings?.studio_details?.logo_url || wedding?.branding?.logo_url;
+  const studioImage = themeSettings?.studio_details?.default_image_url || wedding?.branding?.default_image_url;
   
   console.log('ClassicSplitHero - videoTemplate:', videoTemplate);
 
