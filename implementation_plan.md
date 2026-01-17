@@ -658,9 +658,240 @@ async def on_publish_done(request: Request, background_tasks: BackgroundTasks):
 - [ ] Test with multiple OBS instances
 - [ ] Verify webhook responses don't break NGINX
 
-#### 1.4 Real-Time Camera Switching with WebSocket
+#### 1.4 FFmpeg Real-Time Composition Service (NEW)
 
-**File:** `/app/backend/app/websocket/camera_control.py` (NEW)
+**File:** `/app/backend/app/services/ffmpeg_composition.py` (NEW)
+
+This service manages FFmpeg processes that:
+1. Monitor all camera HLS streams
+2. Compose/switch between cameras in real-time
+3. Generate a single output HLS stream for viewers
+
+**Implementation:**
+
+```python
+import asyncio
+import subprocess
+import logging
+from typing import Dict, Optional
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+class FFmpegCompositionService:
+    def __init__(self):
+        self.active_processes: Dict[str, subprocess.Popen] = {}
+        self.hls_base_path = Path("/tmp/hls")
+        self.output_base_path = Path("/tmp/hls_output")
+        self.output_base_path.mkdir(parents=True, exist_ok=True)
+    
+    async def start_composition(self, wedding_id: str, cameras: list, active_camera_id: str):
+        """
+        Start FFmpeg composition for multi-camera wedding
+        
+        Strategy: Use FFmpeg's concat demuxer with pipe to switch streams dynamically
+        
+        Alternative simpler approach: Just copy active camera's HLS to output
+        This is what we'll implement first for simplicity and low latency
+        """
+        logger.info(f"[FFMPEG_COMP] Starting composition for wedding {wedding_id}")
+        
+        # Get active camera
+        active_camera = next((c for c in cameras if c["camera_id"] == active_camera_id), None)
+        if not active_camera:
+            logger.error(f"[FFMPEG_COMP] No active camera found")
+            return {"success": False, "error": "No active camera"}
+        
+        output_stream_key = f"output_{wedding_id}"
+        output_hls_path = self.output_base_path / output_stream_key
+        output_hls_path.mkdir(parents=True, exist_ok=True)
+        
+        # FFmpeg command: Re-stream active camera to output
+        input_hls = f"http://localhost:8080/hls/{active_camera['stream_key']}.m3u8"
+        output_hls = str(output_hls_path / "output.m3u8")
+        
+        cmd = [
+            "ffmpeg",
+            "-i", input_hls,
+            "-c", "copy",  # Copy without re-encoding for low latency
+            "-f", "hls",
+            "-hls_time", "2",
+            "-hls_list_size", "5",
+            "-hls_flags", "delete_segments+append_list",
+            "-hls_segment_filename", str(output_hls_path / "segment_%03d.ts"),
+            output_hls
+        ]
+        
+        # Start FFmpeg process
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE
+        )
+        
+        self.active_processes[wedding_id] = process
+        
+        logger.info(f"[FFMPEG_COMP] Composition started for {wedding_id}")
+        logger.info(f"   PID: {process.pid}")
+        logger.info(f"   Output: {output_hls}")
+        
+        return {
+            "success": True,
+            "process_pid": process.pid,
+            "output_hls_url": f"/hls_output/{output_stream_key}/output.m3u8"
+        }
+    
+    async def switch_camera(self, wedding_id: str, new_camera: dict):
+        """
+        Switch to new camera by restarting FFmpeg with new input
+        
+        Note: This causes a brief interruption (~2-3 seconds)
+        For seamless switching, we'd need more complex FFmpeg filter graphs
+        """
+        logger.info(f"[FFMPEG_COMP] Switching camera for wedding {wedding_id}")
+        
+        # Stop current composition
+        await self.stop_composition(wedding_id)
+        
+        # Wait a moment for clean shutdown
+        await asyncio.sleep(0.5)
+        
+        # Start new composition with new camera
+        # Note: We need to fetch all cameras and active_camera_id from DB
+        from app.database import get_db
+        db = get_db()
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        
+        if not wedding:
+            return {"success": False, "error": "Wedding not found"}
+        
+        cameras = wedding.get("multi_cameras", [])
+        active_camera_id = new_camera["camera_id"]
+        
+        return await self.start_composition(wedding_id, cameras, active_camera_id)
+    
+    async def stop_composition(self, wedding_id: str):
+        """Stop FFmpeg composition process"""
+        if wedding_id in self.active_processes:
+            process = self.active_processes[wedding_id]
+            
+            try:
+                # Graceful shutdown
+                process.stdin.write(b'q')
+                process.stdin.flush()
+                process.wait(timeout=5)
+            except:
+                # Force kill if graceful fails
+                process.kill()
+                process.wait()
+            
+            del self.active_processes[wedding_id]
+            logger.info(f"[FFMPEG_COMP] Stopped composition for {wedding_id}")
+            
+            return {"success": True}
+        
+        return {"success": False, "error": "No active composition"}
+    
+    def get_status(self, wedding_id: str) -> dict:
+        """Check if composition is running"""
+        if wedding_id in self.active_processes:
+            process = self.active_processes[wedding_id]
+            return {
+                "active": process.poll() is None,
+                "pid": process.pid
+            }
+        return {"active": False, "pid": None}
+
+# Global instance
+composition_service = FFmpegCompositionService()
+
+# Helper functions for use in routes
+async def start_ffmpeg_composition(wedding_id: str):
+    """Background task to start composition"""
+    from app.database import get_db
+    db = get_db()
+    
+    wedding = await db.weddings.find_one({"id": wedding_id})
+    if not wedding:
+        return
+    
+    cameras = wedding.get("multi_cameras", [])
+    active_camera_id = wedding.get("active_camera_id")
+    
+    if not active_camera_id:
+        # Use first live camera
+        live_cameras = [c for c in cameras if c["status"] == "live"]
+        if not live_cameras:
+            return
+        active_camera_id = live_cameras[0]["camera_id"]
+        await db.weddings.update_one(
+            {"id": wedding_id},
+            {"$set": {"active_camera_id": active_camera_id}}
+        )
+    
+    result = await composition_service.start_composition(wedding_id, cameras, active_camera_id)
+    
+    if result.get("success"):
+        # Update database
+        await db.weddings.update_one(
+            {"id": wedding_id},
+            {
+                "$set": {
+                    "multi_camera_config.composition_active": True,
+                    "multi_camera_config.ffmpeg_process_pid": result["process_pid"],
+                    "multi_camera_config.output_hls_url": result["output_hls_url"]
+                }
+            }
+        )
+
+async def update_ffmpeg_composition(wedding_id: str, new_camera_id: str):
+    """Background task to switch camera in composition"""
+    from app.database import get_db
+    db = get_db()
+    
+    wedding = await db.weddings.find_one({"id": wedding_id})
+    if not wedding:
+        return
+    
+    cameras = wedding.get("multi_cameras", [])
+    new_camera = next((c for c in cameras if c["camera_id"] == new_camera_id), None)
+    
+    if new_camera:
+        await composition_service.switch_camera(wedding_id, new_camera)
+
+async def stop_ffmpeg_composition(wedding_id: str):
+    """Background task to stop composition"""
+    await composition_service.stop_composition(wedding_id)
+    
+    from app.database import get_db
+    db = get_db()
+    await db.weddings.update_one(
+        {"id": wedding_id},
+        {
+            "$set": {
+                "multi_camera_config.composition_active": False,
+                "multi_camera_config.ffmpeg_process_pid": None
+            }
+        }
+    )
+```
+
+**Alternative Advanced Approach** (for seamless switching without interruption):
+```python
+# Use FFmpeg filter_complex with sendcmd to switch inputs dynamically
+# This is more complex but provides seamless switching
+# Implementation would use named pipes and dynamic filter switching
+```
+
+**Tasks:**
+- [ ] Create FFmpegCompositionService class
+- [ ] Implement start_composition method
+- [ ] Implement switch_camera method (with restart approach)
+- [ ] Implement stop_composition method
+- [ ] Add process monitoring and auto-restart on failure
+- [ ] Test switching latency
+- [ ] (Optional) Implement seamless switching with filter graphs
 
 **WebSocket Events:**
 ```python
