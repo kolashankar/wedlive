@@ -36,10 +36,21 @@ CAMERAS (OBS) → NGINX-RTMP (Port 1935) → HLS Chunks (Port 8080)
     - [x] Add switch camera endpoint
     - [x] Add get active camera endpoint
     - [x] Create service placeholders for composition and websocket
+- [x] **1.3 FFmpeg Composition Service**
+    - [x] Implement FFmpegCompositionService class
+    - [x] Implement start/stop/switch logic
+    - [x] Integrate with system FFmpeg process
+- [x] **1.4 RTMP Webhook Updates**
+    - [x] Extend on-publish to handle camera streams
+    - [x] Extend on-publish-done for camera offline handling
+    - [x] Implement auto-activation/fallback logic
+- [x] **1.5 WebSocket Service**
+    - [x] Implement CameraWebSocketManager
+    - [x] Add WebSocket endpoint to streams router
+    - [x] Integrate broadcast notifications
 
-#### PHASE 2: Core Services (Day 3-4)
-- [ ] **2.1 FFmpeg Composition Service**
-- [ ] **2.2 WebSocket Service**
+#### PHASE 2: Core Services (Day 3-4) (Completed in Phase 1)
+(Moved composition & websocket to Phase 1 as requested)
 
 #### PHASE 3: Frontend Implementation (Day 5-6)
 - [ ] **3.1 Camera Management UI**
@@ -50,4 +61,4 @@ CAMERAS (OBS) → NGINX-RTMP (Port 1935) → HLS Chunks (Port 8080)
 - [ ] **4.2 Testing & Optimization**
 
 ### 📊 Progress Tracker
-**Current Progress:** 25%
+**Current Progress:** 60%
