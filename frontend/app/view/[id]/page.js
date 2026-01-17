@@ -215,9 +215,17 @@ function ViewerContent({ weddingId }) {
                           />
                         </div>
                         <div className="p-4 flex justify-between items-center">
-                          <div className="flex items-center space-x-2">
-                            <Users className="w-5 h-5 text-gray-600" />
-                            <span className="text-gray-600">{viewerCount || live_stream.viewers_count} watching</span>
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <Users className="w-5 h-5 text-gray-600" />
+                              <span className="text-gray-600">{viewerCount || live_stream.viewers_count} watching</span>
+                            </div>
+                            {live_stream.has_multi_camera && (
+                              <div className="flex items-center space-x-2">
+                                <Camera className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm text-blue-600 font-medium">Multi-Camera</span>
+                              </div>
+                            )}
                           </div>
                           <Badge className="bg-red-500 text-white animate-pulse">
                             LIVE
