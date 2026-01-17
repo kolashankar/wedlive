@@ -543,16 +543,16 @@ export default function Layout2({
       )}
 
       {/* --- STUDIO PARTNER --- */}
-      {studioDetails?.logo_url && (
+      {studioDetails?.default_image_url && (
         <section className="py-20 bg-white border-t border-gray-100">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h3 className="text-sm uppercase tracking-widest text-gray-400 mb-10">Memories Captured By</h3>
             
             <div className="flex flex-col items-center gap-8">
               <img
-                src={studioDetails.logo_url}
+                src={studioDetails.default_image_url}
                 alt={studioDetails.name || "Studio partner"}
-                className="h-16 sm:h-20 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-80 hover:opacity-100"
+                className="w-full max-w-sm rounded-lg object-cover grayscale hover:grayscale-0 transition-all duration-500 opacity-80 hover:opacity-100"
               />
 
               {studioDetails.show_details && (
