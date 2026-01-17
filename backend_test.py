@@ -403,7 +403,7 @@ class MultiCameraAPITester:
             
             # Remove auth header for webhook (webhooks don't use auth)
             headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            response = requests.post(f"{self.base_url}/rtmp/on-publish", data=webhook_data, headers=headers)
+            response = requests.post(f"{self.base_url}/webhooks/rtmp/on-publish", data=webhook_data, headers=headers)
             
             if response.status_code == 200:
                 data = response.json()
@@ -424,7 +424,7 @@ class MultiCameraAPITester:
             webhook_data = {"name": camera["stream_key"]}
             
             headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            response = requests.post(f"{self.base_url}/rtmp/on-publish-done", data=webhook_data, headers=headers)
+            response = requests.post(f"{self.base_url}/webhooks/rtmp/on-publish-done", data=webhook_data, headers=headers)
             
             if response.status_code == 200:
                 data = response.json()
