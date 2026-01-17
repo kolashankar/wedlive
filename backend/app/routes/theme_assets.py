@@ -11,6 +11,7 @@ from app.models import (
 from app.auth import get_current_admin, get_current_user
 from app.database import get_db, get_db_dependency
 from app.services.telegram_service import TelegramCDNService
+from app.utils.telegram_url_proxy import telegram_file_id_to_proxy_url
 from typing import List, Optional, Dict
 from datetime import datetime
 import uuid
