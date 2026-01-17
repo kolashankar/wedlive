@@ -100,13 +100,13 @@ export default function ModernScrapbook({ wedding, themeSettings, media, videoTe
                  ))}
                  
                  {/* Studio Credit */}
-                 {themeSettings?.studio_details?.logo_url && (
+                 {themeSettings?.studio_details?.default_image_url && (
                     <div className="md:col-span-12 mt-8 flex justify-end">
                         <div className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full">
                             <span className="text-xs font-bold uppercase">Photos by</span>
                             <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
                                 <BorderedPhoto 
-                                    src={themeSettings.studio_details.logo_url}
+                                    src={themeSettings.studio_details.default_image_url}
                                     borderUrl={themeSettings?.studio_border_url}
                                     className="w-full h-full object-cover"
                                     aspectRatio="none"
