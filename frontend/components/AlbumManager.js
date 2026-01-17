@@ -77,6 +77,12 @@ export default function AlbumManager({ weddingId }) {
 
   return (
     <div className="space-y-6">
+        {previewAlbum && (
+            <SlideshowPlayer 
+                album={previewAlbum} 
+                onClose={() => setPreviewAlbum(null)} 
+            />
+        )}
         <div className="flex justify-between items-center">
             <div>
                 <h3 className="text-lg font-semibold">Photo Albums</h3>
