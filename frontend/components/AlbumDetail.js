@@ -1,13 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, Save, Loader2, Music } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Loader2, Music, Play } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import MediaSelector from './MediaSelector';
+import SlideshowPlayer from './SlideshowPlayer';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AlbumDetail({ albumId, onBack }) {
@@ -16,6 +17,7 @@ export default function AlbumDetail({ albumId, onBack }) {
     const [loading, setLoading] = useState(true);
     const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
     
     // Global Settings State
     const [globalDuration, setGlobalDuration] = useState(5.0);
