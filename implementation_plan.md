@@ -280,26 +280,23 @@ This document outlines the complete implementation plan for adding professional 
 
 **File:** `/app/backend/app/models/wedding.py`
 
-Add new fields to Wedding model:
+Add new fields to Wedding model (ALREADY PARTIALLY IMPLEMENTED):
 ```python
 {
-  "cameras": [
+  "multi_cameras": [  # ✅ Already exists in your code!
     {
       "camera_id": "camera_001",
-      "camera_name": "Main Stage",
-      "call_participant_id": "participant_xyz",
-      "rtmp_url": "rtmp://...",
-      "stream_key": "jwt_token_...",
-      "status": "live",  # live, offline, error
-      "priority": 1,  # 1-5
-      "is_active": true,  # Currently broadcasting to viewers
-      "connection_quality": 95,  # 0-100
+      "name": "Main Stage",
+      "stream_key": "live_wedding123_camera001_abc123",  # Unique RTMP key
+      "status": "waiting",  # waiting, live, offline
       "created_at": "2025-01-10T10:00:00Z",
-      "last_heartbeat": "2025-01-10T10:30:00Z"
+      "last_heartbeat": "2025-01-10T10:30:00Z",
+      "hls_url": "/hls/live_wedding123_camera001_abc123.m3u8",
+      "thumbnail_url": "/api/camera-thumbnails/camera_001.jpg"
     }
   ],
-  "active_camera_id": "camera_001",
-  "camera_switches": [
+  "active_camera_id": "camera_001",  # NEW: Currently broadcasting camera
+  "camera_switches": [  # NEW: Log all camera switches
     {
       "from_camera_id": "camera_001",
       "to_camera_id": "camera_002",
@@ -307,19 +304,24 @@ Add new fields to Wedding model:
       "switched_by": "creator_user_id"
     }
   ],
-  "recording_config": {
+  "multi_camera_config": {  # NEW: Composition settings
+    "output_stream_key": "live_wedding123_output",
+    "output_hls_url": "/hls/live_wedding123_output.m3u8",
+    "composition_active": false,
+    "ffmpeg_process_pid": null
+  },
+  "recording_config": {  # EXTEND existing
     "enabled": true,
-    "record_all_cameras": true,  # Record each camera separately
-    "record_output": true,  # Record final composed output
+    "record_all_cameras": true,
+    "record_output": true,
     "recordings": [
       {
         "recording_id": "rec_001",
         "camera_id": "camera_001",  # null for output recording
-        "file_path": "/recordings/wedding_123/camera_001.mp4",
+        "file_path": "/tmp/recordings/wedding_123/camera_001.mp4",
         "start_time": "2025-01-10T10:00:00Z",
         "end_time": "2025-01-10T11:30:00Z",
-        "file_size_mb": 1250,
-        "duration_seconds": 5400
+        "file_size_mb": 1250
       }
     ]
   }
@@ -327,93 +329,64 @@ Add new fields to Wedding model:
 ```
 
 **Tasks:**
-- [x] Update Wedding model with cameras array
-- [x] Add camera_switches logging
-- [x] Add recording_config object
-- [x] Create database migration script
-- [x] Add validation: max 5 cameras per wedding
+- [x] ✅ multi_cameras array already exists in streams.py!
+- [ ] Add active_camera_id field
+- [ ] Add camera_switches array
+- [ ] Add multi_camera_config object
+- [ ] Extend recording_config for multi-camera
+- [ ] Create database migration script
+- [ ] Verify max 5 cameras validation (already in streams.py)
 
-#### 1.2 Camera Management API
+#### 1.2 Camera Management API (EXTEND EXISTING)
 
-**File:** `/app/backend/app/routes/cameras.py` (NEW)
+**File:** `/app/backend/app/routes/streams.py` ✅ ALREADY EXISTS!
 
-**Endpoints:**
+**Current endpoints already implemented:**
 ```
-POST   /api/weddings/{wedding_id}/cameras          - Add new camera
-GET    /api/weddings/{wedding_id}/cameras          - List all cameras
-PUT    /api/weddings/{wedding_id}/cameras/{camera_id} - Update camera
-DELETE /api/weddings/{wedding_id}/cameras/{camera_id} - Remove camera
-POST   /api/weddings/{wedding_id}/cameras/{camera_id}/switch - Switch to camera
-GET    /api/weddings/{wedding_id}/cameras/active   - Get active camera
-POST   /api/weddings/{wedding_id}/cameras/{camera_id}/heartbeat - Camera status update
+✅ POST   /api/stream/camera/add           - Add new camera (line 462)
+✅ DELETE /api/stream/camera/{wedding_id}/{camera_id} - Remove camera (line 542)
+✅ GET    /api/stream/{wedding_id}/cameras - List cameras (line 579)
+```
+
+**NEW endpoints needed:**
+```
+POST   /api/stream/camera/{wedding_id}/{camera_id}/switch - Switch to camera
+GET    /api/stream/camera/{wedding_id}/active   - Get active camera
+POST   /api/stream/camera/{wedding_id}/{camera_id}/heartbeat - Camera status
+GET    /api/stream/camera/{wedding_id}/{camera_id}/thumbnail - Get thumbnail
 ```
 
 **Implementation Details:**
 
-**Add Camera:**
+**Switch Camera Endpoint (NEW):**
 ```python
-@router.post("/weddings/{wedding_id}/cameras")
-async def add_camera(
-    wedding_id: str,
-    camera_data: CameraCreate,
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Creates a new camera source with:
-    1. Unique call participant in Stream.io
-    2. RTMP credentials (JWT token)
-    3. Initial status: offline
-    """
-    # Validate: Max 5 cameras
-    wedding = await get_wedding(wedding_id)
-    if len(wedding.cameras) >= 5:
-        raise HTTPException(status_code=400, detail="Maximum 5 cameras allowed")
-    
-    # Create Stream.io call participant
-    participant_id = f"camera_{camera_data.camera_name}_{uuid.uuid4()}"
-    stream_token = generate_stream_token(participant_id, wedding.call_id)
-    
-    camera = {
-        "camera_id": str(uuid.uuid4()),
-        "camera_name": camera_data.camera_name,
-        "call_participant_id": participant_id,
-        "rtmp_url": STREAM_IO_RTMP_URL,
-        "stream_key": stream_token,
-        "status": "offline",
-        "priority": len(wedding.cameras) + 1,
-        "is_active": len(wedding.cameras) == 0,  # First camera is active
-        "created_at": datetime.utcnow()
-    }
-    
-    # Add to wedding
-    wedding.cameras.append(camera)
-    if len(wedding.cameras) == 1:
-        wedding.active_camera_id = camera["camera_id"]
-    
-    await update_wedding(wedding_id, {"cameras": wedding.cameras})
-    
-    return camera
-```
-
-**Switch Camera:**
-```python
-@router.post("/weddings/{wedding_id}/cameras/{camera_id}/switch")
+@router.post("/camera/{wedding_id}/{camera_id}/switch")
 async def switch_camera(
     wedding_id: str,
     camera_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Switch active camera:
     1. Update active_camera_id
     2. Log switch event
     3. Broadcast to viewers via WebSocket
-    4. Update composition service
+    4. Update FFmpeg composition service
     """
-    wedding = await get_wedding(wedding_id)
+    db = get_db()
+    wedding = await db.weddings.find_one({"id": wedding_id})
+    
+    if not wedding:
+        raise HTTPException(status_code=404, detail="Wedding not found")
+    
+    # Check ownership
+    if wedding["creator_id"] != current_user["user_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     # Validate camera exists and is live
-    camera = next((c for c in wedding.cameras if c["camera_id"] == camera_id), None)
+    cameras = wedding.get("multi_cameras", [])
+    camera = next((c for c in cameras if c["camera_id"] == camera_id), None)
+    
     if not camera:
         raise HTTPException(status_code=404, detail="Camera not found")
     if camera["status"] != "live":
@@ -421,39 +394,94 @@ async def switch_camera(
     
     # Log switch event
     switch_event = {
-        "from_camera_id": wedding.active_camera_id,
+        "from_camera_id": wedding.get("active_camera_id"),
         "to_camera_id": camera_id,
         "switched_at": datetime.utcnow(),
-        "switched_by": current_user.user_id
+        "switched_by": current_user["user_id"]
     }
     
     # Update database
-    await update_wedding(wedding_id, {
-        "active_camera_id": camera_id,
-        "camera_switches": wedding.camera_switches + [switch_event]
-    })
+    await db.weddings.update_one(
+        {"id": wedding_id},
+        {
+            "$set": {"active_camera_id": camera_id},
+            "$push": {"camera_switches": switch_event}
+        }
+    )
     
-    # Update all cameras is_active status
-    for c in wedding.cameras:
-        c["is_active"] = (c["camera_id"] == camera_id)
+    # Broadcast via WebSocket
+    from app.services.camera_websocket import broadcast_camera_switch
+    await broadcast_camera_switch(wedding_id, camera)
     
-    # Broadcast to viewers via WebSocket
-    await broadcast_camera_switch(wedding_id, camera_id)
+    # Update FFmpeg composition
+    from app.services.ffmpeg_composition import update_active_camera
+    await update_active_camera(wedding_id, camera_id)
     
-    # Notify composition service
-    await notify_composition_service(wedding.call_id, camera_id)
+    return {
+        "status": "success",
+        "active_camera": camera,
+        "message": f"Switched to {camera['name']}"
+    }
+```
+
+**Get Active Camera (NEW):**
+```python
+@router.get("/camera/{wedding_id}/active")
+async def get_active_camera(wedding_id: str):
+    """Get currently active camera for wedding"""
+    db = get_db()
+    wedding = await db.weddings.find_one({"id": wedding_id})
     
-    return {"status": "success", "active_camera": camera}
+    if not wedding:
+        raise HTTPException(status_code=404, detail="Wedding not found")
+    
+    active_camera_id = wedding.get("active_camera_id")
+    if not active_camera_id:
+        return {"active_camera": None, "message": "No active camera"}
+    
+    cameras = wedding.get("multi_cameras", [])
+    camera = next((c for c in cameras if c["camera_id"] == active_camera_id), None)
+    
+    if camera:
+        return {
+            "active_camera": camera,
+            "output_hls_url": wedding.get("multi_camera_config", {}).get("output_hls_url")
+        }
+    
+    return {"active_camera": None, "message": "Active camera not found"}
+```
+
+**Camera Heartbeat (NEW):**
+```python
+@router.post("/camera/{wedding_id}/{camera_id}/heartbeat")
+async def camera_heartbeat(
+    wedding_id: str,
+    camera_id: str,
+    status_data: dict
+):
+    """Update camera status from RTMP webhook or polling"""
+    db = get_db()
+    
+    await db.weddings.update_one(
+        {"id": wedding_id, "multi_cameras.camera_id": camera_id},
+        {
+            "$set": {
+                "multi_cameras.$.status": status_data.get("status", "live"),
+                "multi_cameras.$.last_heartbeat": datetime.utcnow()
+            }
+        }
+    )
+    
+    return {"status": "success"}
 ```
 
 **Tasks:**
-- [x] Create cameras.py routes file
-- [x] Implement add_camera endpoint
-- [x] Implement list_cameras endpoint
-- [x] Implement switch_camera endpoint
-- [x] Implement delete_camera endpoint
-- [x] Add camera heartbeat endpoint
-- [x] Add authentication and authorization checks
+- [ ] Add camera switching endpoint
+- [ ] Add get active camera endpoint
+- [ ] Add camera heartbeat endpoint
+- [ ] Add camera thumbnail endpoint
+- [ ] Update existing add_camera to set first camera as active
+- [ ] Test all endpoints with Postman/curl
 
 #### 1.3 Stream.io Multi-Participant Integration
 
