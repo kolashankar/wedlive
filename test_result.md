@@ -15,6 +15,17 @@
         comment: "✅ FIXED TEXT FITTING & WRAPPING: 1) Implemented AUTO-SCALE logic in ResponsiveTextOverlay.js using useLayoutEffect. Text now shrinks to fit inside the defined percentage box (width/height) instead of overflowing or forcing huge vertical expansion. 2) Changed overflowWrap from 'break-word' to 'normal' to prevent names like 'Radha' from being split vertically (R a d h a) on small screens."
 
 backend:
+  - task: "Remove Upload Logo option and use only studio image"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/routes/profile.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ STUDIO IMAGE UPLOAD REFACTORED: 1) Updated /api/profile/studios/{studio_id}/logo endpoint to save uploads as 'default_image_url' instead of 'logo_url'. 2) Profile endpoint now returns default_image_url as logo_url for compatibility. 3) All logging updated from STUDIO_LOGO to STUDIO_IMAGE for clarity."
   - task: "Fix Telegram URL CORS errors for photo borders and backgrounds"
     implemented: true
     working: true
@@ -31,6 +42,17 @@ backend:
         comment: "✅ BACKEND_URL CONFIGURATION FIX FOR VERCEL + RENDER DEPLOYMENT."
 
 frontend:
+  - task: "Remove Upload Logo button from profile page"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/app/profile/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ REMOVED UPLOAD LOGO OPTION: 1) Removed 'Upload Logo' button from studio cards in profile page. 2) Removed handleUploadStudioLogo function and uploadingLogo state. 3) Updated studio dialog to clarify 'Studio Image' upload. 4) Updated description to show 'This image will be displayed in wedding layouts'. 5) Studio cards now display only the studio image (default_image_url)."
   - task: "Make Layout 1 transparent to show chosen background"
     implemented: true
     working: true
@@ -56,22 +78,27 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.1"
-  test_sequence: 4
+  version: "1.2"
+  test_sequence: 5
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Verify overlay text sizing matches Admin view"
-    - "Verify 'Radha' and 'Rajagopal' are not broken into multiple lines"
+    - "Test profile page studio image upload"
+    - "Verify studio image displays in profile studio cards"
+    - "Verify studio image displays in wedding management preview"
+    - "Verify Upload Logo button is removed"
   stuck_tasks: []
   test_all: false
-  test_priority: "critical_first"
+  test_priority: "high_first"
 
 agent_communication:
+  - agent: "main"
+    message: "✅ STUDIO IMAGE UPLOAD REFACTORED - LOGO UPLOAD REMOVED: 1) Backend endpoint /api/profile/studios/{studio_id}/logo now saves to 'default_image_url' instead of 'logo_url'. 2) Frontend profile page no longer shows 'Upload Logo' button on studio cards. 3) Studio dialog updated to clarify it's for 'Studio Image' that will be displayed in wedding layouts. 4) Studio image will now properly display in wedding management preview under 'Studio Partner' section. 5) All changes maintain backward compatibility."
   - agent: "main"
     message: "✅ MADE Layout 1 COMPLETELY TRANSPARENT! Removed all hardcoded backgrounds (bg-white, bg-black, gradients) from all sections. Now uses transparent sections with subtle backdrop-blur-sm for glass morphism effect. The chosen background image/color is now fully visible throughout the entire layout. Gallery cards use bg-white/95 for semi-transparent polaroid effect. Footer is bg-black/50 with backdrop blur. This allows backgrounds set in theme settings to show through beautifully. See /app/LAYOUT1_TRANSPARENT_BACKGROUND.md for complete implementation details."
   - agent: "main"
     message: "✅ FIXED Telegram URL CORS errors! All 23 photo borders/backgrounds in the database now use proxy URLs instead of direct Telegram API URLs. The migration script successfully converted URLs like 'https://api.telegram.org/file/bot.../file_102.png' to 'https://wedlive.onrender.com/api/media/telegram-proxy/documents/{file_id}'. No more NS_BINDING_ABORTED errors. Backend proxy endpoint was already in place, just needed to update the database records. See /app/TELEGRAM_URL_FIX_SUMMARY.md for complete details."
   - agent: "main"
     message: "I have fixed the font sizing issue by aligning the reference resolution logic in the public player with the actual video resolution. I also disabled word breaking to match the admin editor behavior."
+
