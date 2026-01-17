@@ -63,7 +63,8 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
             studios.append({
                 "id": studio_id,
                 "name": studio["name"],
-                "logo_url": studio.get("logo_url"),
+                "logo_url": studio.get("default_image_url"),  # Show studio image as logo_url for compatibility
+                "default_image_url": studio.get("default_image_url"),  # Also include default_image_url
                 "website": studio.get("website"),
                 "email": studio.get("email"),
                 "phone": studio.get("phone"),
