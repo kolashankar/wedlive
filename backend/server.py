@@ -174,6 +174,15 @@ async def get_main_camera_rtmp(wedding_id: str):
         "playbackUrl": wedding.get("playback_url", "")
     }
 
+# Mount HLS Output directory for multi-camera composition
+# Ensure directory exists
+os.makedirs("/tmp/hls_output", exist_ok=True)
+fastapi_app.mount("/hls_output", StaticFiles(directory="/tmp/hls_output"), name="hls_output")
+
+# Mount HLS directory for raw camera streams (if needed for debugging or direct view)
+# os.makedirs("/tmp/hls", exist_ok=True)
+# fastapi_app.mount("/hls", StaticFiles(directory="/tmp/hls"), name="hls")
+
 # Mount Socket.IO for real-time communication
 # This wraps the FastAPI app with Socket.IO support for WebSocket connections
 socket_app = socketio.ASGIApp(sio, fastapi_app)
