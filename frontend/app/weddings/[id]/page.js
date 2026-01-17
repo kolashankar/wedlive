@@ -141,6 +141,7 @@ function WeddingViewPageContent({ params, searchParams }) {
             studio_id: '',
             name: '',
             logo_url: '',
+            default_image_url: '',
             contact: ''
           };
         }
