@@ -3,17 +3,14 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import api from '@/lib/api';
-import AlbumDetail from './AlbumDetail';
+import { Plus, Edit, Trash2, Image as ImageIcon, Play } from 'lucide-react';
+import SlideshowPlayer from './SlideshowPlayer';
 
 export default function AlbumManager({ weddingId }) {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [previewAlbum, setPreviewAlbum] = useState(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newAlbumTitle, setNewAlbumTitle] = useState('');
 
