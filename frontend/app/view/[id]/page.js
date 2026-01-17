@@ -211,20 +211,61 @@ function ViewerContent({ weddingId }) {
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto mb-8">
+            <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-8">
               <TabsTrigger value="live" disabled={!live_stream.is_live}>
                 <Video className="w-4 h-4 mr-2" />
                 Live
+              </TabsTrigger>
+              <TabsTrigger value="albums" disabled={albums.length === 0}>
+                <Play className="w-4 h-4 mr-2" />
+                Albums ({albums.length})
               </TabsTrigger>
               <TabsTrigger value="media" disabled={media.total_count === 0}>
                 <ImageIcon className="w-4 h-4 mr-2" />
                 Media ({media.total_count})
               </TabsTrigger>
               <TabsTrigger value="recording" disabled={!recording.available}>
-                <Play className="w-4 h-4 mr-2" />
+                <Download className="w-4 h-4 mr-2" />
                 Recording
               </TabsTrigger>
             </TabsList>
+
+            {/* Albums Tab */}
+            <TabsContent value="albums">
+                {albums.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {albums.map((album) => (
+                            <Card key={album.id} className="overflow-hidden group hover:shadow-lg transition-all cursor-pointer" onClick={() => playAlbum(album.id)}>
+                                <div className="aspect-video bg-gray-100 relative">
+                                    {album.cover_photo_url ? (
+                                        <img src={album.cover_photo_url} alt={album.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                            <ImageIcon className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                                        <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full border border-white/50 group-hover:scale-110 transition-transform">
+                                            <Play className="w-8 h-8 text-white fill-white" />
+                                        </div>
+                                    </div>
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white">
+                                        <h3 className="font-bold text-lg">{album.title}</h3>
+                                        <p className="text-sm opacity-80">{album.slides?.length || 0} photos</p>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                     <Card>
+                        <CardContent className="py-12 text-center">
+                            <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                            <p className="text-gray-600">No albums created yet</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </TabsContent>
 
             {/* Live Stream Tab */}
             <TabsContent value="live">
