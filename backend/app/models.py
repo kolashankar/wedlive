@@ -611,6 +611,9 @@ class WeddingResponse(BaseModel):
     viewers_count: int = 0
     is_locked: bool = False
     multi_cameras: Optional[List[MultiCamera]] = []
+    active_camera_id: Optional[str] = None
+    camera_switches: List[CameraSwitchEvent] = []
+    composition_config: Optional[CompositionConfig] = None
     settings: Optional[WeddingSettings] = None
     theme_settings: Optional[ThemeSettings] = None
     backgrounds: Optional[WeddingBackgrounds] = None  # ADDED: Background images for layout and stream pages
