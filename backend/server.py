@@ -20,6 +20,7 @@ load_dotenv(ROOT_DIR / '.env')
 # Import WedLive routes
 from app.database import init_db, close_db, get_db
 from app.routes import auth, weddings, streams, subscriptions, admin, media, chat, analytics, features, premium, phase10, plan_management, storage_management, viewer_access, plan_info, recording, folders, quality, profile, security, settings, comments, theme_assets, templates, rtmp_webhooks, themes, live_controls, media_proxy, borders, sections, studios, precious_moments, youtube, layout_photos, layout_backgrounds, admin_cleanup, video_templates
+from app.routes import albums
 from app.services.socket_service import sio
 from fastapi import HTTPException, status, Request
 from fastapi.responses import JSONResponse
@@ -138,6 +139,7 @@ fastapi_app.include_router(layout_backgrounds.router, prefix="/api", tags=["Layo
 
 # YouTube Live Streaming Routes
 fastapi_app.include_router(youtube.router, prefix="/api/youtube", tags=["YouTube Live Streaming"])
+fastapi_app.include_router(albums.router, prefix="/api/albums", tags=["Albums & Slideshows"])
 
 # Video Templates System Routes
 fastapi_app.include_router(video_templates.router, prefix="/api", tags=["Video Templates"])
