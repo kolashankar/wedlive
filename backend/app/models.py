@@ -162,7 +162,8 @@ class UpdateWeddingSettings(BaseModel):
 class StudioDetails(BaseModel):
     studio_id: str = ""  # Reference to studio from profile
     name: str = ""
-    logo_url: str = ""
+    logo_url: str = ""  # Deprecated - kept for backward compatibility
+    default_image_url: str = ""  # Studio image (replaces logo_url)
     website: str = ""
     email: str = ""
     phone: str = ""
