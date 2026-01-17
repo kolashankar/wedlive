@@ -328,4 +328,109 @@ class RecordingService:
             
         except Exception as e:
             logger.error(f"Failed to auto-start recording for wedding {wedding_id}: {str(e)}")
+
+    # Multi-Camera Recording Methods
+    async def _start_composed_recording(self, wedding_id: str, recording_id: str):
+        """
+        Start FFmpeg recording of the composed HLS output
+        This records what viewers see in multi-camera weddings
+        """
+        try:
+            import subprocess
+            from pathlib import Path
+            
+            # Input: Composed HLS stream
+            input_url = f"http://localhost:8080/hls_output/output_{wedding_id}/output.m3u8"
+            
+            # Output: MP4 file
+            output_dir = Path(self.recording_base_path) / wedding_id
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_file = output_dir / f"recording_{recording_id}.mp4"
+            
+            logger.info(f"🎬 Starting composed stream recording")
+            logger.info(f"   Input: {input_url}")
+            logger.info(f"   Output: {output_file}")
+            
+            # FFmpeg command for recording HLS to MP4
+            cmd = [
+                "ffmpeg",
+                "-i", input_url,
+                "-c", "copy",  # Copy codec for efficiency
+                "-movflags", "+faststart",  # Enable streaming playback
+                "-f", "mp4",
+                str(output_file)
+            ]
+            
+            # Start process in background
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE
+            )
+            
+            # Store process info in recording metadata
+            await self.recordings_collection.update_one(
+                {"_id": ObjectId(recording_id)},
+                {"$set": {
+                    "ffmpeg_pid": process.pid,
+                    "output_file": str(output_file)
+                }}
+            )
+            
+            logger.info(f"✅ Composed recording started - PID: {process.pid}")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to start composed recording: {e}")
+            raise
+    
+    async def _stop_composed_recording(self, recording_id: str):
+        """
+        Stop FFmpeg recording process and finalize the file
+        """
+        try:
+            recording = await self.recordings_collection.find_one({"_id": ObjectId(recording_id)})
+            
+            if not recording or not recording.get("ffmpeg_pid"):
+                logger.warning(f"No FFmpeg process found for recording {recording_id}")
+                return
+            
+            import subprocess
+            import signal
+            import os
+            
+            pid = recording["ffmpeg_pid"]
+            
+            try:
+                # Send quit signal to FFmpeg for graceful shutdown
+                os.kill(pid, signal.SIGTERM)
+                logger.info(f"🛑 Sent SIGTERM to FFmpeg process {pid}")
+                
+                # Wait for process to finish (with timeout)
+                import time
+                timeout = 10
+                start_time = time.time()
+                while time.time() - start_time < timeout:
+                    try:
+                        os.kill(pid, 0)  # Check if process exists
+                        await asyncio.sleep(0.5)
+                    except OSError:
+                        # Process has terminated
+                        break
+                else:
+                    # Timeout - force kill
+                    try:
+                        os.kill(pid, signal.SIGKILL)
+                        logger.warning(f"⚠️ Force killed FFmpeg process {pid}")
+                    except:
+                        pass
+                
+                logger.info(f"✅ FFmpeg recording process {pid} stopped")
+                
+            except Exception as e:
+                logger.error(f"Error stopping FFmpeg process {pid}: {e}")
+        
+        except Exception as e:
+            logger.error(f"❌ Failed to stop composed recording: {e}")
+
             return None
