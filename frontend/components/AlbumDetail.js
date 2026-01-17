@@ -105,6 +105,12 @@ export default function AlbumDetail({ albumId, onBack }) {
 
     return (
         <div className="space-y-6">
+            {showPreview && (
+                <SlideshowPlayer 
+                    album={{...album, slides: slides}} // Pass current state for instant preview
+                    onClose={() => setShowPreview(false)} 
+                />
+            )}
             <div className="flex items-center justify-between sticky top-[64px] z-10 bg-white/80 backdrop-blur py-4 border-b">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={onBack}>
@@ -116,6 +122,10 @@ export default function AlbumDetail({ albumId, onBack }) {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Button variant="secondary" onClick={() => setShowPreview(true)}>
+                        <Play className="w-4 h-4 mr-2" />
+                        Preview
+                    </Button>
                     <Button variant="outline" onClick={() => setIsMediaSelectorOpen(true)}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Photos
