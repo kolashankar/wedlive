@@ -1,15 +1,16 @@
-
 import subprocess
 import asyncio
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 class FFmpegCompositionService:
     def __init__(self):
         self.processes: Dict[str, subprocess.Popen] = {}  # wedding_id -> Process
+        self.process_health: Dict[str, Dict] = {}  # wedding_id -> {last_check, status, restarts}
         self.output_dir = Path("/tmp/hls_output")
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
