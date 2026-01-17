@@ -573,6 +573,16 @@ async def get_available_borders(
     for border in borders:
         border_data = dict(border)
         
+        # CRITICAL FIX: Convert cdn_url to proxy URL using telegram_file_id
+        # This prevents CORS issues and avoids exposing bot token
+        telegram_file_id = border_data.get("telegram_file_id")
+        if telegram_file_id:
+            # Use documents media type for photo borders
+            proxy_url = telegram_file_id_to_proxy_url(telegram_file_id, media_type="documents")
+            if proxy_url:
+                border_data["cdn_url"] = proxy_url
+                logger.debug(f"[BORDERS] Converted cdn_url to proxy for border {border_data.get('id')}: {proxy_url[:50]}...")
+        
         # Map mask field to mask_data for response compatibility
         if "mask" in border_data and "mask_data" not in border_data:
             mask_data = border_data.pop("mask")
