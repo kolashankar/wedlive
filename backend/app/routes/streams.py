@@ -38,6 +38,21 @@ PREMIUM_PLAN_QUALITIES = ["240p", "360p", "480p", "720p", "1080p", "1440p", "4K"
 class StreamRequest(BaseModel):
     wedding_id: str
 
+from fastapi import WebSocket
+
+@router.websocket("/ws/camera-control/{wedding_id}")
+async def camera_control_ws(websocket: WebSocket, wedding_id: str):
+    """WebSocket endpoint for camera control and notifications"""
+    await ws_manager.connect(websocket, wedding_id)
+    try:
+        while True:
+            # Keep connection alive and handle incoming messages if any
+            # For now, this is primarily for server->client notifications
+            await websocket.receive_text()
+    except Exception:
+        # Connection closed or error
+        ws_manager.disconnect(websocket, wedding_id)
+
 @router.get("/live", response_model=List[StreamResponse])
 async def get_live_streams():
     """Get all currently live streams"""
