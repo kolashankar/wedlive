@@ -349,7 +349,7 @@ async def upload_studio_image(
         logger.info(f"[STUDIO_IMAGE] Studio found: {studio['name']}")
         
         # Validate file type
-        if not file.content_type or not file.content_type.startsWith('image/'):
+        if not file.content_type or not file.content_type.startswith('image/'):
             logger.error(f"[STUDIO_IMAGE] Invalid file type: {file.content_type}")
             raise HTTPException(status_code=400, detail="Only image files are allowed")
         
