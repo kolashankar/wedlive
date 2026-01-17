@@ -369,19 +369,19 @@ async def upload_studio_logo(
             cdn_url = result['cdn_url']
             logger.info(f"[STUDIO_LOGO] Telegram upload successful: {cdn_url}")
             
-            # Update studio logo
+            # Update studio image (now saving as default_image_url instead of logo_url)
             update_result = await db.studios.update_one(
                 {"_id": studio_id},
                 {"$set": {
-                    "logo_url": cdn_url,
+                    "default_image_url": cdn_url,
                     "updated_at": datetime.utcnow()
                 }}
             )
-            logger.info(f"[STUDIO_LOGO] Database updated: matched={update_result.matched_count}, modified={update_result.modified_count}")
+            logger.info(f"[STUDIO_IMAGE] Database updated: matched={update_result.matched_count}, modified={update_result.modified_count}")
             
             return {
-                "logo_url": cdn_url,
-                "message": "Studio logo uploaded successfully"
+                "default_image_url": cdn_url,
+                "message": "Studio image uploaded successfully"
             }
         finally:
             # Clean up temp file
