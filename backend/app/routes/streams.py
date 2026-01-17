@@ -665,15 +665,6 @@ async def get_camera_thumbnail(
     # Return default placeholder if not found
     # For now 404
     raise HTTPException(status_code=404, detail="Thumbnail not available")
-        MultiCamera(
-            camera_id=cam["camera_id"],
-            name=cam["name"],
-            stream_key=cam["stream_key"],
-            status=CameraStatus(cam["status"]),
-            created_at=cam["created_at"]
-        )
-        for cam in cameras
-    ]
 
 
 @router.post("/camera/{wedding_id}/{camera_id}/switch")
