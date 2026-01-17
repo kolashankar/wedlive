@@ -11,8 +11,8 @@ User reported two critical issues:
 
 ### Root Cause
 The frontend `.env` file was configured to connect to an incorrect backend URL:
-- **Old URL**: `https://camera-composer.preview.emergentagent.com`
-- **Actual deployment**: `https://camera-composer.preview.emergentagent.com`
+- **Old URL**: `https://streamswitch-1.preview.emergentagent.com`
+- **Actual deployment**: `https://streamswitch-1.preview.emergentagent.com`
 
 This caused:
 - 404 errors when trying to reach `/api/auth/login`
@@ -22,18 +22,18 @@ This caused:
 ### Solution Applied
 **File: `/app/frontend/.env`**
 ```diff
-- NEXT_PUBLIC_API_URL=https://camera-composer.preview.emergentagent.com
-- NEXT_PUBLIC_BACKEND_URL=https://camera-composer.preview.emergentagent.com
-- REACT_APP_BACKEND_URL=https://camera-composer.preview.emergentagent.com
-+ NEXT_PUBLIC_API_URL=https://camera-composer.preview.emergentagent.com
-+ NEXT_PUBLIC_BACKEND_URL=https://camera-composer.preview.emergentagent.com
-+ REACT_APP_BACKEND_URL=https://camera-composer.preview.emergentagent.com
+- NEXT_PUBLIC_API_URL=https://streamswitch-1.preview.emergentagent.com
+- NEXT_PUBLIC_BACKEND_URL=https://streamswitch-1.preview.emergentagent.com
+- REACT_APP_BACKEND_URL=https://streamswitch-1.preview.emergentagent.com
++ NEXT_PUBLIC_API_URL=https://streamswitch-1.preview.emergentagent.com
++ NEXT_PUBLIC_BACKEND_URL=https://streamswitch-1.preview.emergentagent.com
++ REACT_APP_BACKEND_URL=https://streamswitch-1.preview.emergentagent.com
 ```
 
 **File: `/app/backend/.env`**
 ```diff
 - BACKEND_URL=https://wedlive.onrender.com
-+ BACKEND_URL=https://camera-composer.preview.emergentagent.com
++ BACKEND_URL=https://streamswitch-1.preview.emergentagent.com
 ```
 
 ### Verification
@@ -130,7 +130,7 @@ https://api.telegram.org/file/bot8534420328:AAEB.../documents/file_102.png
 
 **After (Proxy URL via telegram_file_id):**
 ```
-https://camera-composer.preview.emergentagent.com/api/media/telegram-proxy/documents/BQACAgUAAyEGAATO7nwaAAOQaU_fIOrovv7dezINOwV2YbmCD94AAvIcAALG7oBWyaY-YZXnkyc2BA
+https://streamswitch-1.preview.emergentagent.com/api/media/telegram-proxy/documents/BQACAgUAAyEGAATO7nwaAAOQaU_fIOrovv7dezINOwV2YbmCD94AAvIcAALG7oBWyaY-YZXnkyc2BA
 ```
 ✅ Bot token hidden
 ✅ CORS headers properly set by backend
@@ -138,7 +138,7 @@ https://camera-composer.preview.emergentagent.com/api/media/telegram-proxy/docum
 
 **Alternative (Proxy URL via cdn_url):**
 ```
-https://camera-composer.preview.emergentagent.com/api/media/proxy?url=https%3A%2F%2Fapi.telegram.org%2Ffile%2F...
+https://streamswitch-1.preview.emergentagent.com/api/media/proxy?url=https%3A%2F%2Fapi.telegram.org%2Ffile%2F...
 ```
 
 ### Proxy Strategy (Priority Order)
@@ -159,7 +159,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
   | python3 -c "import json, sys; data=json.load(sys.stdin); print('cdn_url:', data['cdn_url'])"
 
 # Output:
-# cdn_url: https://camera-composer.preview.emergentagent.com/api/media/telegram-proxy/documents/BQACAgUAAyEGAATO7nwaAAOQaU_fIOrovv7dezINOwV2YbmCD94AAvIcAALG7oBWyaY-YZXnkyc2BA
+# cdn_url: https://streamswitch-1.preview.emergentagent.com/api/media/telegram-proxy/documents/BQACAgUAAyEGAATO7nwaAAOQaU_fIOrovv7dezINOwV2YbmCD94AAvIcAALG7oBWyaY-YZXnkyc2BA
 
 # Test admin borders list - all borders should have proxy URLs
 curl -s -H "Authorization: Bearer $TOKEN" \
@@ -168,7 +168,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 # Output:
 # Total: 23
-# First URL: https://camera-composer.preview.emergentagent.com/api/media/telegram-proxy/documents/BQACAgUAAyEGAATO7nwaAAO4aVYQYVQSUgT1hVeT4lhw7O1hto8AAqUfAAJa2LBWvY9_nCIEKzM4BA
+# First URL: https://streamswitch-1.preview.emergentagent.com/api/media/telegram-proxy/documents/BQACAgUAAyEGAATO7nwaAAO4aVYQYVQSUgT1hVeT4lhw7O1hto8AAqUfAAJa2LBWvY9_nCIEKzM4BA
 ```
 
 ---
@@ -221,7 +221,7 @@ mongodb                          RUNNING   pid 1509, uptime 0:00:20
 ## Next Steps for User
 
 1. **Clear Browser Cache**: The frontend may have cached the old backend URL
-2. **Test Login**: Try logging in via the UI at `https://camera-composer.preview.emergentagent.com`
+2. **Test Login**: Try logging in via the UI at `https://streamswitch-1.preview.emergentagent.com`
 3. **Verify Assets**: Check that photo borders/backgrounds load correctly without CORS errors
 4. **Monitor Logs**: Watch for any "stale URL" or CORS issues - should be resolved now
 
