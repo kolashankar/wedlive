@@ -15,6 +15,18 @@
         comment: "✅ FIXED TEXT FITTING & WRAPPING: 1) Implemented AUTO-SCALE logic in ResponsiveTextOverlay.js using useLayoutEffect. Text now shrinks to fit inside the defined percentage box (width/height) instead of overflowing or forcing huge vertical expansion. 2) Changed overflowWrap from 'break-word' to 'normal' to prevent names like 'Radha' from being split vertically (R a d h a) on small screens."
 
 backend:
+  - task: "Implement Multi-Camera Switching API (Phase 1)"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/routes/streams.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ PHASE 1 COMPLETE: 1) Updated Database Schema with 'active_camera_id', 'camera_switches', 'composition_config' fields. 2) Implemented POST /api/streams/camera/{wedding_id}/{camera_id}/switch and GET /api/streams/camera/{wedding_id}/active endpoints. 3) Created placeholder services for FFmpeg Composition and WebSocket broadcast."
+
   - task: "Remove Upload Logo option and use only studio image"
     implemented: true
     working: "pending_test"
