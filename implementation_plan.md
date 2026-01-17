@@ -483,65 +483,180 @@ async def camera_heartbeat(
 - [ ] Update existing add_camera to set first camera as active
 - [ ] Test all endpoints with Postman/curl
 
-#### 1.3 Stream.io Multi-Participant Integration
+#### 1.3 NGINX-RTMP Webhook Updates (EXTEND EXISTING)
 
-**File:** `/app/backend/app/services/stream_service.py` (EXTEND)
+**File:** `/app/backend/app/routes/rtmp_webhooks.py` ✅ ALREADY EXISTS!
+
+**Current webhooks:**
+- ✅ `/api/rtmp/on-publish` - Stream started
+- ✅ `/api/rtmp/on-publish-done` - Stream stopped
+- ✅ `/api/rtmp/on-update` - Periodic updates
 
 **Updates Needed:**
+
+Extend `on_publish` to handle multi-camera streams:
 ```python
-class StreamService:
-    async def create_multi_camera_call(self, wedding_id: str, num_cameras: int = 1):
-        """
-        Creates a Stream.io call configured for multiple participants
-        
-        Key configurations:
-        - Enable multiple publishers
-        - Configure video composition
-        - Set recording mode: per-participant + composed
-        """
-        call_id = f"wedding_{wedding_id}"
-        
-        # Create call with multi-publisher support
-        call = self.client.video.call("livestream", call_id)
-        
-        # Configure for multiple participants
-        settings = {
-            "ring": False,
-            "audio": {"mic_default_on": True},
-            "video": {"camera_default_on": True},
-            "backstage": {"enabled": False},
-            "broadcasting": {
-                "enabled": True,
-                "hls": {"enabled": True, "quality_tracks": ["1080p", "720p", "480p"]},
-                "rtmp": {"enabled": True}
-            },
-            "recording": {
-                "mode": "available",  # Records all participants
-                "audio_only": False,
-                "quality": "1080p"
-            }
-        }
-        
-        await call.update(settings=settings)
-        return call
+@router.post("/rtmp/on-publish")
+async def on_publish(request: Request, background_tasks: BackgroundTasks):
+    """
+    NGINX calls this when ANY stream starts (main or camera)
     
-    async def generate_camera_token(self, camera_id: str, call_id: str):
-        """Generate JWT token for camera participant"""
-        user_id = f"camera_{camera_id}"
-        token = self.client.create_token(
-            user_id=user_id,
-            expiration=datetime.utcnow() + timedelta(hours=24),
-            call_cids=[f"livestream:{call_id}"]
+    Logic:
+    1. Parse stream_key
+    2. If matches main wedding stream_key → start live session
+    3. If matches camera stream_key → mark camera as "live"
+    4. Update database
+    5. If this is a camera stream, check if FFmpeg composition should start
+    """
+    data = await request.form()
+    stream_key = data.get("name", "")
+    
+    logger.info(f"[RTMP_PUBLISH] Stream started: {stream_key}")
+    
+    db = get_db()
+    
+    # Check if this is a main wedding stream
+    wedding = await db.weddings.find_one({"stream_key": stream_key})
+    
+    if wedding:
+        # Main wedding stream started
+        wedding_id = wedding["id"]
+        live_service = LiveStatusService(db)
+        result = await live_service.handle_stream_start(wedding_id, stream_key)
+        return {"status": "success", "type": "main_stream", "wedding_id": wedding_id}
+    
+    # Check if this is a camera stream
+    wedding = await db.weddings.find_one({
+        "multi_cameras.stream_key": stream_key
+    })
+    
+    if wedding:
+        # Camera stream started
+        wedding_id = wedding["id"]
+        
+        # Update camera status to "live"
+        await db.weddings.update_one(
+            {"id": wedding_id, "multi_cameras.stream_key": stream_key},
+            {
+                "$set": {
+                    "multi_cameras.$.status": "live",
+                    "multi_cameras.$.last_heartbeat": datetime.utcnow()
+                }
+            }
         )
-        return token
+        
+        # Get camera info
+        cameras = wedding.get("multi_cameras", [])
+        camera = next((c for c in cameras if c["stream_key"] == stream_key), None)
+        
+        logger.info(f"[RTMP_PUBLISH] Camera {camera['name']} is now LIVE for wedding {wedding_id}")
+        
+        # Check if we need to start FFmpeg composition
+        if not wedding.get("multi_camera_config", {}).get("composition_active"):
+            background_tasks.add_task(start_ffmpeg_composition, wedding_id)
+        
+        # If this is the first/only live camera, make it active
+        active_camera_id = wedding.get("active_camera_id")
+        if not active_camera_id:
+            await db.weddings.update_one(
+                {"id": wedding_id},
+                {"$set": {"active_camera_id": camera["camera_id"]}}
+            )
+            logger.info(f"[RTMP_PUBLISH] Set {camera['name']} as active camera")
+        
+        # Broadcast update to UI via WebSocket
+        from app.services.camera_websocket import broadcast_camera_status
+        await broadcast_camera_status(wedding_id, camera["camera_id"], "live")
+        
+        return {
+            "status": "success",
+            "type": "camera_stream",
+            "wedding_id": wedding_id,
+            "camera_id": camera["camera_id"]
+        }
+    
+    logger.error(f"[RTMP_PUBLISH] Unknown stream_key: {stream_key}")
+    return {"status": "error", "message": "Invalid stream key"}
+```
+
+Extend `on_publish_done` for cameras:
+```python
+@router.post("/rtmp/on-publish-done")
+async def on_publish_done(request: Request, background_tasks: BackgroundTasks):
+    """
+    NGINX calls this when stream stops (main or camera)
+    """
+    data = await request.form()
+    stream_key = data.get("name", "")
+    
+    logger.info(f"[RTMP_DONE] Stream stopped: {stream_key}")
+    
+    db = get_db()
+    
+    # Check if main stream
+    wedding = await db.weddings.find_one({"stream_key": stream_key})
+    
+    if wedding:
+        # Main stream stopped - existing logic
+        wedding_id = wedding["id"]
+        live_service = LiveStatusService(db)
+        result = await live_service.handle_stream_stop(wedding_id, stream_key)
+        return {"status": "success", "type": "main_stream"}
+    
+    # Check if camera stream
+    wedding = await db.weddings.find_one({
+        "multi_cameras.stream_key": stream_key
+    })
+    
+    if wedding:
+        wedding_id = wedding["id"]
+        
+        # Update camera status to "offline"
+        await db.weddings.update_one(
+            {"id": wedding_id, "multi_cameras.stream_key": stream_key},
+            {
+                "$set": {
+                    "multi_cameras.$.status": "offline",
+                    "multi_cameras.$.last_heartbeat": datetime.utcnow()
+                }
+            }
+        )
+        
+        cameras = wedding.get("multi_cameras", [])
+        camera = next((c for c in cameras if c["stream_key"] == stream_key), None)
+        
+        logger.info(f"[RTMP_DONE] Camera {camera['name']} went OFFLINE for wedding {wedding_id}")
+        
+        # Check if active camera went offline
+        if wedding.get("active_camera_id") == camera["camera_id"]:
+            # Switch to another live camera
+            live_cameras = [c for c in cameras if c["status"] == "live"]
+            if live_cameras:
+                new_active = live_cameras[0]
+                await db.weddings.update_one(
+                    {"id": wedding_id},
+                    {"$set": {"active_camera_id": new_active["camera_id"]}}
+                )
+                logger.info(f"[RTMP_DONE] Auto-switched to {new_active['name']}")
+                
+                # Update FFmpeg composition
+                background_tasks.add_task(update_ffmpeg_composition, wedding_id, new_active["camera_id"])
+        
+        # Broadcast status update
+        from app.services.camera_websocket import broadcast_camera_status
+        await broadcast_camera_status(wedding_id, camera["camera_id"], "offline")
+        
+        return {"status": "success", "type": "camera_stream"}
+    
+    return {"status": "error", "message": "Unknown stream key"}
 ```
 
 **Tasks:**
-- [x] Update create_call for multi-participant support
-- [x] Implement generate_camera_token method
-- [x] Add participant management methods
-- [x] Configure video composition settings
-- [x] Test with multiple simultaneous streams
+- [ ] Extend on_publish webhook for camera streams
+- [ ] Extend on_publish_done for camera streams
+- [ ] Add auto camera switching when active goes offline
+- [ ] Test with multiple OBS instances
+- [ ] Verify webhook responses don't break NGINX
 
 #### 1.4 Real-Time Camera Switching with WebSocket
 
