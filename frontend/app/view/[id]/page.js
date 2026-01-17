@@ -28,6 +28,7 @@ import StreamVideoPlayer from '@/components/StreamVideoPlayer';
 import { SocketProvider, useSocket } from '@/contexts/SocketContext';
 import CommentsSection from '@/components/CommentsSection';
 import QualityControl from '@/components/QualityControl';
+import SlideshowPlayer from '@/components/SlideshowPlayer';
 
 import LayoutRenderer from './layouts/LayoutRenderer';
 function ViewerContent({ weddingId }) {
@@ -37,6 +38,8 @@ function ViewerContent({ weddingId }) {
   const [weddingData, setWeddingData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('live');
+  const [albums, setAlbums] = useState([]);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
 
   const loadWeddingData = useCallback(async () => {
     try {
@@ -45,6 +48,14 @@ function ViewerContent({ weddingId }) {
       console.log('Video Template Data:', response.data.video_template);
       setWeddingData(response.data);
       
+      // Fetch albums
+      try {
+        const albumRes = await api.get(`/api/albums/${weddingId}`);
+        setAlbums(albumRes.data);
+      } catch (err) {
+        console.error("Failed to load albums", err);
+      }
+
       // Auto-select appropriate tab
       if (response.data.live_stream.is_live) {
         setActiveTab('live');
