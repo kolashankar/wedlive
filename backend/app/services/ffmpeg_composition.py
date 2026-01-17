@@ -111,6 +111,116 @@ class FFmpegCompositionService:
             except Exception as e:
                 logger.warning(f"Error stopping process: {e}")
                 process.kill()
+
+    async def check_health(self, wedding_id: str) -> Dict[str, Any]:
+        """
+        Check health of FFmpeg composition process
+        Returns status and metrics for monitoring
+        """
+        if wedding_id not in self.processes:
+            return {
+                "status": "not_running",
+                "healthy": False,
+                "message": "No composition process found"
+            }
+        
+        process = self.processes[wedding_id]
+        
+        # Check if process is still running
+        if process.poll() is not None:
+            # Process has terminated
+            exit_code = process.returncode
+            logger.warning(f"⚠️ FFmpeg process for {wedding_id} has terminated (exit code: {exit_code})")
+            
+            # Remove from tracking
+            del self.processes[wedding_id]
+            
+            return {
+                "status": "terminated",
+                "healthy": False,
+                "exit_code": exit_code,
+                "message": f"Process terminated with exit code {exit_code}"
+            }
+        
+        # Process is running
+        # Check output directory for recent segments
+        output_path = self.output_dir / f"output_{wedding_id}"
+        output_m3u8 = output_path / "output.m3u8"
+        
+        if not output_m3u8.exists():
+            return {
+                "status": "running",
+                "healthy": False,
+                "message": "Output file not found",
+                "pid": process.pid
+            }
+        
+        # Check last modification time
+        import time
+        last_modified = output_m3u8.stat().st_mtime
+        age_seconds = time.time() - last_modified
+        
+        # If output hasn't been updated in 10 seconds, something might be wrong
+        is_stale = age_seconds > 10
+        
+        health_status = {
+            "status": "running",
+            "healthy": not is_stale,
+            "pid": process.pid,
+            "output_age_seconds": age_seconds,
+            "message": "Stale output detected" if is_stale else "Healthy"
+        }
+        
+        # Update health tracking
+        self.process_health[wedding_id] = {
+            "last_check": datetime.utcnow(),
+            "status": health_status["status"],
+            "healthy": health_status["healthy"]
+        }
+        
+        return health_status
+    
+    async def recover_composition(self, wedding_id: str, camera: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Attempt to recover a failed composition process
+        """
+        logger.info(f"🔄 Attempting to recover composition for {wedding_id}")
+        
+        # Stop any existing process
+        await self.stop_composition(wedding_id)
+        
+        # Wait a moment
+        await asyncio.sleep(1)
+        
+        # Restart composition
+        result = await self.start_composition(wedding_id, camera)
+        
+        if result.get("success"):
+            # Track recovery attempt
+            if wedding_id not in self.process_health:
+                self.process_health[wedding_id] = {"restarts": 0}
+            
+            self.process_health[wedding_id]["restarts"] = self.process_health[wedding_id].get("restarts", 0) + 1
+            logger.info(f"✅ Composition recovered for {wedding_id} (restart #{self.process_health[wedding_id]['restarts']})")
+        
+        return result
+    
+    def get_all_health_status(self) -> Dict[str, Dict]:
+        """
+        Get health status for all active compositions
+        """
+        status = {}
+        for wedding_id in list(self.processes.keys()):
+            # Use asyncio to check health - but this is a sync method
+            # For now just return basic info
+            process = self.processes[wedding_id]
+            status[wedding_id] = {
+                "running": process.poll() is None,
+                "pid": process.pid if process.poll() is None else None,
+                "health_info": self.process_health.get(wedding_id, {})
+            }
+        return status
+
                 
             del self.processes[wedding_id]
 
