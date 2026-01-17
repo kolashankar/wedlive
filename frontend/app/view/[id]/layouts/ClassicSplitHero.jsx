@@ -106,17 +106,17 @@ export default function ClassicSplitHero({ wedding, themeSettings, media, videoT
       </div>
 
        {/* Studio Partner */}
-       {studioLogo && (
+       {studioImage && (
         <div className="py-12 bg-white/50 text-center">
             <p className="text-sm uppercase tracking-widest text-gray-500 mb-4">Captured By</p>
             <div className="flex justify-center">
-                 <div className="w-32 md:w-48 relative">
+                 <div className="w-48 md:w-64 relative rounded-lg overflow-hidden">
                      <BorderedPhoto 
-                        src={studioLogo}
+                        src={studioImage}
                         borderUrl={themeSettings?.studio_border_url}
                         alt="Studio"
                         aspectRatio="aspect-video"
-                        className="bg-transparent shadow-none"
+                        className="bg-transparent shadow-none object-cover"
                      />
                  </div>
             </div>
