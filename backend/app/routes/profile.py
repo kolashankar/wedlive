@@ -360,14 +360,14 @@ async def upload_studio_image(
             tmp.write(content)
             tmp_path = tmp.name
         
-        logger.info(f"[STUDIO_LOGO] Temp file created: {tmp_path}, size: {len(content)} bytes")
+        logger.info(f"[STUDIO_IMAGE] Temp file created: {tmp_path}, size: {len(content)} bytes")
         
         try:
             # Upload to Telegram
-            logger.info(f"[STUDIO_LOGO] Starting Telegram upload...")
-            result = await telegram_service.upload_photo(tmp_path, f"Logo for {studio['name']}")
+            logger.info(f"[STUDIO_IMAGE] Starting Telegram upload...")
+            result = await telegram_service.upload_photo(tmp_path, f"Image for {studio['name']}")
             cdn_url = result['cdn_url']
-            logger.info(f"[STUDIO_LOGO] Telegram upload successful: {cdn_url}")
+            logger.info(f"[STUDIO_IMAGE] Telegram upload successful: {cdn_url}")
             
             # Update studio image (now saving as default_image_url instead of logo_url)
             update_result = await db.studios.update_one(
