@@ -506,27 +506,6 @@ export default function ProfilePage() {
                                 <span>{studio.address}</span>
                               </div>
                             )}
-                            <div className="mt-3 space-x-2">
-                              <Label
-                                htmlFor={`logo-upload-${studio.id}`}
-                                className="cursor-pointer inline-flex items-center px-3 py-1 bg-white border border-gray-300 rounded text-xs font-medium text-gray-700 hover:bg-gray-50"
-                              >
-                                {uploadingLogo ? (
-                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                ) : (
-                                  <Upload className="w-3 h-3 mr-1" />
-                                )}
-                                Upload Logo
-                              </Label>
-                              <input
-                                id={`logo-upload-${studio.id}`}
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleUploadStudioLogo(studio.id, e)}
-                                className="hidden"
-                                disabled={uploadingLogo}
-                              />
-                            </div>
                           </div>
                         </div>
                         <div className="flex gap-2">
