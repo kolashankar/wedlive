@@ -27,15 +27,15 @@ CAMERAS (OBS) → NGINX-RTMP (Port 1935) → HLS Chunks (Port 8080)
 ### 📐 Implementation Plan
 
 #### PHASE 1: Backend Foundation (Day 1-2)
-- [ ] **1.1 Database Schema Updates**
-    - [ ] Add active_camera_id field
-    - [ ] Add camera_switches array
-    - [ ] Add composition_config object
-    - [ ] Update Pydantic models
-- [ ] **1.2 Camera Switching API**
-    - [ ] Add switch camera endpoint
-    - [ ] Add get active camera endpoint
-    - [ ] Create service placeholders for composition and websocket
+- [x] **1.1 Database Schema Updates**
+    - [x] Add active_camera_id field
+    - [x] Add camera_switches array
+    - [x] Add composition_config object
+    - [x] Update Pydantic models
+- [x] **1.2 Camera Switching API**
+    - [x] Add switch camera endpoint
+    - [x] Add get active camera endpoint
+    - [x] Create service placeholders for composition and websocket
 
 #### PHASE 2: Core Services (Day 3-4)
 - [ ] **2.1 FFmpeg Composition Service**
@@ -50,4 +50,4 @@ CAMERAS (OBS) → NGINX-RTMP (Port 1935) → HLS Chunks (Port 8080)
 - [ ] **4.2 Testing & Optimization**
 
 ### 📊 Progress Tracker
-**Current Progress:** 0%
+**Current Progress:** 25%
