@@ -820,9 +820,21 @@ async def get_random_defaults(db = Depends(get_db_dependency)):
     """Get random default selections for borders, style, and background"""
     
     # Get random border
-    borders_cursor = db.photo_borders.aggregate([{"$sample": {"size": 1}}])
+    borders_cursor = db.photo_borders.aggregate([
+        {"$match": {"category": {"$ne": "background"}}},  # Exclude backgrounds
+        {"$sample": {"size": 1}}
+    ])
     borders = await borders_cursor.to_list(length=1)
-    random_border = PhotoBorderResponse(**borders[0]) if borders else None
+    random_border = None
+    if borders:
+        border_data = dict(borders[0])
+        # Convert cdn_url to proxy URL
+        telegram_file_id = border_data.get("telegram_file_id")
+        if telegram_file_id:
+            proxy_url = telegram_file_id_to_proxy_url(telegram_file_id, media_type="documents")
+            if proxy_url:
+                border_data["cdn_url"] = proxy_url
+        random_border = PhotoBorderResponse(**border_data)
     
     # Get random precious moment style
     styles_cursor = db.precious_moment_styles.aggregate([{"$sample": {"size": 1}}])
