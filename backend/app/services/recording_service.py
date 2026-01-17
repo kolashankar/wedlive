@@ -33,17 +33,18 @@ class RecordingService:
         self,
         wedding_id: str,
         quality: str = "720p",
-        user_id: str = None
+        user_id: str = None,
+        record_composed: bool = True
     ) -> Dict:
         """
         Start DVR recording for a wedding stream
         
-        Note: NGINX-RTMP handles actual recording via config:
-        application live {
-            record all;
-            record_path /tmp/recordings;
-            record_suffix -%Y-%m-%d-%H-%M-%S.flv;
-        }
+        For Multi-Camera Weddings:
+        - If record_composed=True (default): Records the composed output stream (what viewers see)
+        - If record_composed=False: Records individual camera streams (future enhancement)
+        
+        Note: NGINX-RTMP handles actual recording via config for single streams.
+        For composed streams, we use FFmpeg to record the HLS output.
         
         This method creates metadata tracking.
         """
