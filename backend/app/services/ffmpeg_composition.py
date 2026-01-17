@@ -221,9 +221,6 @@ class FFmpegCompositionService:
             }
         return status
 
-                
-            del self.processes[wedding_id]
-
 # Singleton instance
 composition_service = FFmpegCompositionService()
 
