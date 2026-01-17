@@ -790,9 +790,30 @@ async def get_available_backgrounds(
     db = Depends(get_db_dependency)
 ):
     """Get all available background images (public access)"""
-    cursor = db.background_images.find().sort("created_at", -1).skip(skip).limit(limit)
+    # FIX: Backgrounds are stored in photo_borders collection with category="background"
+    cursor = db.photo_borders.find({"category": "background"}).sort("created_at", -1).skip(skip).limit(limit)
     backgrounds = await cursor.to_list(length=limit)
-    return [BackgroundImageResponse(**bg) for bg in backgrounds]
+    
+    # Convert cdn_url to proxy URLs
+    response_backgrounds = []
+    for bg in backgrounds:
+        bg_data = dict(bg)
+        
+        # CRITICAL FIX: Convert cdn_url to proxy URL using telegram_file_id
+        telegram_file_id = bg_data.get("telegram_file_id")
+        if telegram_file_id:
+            proxy_url = telegram_file_id_to_proxy_url(telegram_file_id, media_type="documents")
+            if proxy_url:
+                bg_data["cdn_url"] = proxy_url
+                logger.debug(f"[BACKGROUNDS] Converted cdn_url to proxy for background {bg_data.get('id')}: {proxy_url[:50]}...")
+        
+        try:
+            response_backgrounds.append(BackgroundImageResponse(**bg_data))
+        except Exception as e:
+            logger.error(f"Error creating BackgroundImageResponse for background {bg_data.get('id', 'unknown')}: {e}")
+            continue
+    
+    return response_backgrounds
 
 @router.get("/theme-assets/random-defaults")
 async def get_random_defaults(db = Depends(get_db_dependency)):
