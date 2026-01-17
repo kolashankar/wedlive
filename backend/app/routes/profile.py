@@ -337,22 +337,22 @@ async def upload_studio_image(
     try:
         db = get_db()
         
-        logger.info(f"[STUDIO_LOGO] Upload request for studio_id: {studio_id}")
+        logger.info(f"[STUDIO_IMAGE] Upload request for studio_id: {studio_id}")
         
         # Verify ownership
         studio = await db.studios.find_one({"_id": studio_id, "user_id": current_user["user_id"]})
         if not studio:
-            logger.error(f"[STUDIO_LOGO] Studio not found: {studio_id}")
+            logger.error(f"[STUDIO_IMAGE] Studio not found: {studio_id}")
             raise HTTPException(status_code=404, detail="Studio not found")
         
-        logger.info(f"[STUDIO_LOGO] Studio found: {studio['name']}")
+        logger.info(f"[STUDIO_IMAGE] Studio found: {studio['name']}")
         
         # Validate file type
-        if not file.content_type or not file.content_type.startswith('image/'):
-            logger.error(f"[STUDIO_LOGO] Invalid file type: {file.content_type}")
+        if not file.content_type or not file.content_type.startsWith('image/'):
+            logger.error(f"[STUDIO_IMAGE] Invalid file type: {file.content_type}")
             raise HTTPException(status_code=400, detail="Only image files are allowed")
         
-        logger.info(f"[STUDIO_LOGO] File type valid: {file.content_type}, size: {file.size if hasattr(file, 'size') else 'unknown'}")
+        logger.info(f"[STUDIO_IMAGE] File type valid: {file.content_type}, size: {file.size if hasattr(file, 'size') else 'unknown'}")
         
         # Save to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
