@@ -160,7 +160,7 @@ export default function Layout1({
       )}
 
       {/* Section 4: Studio Image/Branding */}
-      {studioDetails?.logo_url && (
+      {studioDetails?.default_image_url && (
         <section className="w-full min-h-[40vh] md:min-h-[50vh] backdrop-blur-sm py-12 md:py-20 flex items-center justify-center">
           <motion.div
             initial="hidden"
@@ -171,8 +171,8 @@ export default function Layout1({
           >
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 md:p-16 shadow-2xl border border-white/20">
               <img 
-                src={studioDetails.logo_url} 
-                className="h-20 md:h-32 mx-auto mb-6 filter drop-shadow-lg" 
+                src={studioDetails.default_image_url} 
+                className="w-full max-w-md mx-auto mb-6 rounded-lg filter drop-shadow-lg object-cover" 
                 alt="Studio" 
               />
               <h3 className="text-white text-xl md:text-2xl lg:text-3xl font-bold uppercase tracking-widest mb-4">
