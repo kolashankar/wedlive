@@ -612,6 +612,20 @@ async def get_cameras(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized"
+        )
+    
+    cameras = wedding.get("multi_cameras", [])
+    
+    return [
+        MultiCamera(
+            camera_id=cam["camera_id"],
+            name=cam["name"],
+            stream_key=cam["stream_key"],
+            status=CameraStatus(cam["status"]),
+            created_at=cam["created_at"]
+        )
+        for cam in cameras
+    ]
 
 @router.get("/camera-thumbnail/{camera_id}")
 async def get_camera_thumbnail(
@@ -640,14 +654,8 @@ async def get_camera_thumbnail(
     # stream_key is needed. 
     thumbnail_path = await service.generate_thumbnail(camera["stream_key"], wedding["id"], is_camera=True)
     
-    # If path returned is a URL path (e.g. /api/media/thumbnails/...), we redirect or serve file?
-    # Service implementation returned: return f"/api/media/thumbnails/{output_filename}"
-    # But wait, that service implementation assumed we serve /api/media/thumbnails
-    # Let's check what I wrote in thumbnail_service.py
-    
     # Service wrote to /tmp/thumbnails/{stream_key}.jpg
     # And returned string "/api/media/thumbnails/{stream_key}.jpg"
-    
     # So we need to map that path to actual file
     real_path = f"/tmp/thumbnails/{camera['stream_key']}.jpg"
     
@@ -657,12 +665,6 @@ async def get_camera_thumbnail(
     # Return default placeholder if not found
     # For now 404
     raise HTTPException(status_code=404, detail="Thumbnail not available")
-
-        )
-    
-    cameras = wedding.get("multi_cameras", [])
-    
-    return [
         MultiCamera(
             camera_id=cam["camera_id"],
             name=cam["name"],
