@@ -84,11 +84,29 @@ class RecordingService:
                 "file_size": None,
                 "duration_seconds": None,
                 "completed_at": None,
-                "error_message": None
+                "error_message": None,
+                "is_multi_camera": len(wedding.get("multi_cameras", [])) > 0,
+                "record_type": "composed" if record_composed else "individual"
             }
             
             result = await self.recordings_collection.insert_one(recording_doc)
             recording_id = str(result.inserted_id)
+            
+            # Start FFmpeg recording for composed stream if multi-camera
+            if recording_doc["is_multi_camera"] and record_composed:
+                try:
+                    await self._start_composed_recording(wedding_id, recording_id)
+                except Exception as e:
+                    logger.error(f"Failed to start composed recording: {e}")
+                    # Update recording status to failed
+                    await self.recordings_collection.update_one(
+                        {"_id": result.inserted_id},
+                        {"$set": {
+                            "status": RecordingStatus.FAILED.value,
+                            "error_message": f"Failed to start composed recording: {str(e)}"
+                        }}
+                    )
+                    raise
             
             # Update recording status to RECORDING
             await self.recordings_collection.update_one(
