@@ -18,22 +18,25 @@ This document outlines the complete implementation plan for adding professional 
 ## 🏗️ System Architecture
 
 ### Current State Analysis
-**Existing Infrastructure:**
-- ✅ Stream.io integration for single-camera streaming
-- ✅ RTMP ingestion with JWT authentication
-- ✅ HLS playback for viewers
+**Existing Infrastructure (NGINX-RTMP Based):**
+- ✅ **Custom NGINX-RTMP server** for streaming (no third-party APIs)
+- ✅ **RTMP ingestion** at port 1935 with unique stream keys
+- ✅ **HLS delivery** at port 8080 for viewers
+- ✅ **RTMP webhooks** (on-publish, on-publish-done, on-update)
+- ✅ **Recording service** with FFmpeg encoding
+- ✅ **Live status service** (waiting → live → paused → ended)
+- ✅ **Multi-camera endpoints** already defined (add/remove camera)
 - ✅ Wedding management system
-- ✅ Live control panel (pause/resume/end)
 - ✅ MongoDB data persistence
 - ✅ FastAPI backend + React frontend
 
 **What Needs to be Built:**
-- 🔨 Multi-camera source management
-- 🔨 Camera switching logic with WebRTC composition
-- 🔨 Real-time preview grid
-- 🔨 Viewer synchronization service
-- 🔨 Multi-stream recording and merging
-- 🔨 Enhanced UI for camera control
+- 🔨 NGINX multi-stream configuration (multiple stream keys → single output)
+- 🔨 FFmpeg-based camera switching/composition service
+- 🔨 Camera preview thumbnails (FFmpeg screenshots)
+- 🔨 Real-time WebSocket for camera switching commands
+- 🔨 Frontend camera grid UI
+- 🔨 Multi-stream recording with timestamp logging
 
 ### Architecture Overview
 
