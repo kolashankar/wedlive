@@ -136,8 +136,8 @@ class RecordingService:
         """
         Stop DVR recording for a wedding stream
         
-        NGINX-RTMP automatically stops recording when stream ends.
-        This method updates metadata and generates playback URL.
+        For multi-camera composed recordings, stops the FFmpeg process.
+        For NGINX-RTMP recordings, updates metadata.
         """
         recording = None
         try:
@@ -161,7 +161,11 @@ class RecordingService:
                 }}
             )
             
-            # Simulate processing delay (NGINX-RTMP finalizes file)
+            # Stop composed recording if applicable
+            if recording.get("is_multi_camera") and recording.get("record_type") == "composed":
+                await self._stop_composed_recording(recording_id)
+            
+            # Wait for processing to complete
             await asyncio.sleep(2)
             
             # Calculate duration
