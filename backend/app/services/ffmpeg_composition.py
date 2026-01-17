@@ -42,13 +42,15 @@ class FFmpegCompositionService:
             
             cmd = [
                 "ffmpeg",
-                "-re", # Read input at native frame rate (important for composition if input is static/loop, but for HLS input it might be auto)
+                "-re", # Read input at native frame rate
                 "-i", input_hls,
                 "-c", "copy",  # Copy codec (no re-encoding) - FAST switching
                 "-f", "hls",
-                "-hls_time", "2",
-                "-hls_list_size", "5",
-                "-hls_flags", "delete_segments",
+                "-hls_time", "1",  # Reduced from 2 to 1 second for lower latency
+                "-hls_list_size", "3",  # Reduced from 5 to 3 for lower latency
+                "-hls_flags", "delete_segments+independent_segments",
+                "-hls_segment_type", "mpegts",
+                "-start_number", "0",
                 output_hls
             ]
             
