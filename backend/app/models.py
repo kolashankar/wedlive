@@ -909,3 +909,53 @@ class RecordingResponse(BaseModel):
 class RecordingListResponse(BaseModel):
     recordings: List[RecordingResponse]
     total_count: int
+
+
+# Album & Slideshow Models (Phase 1)
+class SlideTransition(str, Enum):
+    NONE = "none"
+    FADE = "fade"
+    WIPE_LEFT = "wipe_left"
+    WIPE_RIGHT = "wipe_right"
+    ZOOM_IN = "zoom_in"
+    ZOOM_OUT = "zoom_out"
+    KEN_BURNS = "ken_burns"
+    RANDOM = "random"
+
+class AlbumSlide(BaseModel):
+    media_id: str
+    order: int
+    duration: float = 5.0
+    transition: SlideTransition = SlideTransition.FADE
+    transition_duration: float = 1.0
+    animation: Optional[str] = "none" # e.g., "ken_burns"
+    caption: Optional[str] = None
+
+class Album(BaseModel):
+    id: str
+    wedding_id: str
+    title: str
+    description: Optional[str] = None
+    cover_photo_url: Optional[str] = None
+    music_url: Optional[str] = None
+    slides: List[AlbumSlide] = []
+    created_at: datetime
+    updated_at: datetime
+    created_by: str
+
+class AlbumCreate(BaseModel):
+    wedding_id: str
+    title: str
+    description: Optional[str] = None
+    cover_photo_url: Optional[str] = None
+    music_url: Optional[str] = None
+
+class AlbumUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    cover_photo_url: Optional[str] = None
+    music_url: Optional[str] = None
+    slides: Optional[List[AlbumSlide]] = None
+
+class AlbumResponse(Album):
+    pass
