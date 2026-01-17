@@ -147,10 +147,20 @@ export default function AlbumManager({ weddingId }) {
                                     <ImageIcon className="w-8 h-8 text-gray-300" />
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                                 <Button variant="secondary" size="sm" onClick={() => setSelectedAlbum(album)}>
                                     <Edit className="w-4 h-4 mr-2" />
-                                    Manage Photos
+                                    Manage
+                                </Button>
+                                <Button size="sm" onClick={async () => {
+                                    // Fetch full details for preview (need slides)
+                                    try {
+                                        const res = await api.get(`/api/albums/detail/${album.id}`);
+                                        setPreviewAlbum(res.data);
+                                    } catch(e) { toast.error("Could not load preview"); }
+                                }}>
+                                    <Play className="w-4 h-4 mr-2" />
+                                    Play
                                 </Button>
                             </div>
                         </div>
