@@ -782,3 +782,54 @@ async def get_active_camera(
         "active_camera_id": active_id,
         "camera": camera
     }
+
+
+@router.get("/camera/{wedding_id}/health")
+async def get_composition_health(
+    wedding_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get health status of composition service for a wedding"""
+    from app.services.ffmpeg_composition import composition_service
+    
+    health = await composition_service.check_health(wedding_id)
+    return {
+        "wedding_id": wedding_id,
+        "composition_health": health
+    }
+
+@router.post("/camera/{wedding_id}/recover")
+async def recover_composition(
+    wedding_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Manually trigger composition recovery"""
+    db = get_db()
+    
+    wedding = await db.weddings.find_one({"id": wedding_id})
+    if not wedding:
+        raise HTTPException(status_code=404, detail="Wedding not found")
+    
+    # Check ownership
+    if wedding["creator_id"] != current_user["user_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get active camera
+    active_camera_id = wedding.get("active_camera_id")
+    if not active_camera_id:
+        raise HTTPException(status_code=400, detail="No active camera set")
+    
+    cameras = wedding.get("multi_cameras", [])
+    camera = next((c for c in cameras if c["camera_id"] == active_camera_id), None)
+    
+    if not camera:
+        raise HTTPException(status_code=404, detail="Active camera not found")
+    
+    from app.services.ffmpeg_composition import composition_service
+    result = await composition_service.recover_composition(wedding_id, camera)
+    
+    return {
+        "status": "recovered" if result.get("success") else "failed",
+        "details": result
+    }
+
