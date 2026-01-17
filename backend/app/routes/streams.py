@@ -612,6 +612,52 @@ async def get_cameras(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized"
+
+@router.get("/camera-thumbnail/{camera_id}")
+async def get_camera_thumbnail(
+    camera_id: str,
+    db = Depends(get_db)
+):
+    """Get latest thumbnail for a camera"""
+    # Find camera to get stream key
+    wedding = await db.weddings.find_one({"multi_cameras.camera_id": camera_id})
+    if not wedding:
+        raise HTTPException(status_code=404, detail="Camera not found")
+        
+    cameras = wedding.get("multi_cameras", [])
+    camera = next((c for c in cameras if c["camera_id"] == camera_id), None)
+    
+    if not camera:
+        raise HTTPException(status_code=404, detail="Camera not found")
+        
+    # Generate/Get thumbnail
+    from app.services.thumbnail_service import ThumbnailService
+    from fastapi.responses import FileResponse
+    import os
+    
+    service = ThumbnailService()
+    # Attempt to generate/find
+    # stream_key is needed. 
+    thumbnail_path = await service.generate_thumbnail(camera["stream_key"], wedding["id"], is_camera=True)
+    
+    # If path returned is a URL path (e.g. /api/media/thumbnails/...), we redirect or serve file?
+    # Service implementation returned: return f"/api/media/thumbnails/{output_filename}"
+    # But wait, that service implementation assumed we serve /api/media/thumbnails
+    # Let's check what I wrote in thumbnail_service.py
+    
+    # Service wrote to /tmp/thumbnails/{stream_key}.jpg
+    # And returned string "/api/media/thumbnails/{stream_key}.jpg"
+    
+    # So we need to map that path to actual file
+    real_path = f"/tmp/thumbnails/{camera['stream_key']}.jpg"
+    
+    if os.path.exists(real_path):
+        return FileResponse(real_path, media_type="image/jpeg")
+    
+    # Return default placeholder if not found
+    # For now 404
+    raise HTTPException(status_code=404, detail="Thumbnail not available")
+
         )
     
     cameras = wedding.get("multi_cameras", [])
