@@ -31,6 +31,17 @@ backend:
         comment: "✅ BACKEND_URL CONFIGURATION FIX FOR VERCEL + RENDER DEPLOYMENT."
 
 frontend:
+  - task: "Make Layout 1 transparent to show chosen background"
+    implemented: true
+    working: true
+    file: "/app/frontend/components/layouts/Layout1.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ LAYOUT 1 TRANSPARENCY IMPLEMENTED: 1) Removed all hardcoded section backgrounds (bg-white, bg-black, gradients). 2) Made all sections transparent with subtle backdrop-blur effects for glass morphism. 3) Chosen background now fully visible throughout layout. 4) Updated footer to bg-black/50 with backdrop-blur. 5) Gallery cards use bg-white/95 for semi-transparent effect. See /app/LAYOUT1_TRANSPARENT_BACKGROUND.md for details."
   - task: "Fix overlay text sizing and resolution mismatch in public view"
     implemented: true
     working: "pending_test"
