@@ -47,6 +47,7 @@ import YouTubeBroadcastControls from '@/components/YouTubeBroadcastControls';
 import YouTubeBroadcastsList from '@/components/YouTubeBroadcastsList';
 import TemplateSelector from '@/components/TemplateSelector';
 
+import AlbumManager from '@/components/AlbumManager';
 function ManagePageContent({ params }) {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -900,27 +901,40 @@ function ManagePageContent({ params }) {
 
               {/* Media Tab */}
               <TabsContent value="media" className="space-y-6">
-                {/* Folder Manager */}
-                <FolderManagerNested 
-                  weddingId={weddingId}
-                  onFolderSelect={(folderId) => {
-                    console.log('Selected folder:', folderId);
-                    // You can filter media gallery by folder here
-                  }}
-                />
-                
-                {/* Media Upload */}
-                <MediaUploadChunked 
-                  weddingId={weddingId} 
-                  onUploadComplete={handleMediaUploadComplete}
-                />
-                
-                {/* Media Gallery */}
-                <MediaGallery 
-                  key={refreshGallery} 
-                  weddingId={weddingId} 
-                  isCreator={true} 
-                />
+                <Tabs defaultValue="albums" className="w-full">
+                    <TabsList className="w-full justify-start border-b rounded-none p-0 h-auto bg-transparent gap-6">
+                        <TabsTrigger value="albums" className="rounded-none border-b-2 border-transparent data-[state=active]:border-rose-500 data-[state=active]:bg-transparent px-0 py-2">Albums & Slideshows</TabsTrigger>
+                        <TabsTrigger value="gallery" className="rounded-none border-b-2 border-transparent data-[state=active]:border-rose-500 data-[state=active]:bg-transparent px-0 py-2">All Media Gallery</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="albums" className="mt-6">
+                        <AlbumManager weddingId={weddingId} />
+                    </TabsContent>
+                    
+                    <TabsContent value="gallery" className="mt-6 space-y-6">
+                        {/* Folder Manager */}
+                        <FolderManagerNested 
+                          weddingId={weddingId}
+                          onFolderSelect={(folderId) => {
+                            console.log('Selected folder:', folderId);
+                            // You can filter media gallery by folder here
+                          }}
+                        />
+                        
+                        {/* Media Upload */}
+                        <MediaUploadChunked 
+                          weddingId={weddingId} 
+                          onUploadComplete={handleMediaUploadComplete}
+                        />
+                        
+                        {/* Media Gallery */}
+                        <MediaGallery 
+                          key={refreshGallery} 
+                          weddingId={weddingId} 
+                          isCreator={true} 
+                        />
+                    </TabsContent>
+                </Tabs>
               </TabsContent>
 
               {/* Settings Tab - Cleaned up without Theme Settings */}
