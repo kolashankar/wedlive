@@ -212,6 +212,8 @@ async def get_wedding_complete_view(wedding_id: str):
     Get complete wedding view with everything: details, live stream, media, recordings
     Public endpoint - no authentication required
     This is the unified endpoint for the viewer page
+    from app.services.live_status_service import LiveStatusService
+
     """
     db = get_db()
     
