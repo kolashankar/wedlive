@@ -199,19 +199,20 @@ class RecordingService:
             if recording.get("output_file") and os.path.exists(recording.get("output_file")):
                 file_size = os.path.getsize(recording.get("output_file"))
             
-            # Encode to MP4 format
-            try:
-                encoded_result = await self.encoding_service.encode_to_mp4(recording_filename, wedding_id)
-                
-                if encoded_result.get("success"):
-                    recording_url = encoded_result.get("output_file")
-                    logger.info(f"🎬 Recording encoded to MP4: {recording_url}")
-                else:
-                    recording_url = encoded_result.get("output_file", recording_url)
-                    logger.error(f"❌ MP4 encoding failed: {encoded_result.get('error')}")
-            except Exception as encoding_error:
-                logger.error(f"⚠️ MP4 encoding error: {str(encoding_error)}")
-                # Continue with original recording_url if encoding fails
+            # Encode to MP4 format if needed (only for FLV files from NGINX)
+            if recording_url and recording_url.endswith('.flv'):
+                try:
+                    encoded_result = await self.encoding_service.encode_to_mp4(recording_filename, wedding_id)
+                    
+                    if encoded_result.get("success"):
+                        recording_url = encoded_result.get("output_file")
+                        logger.info(f"🎬 Recording encoded to MP4: {recording_url}")
+                    else:
+                        recording_url = encoded_result.get("output_file", recording_url)
+                        logger.error(f"❌ MP4 encoding failed: {encoded_result.get('error')}")
+                except Exception as encoding_error:
+                    logger.error(f"⚠️ MP4 encoding error: {str(encoding_error)}")
+                    # Continue with original recording_url if encoding fails
             
             # Update recording record
             await self.recordings_collection.update_one(
@@ -221,7 +222,7 @@ class RecordingService:
                     "completed_at": completed_at,
                     "duration_seconds": duration_seconds,
                     "recording_url": recording_url,
-                    "file_size": 0  # TODO: Get actual file size
+                    "file_size": file_size
                 }}
             )
             
