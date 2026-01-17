@@ -173,6 +173,7 @@ function ViewerContent({ weddingId }) {
         themeSettings={weddingData.theme_settings} 
         media={media}
         videoTemplate={weddingData.video_template}
+        layoutPhotos={weddingData.layout_photos || {}}
       />
 
       {/* Wedding Header */}
