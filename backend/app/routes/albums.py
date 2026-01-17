@@ -45,13 +45,6 @@ async def get_albums(wedding_id: str):
     cursor = db.albums.find({"wedding_id": wedding_id}).sort("created_at", -1)
     return await cursor.to_list(length=100)
 
-@router.get("/detail/{album_id}", response_model=Album)
-async def get_album_detail(album_id: str):
-    db = get_db()
-    album = await db.albums.find_one({"id": album_id})
-    if not album:
-        raise HTTPException(status_code=404, detail="Album not found")
-
 @router.get("/detail/{album_id}")
 async def get_album_detail(album_id: str):
     db = get_db()
@@ -71,8 +64,6 @@ async def get_album_detail(album_id: str):
                 file_id = media_map[slide['media_id']]['file_id']
                 slide["media_url"] = f"/api/media/telegram-proxy/photos/{file_id}"
                 
-    return album
-
     return album
 
 @router.put("/{album_id}", response_model=Album)
