@@ -315,6 +315,37 @@ async def get_wedding_complete_view(wedding_id: str):
         theme_settings = clean_invalid_telegram_urls(theme_settings)
         logger.info(f"[VIEWER] Cleaned theme_settings for wedding {wedding_id}")
     
+    # Get layout photos for the public view
+    layout_photos = wedding.get("layout_photos", {})
+    
+    # Convert layout_photos URLs to proxy URLs to avoid CORS issues
+    def convert_to_proxy_url(photo_data):
+        """Convert photo data to use proxy URL"""
+        if not isinstance(photo_data, dict):
+            return photo_data
+        
+        file_id = photo_data.get('file_id', '')
+        if file_id:
+            # Use proxy URL format: /api/media/telegram-proxy/photos/{file_id}
+            photo_data['url'] = f"/api/media/telegram-proxy/photos/{file_id}"
+        
+        return photo_data
+    
+    # Process layout_photos to use proxy URLs
+    processed_layout_photos = {}
+    for placeholder_name, photo_data in layout_photos.items():
+        if isinstance(photo_data, list):
+            # Handle arrays (like preciousMoments)
+            processed_layout_photos[placeholder_name] = [
+                convert_to_proxy_url(photo.copy()) if isinstance(photo, dict) else photo
+                for photo in photo_data
+            ]
+        elif isinstance(photo_data, dict):
+            # Handle single photos
+            processed_layout_photos[placeholder_name] = convert_to_proxy_url(photo_data.copy())
+        else:
+            processed_layout_photos[placeholder_name] = photo_data
+    
     return {
         "wedding": {
             "id": wedding["id"],
@@ -358,6 +389,7 @@ async def get_wedding_complete_view(wedding_id: str):
             "url": wedding.get("recording_url") if not is_locked else None
         },
         "theme_settings": theme_settings,
+        "layout_photos": processed_layout_photos,  # Include layout photos for public view
         "video_template": template_data,
         "branding": branding_data,
         "access_restricted": is_locked,
