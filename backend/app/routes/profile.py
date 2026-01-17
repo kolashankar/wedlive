@@ -387,12 +387,12 @@ async def upload_studio_image(
             # Clean up temp file
             if tmp_path and os.path.exists(tmp_path):
                 os.unlink(tmp_path)
-                logger.info(f"[STUDIO_LOGO] Temp file cleaned up")
+                logger.info(f"[STUDIO_IMAGE] Temp file cleaned up")
             
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"[STUDIO_LOGO] Error uploading studio logo: {str(e)}")
+        logger.error(f"[STUDIO_IMAGE] Error uploading studio image: {str(e)}")
         import traceback
-        logger.error(f"[STUDIO_LOGO] Traceback: {traceback.format_exc()}")
+        logger.error(f"[STUDIO_IMAGE] Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
