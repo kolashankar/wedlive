@@ -87,10 +87,10 @@ export default function CenterFocus({ wedding, themeSettings, media, videoTempla
         </div>
 
         {/* Footer/Studio */}
-        {studioLogo && (
+        {studioImage && (
             <div className="py-8 text-center border-t">
-                 <div className="w-24 mx-auto mb-2">
-                     <BorderedPhoto src={studioLogo} borderUrl={themeSettings?.studio_border_url} className="bg-transparent" />
+                 <div className="w-48 mx-auto mb-2 rounded-lg overflow-hidden">
+                     <BorderedPhoto src={studioImage} borderUrl={themeSettings?.studio_border_url} className="bg-transparent object-cover" />
                  </div>
                  <p className="text-xs text-gray-400 uppercase">Photography Partner</p>
             </div>
