@@ -457,10 +457,10 @@ export default function LayoutRenderer({ wedding, videoTemplate, onEnter }) {
       preciousMoments: borderDetails[wedding.theme_settings?.theme_assets?.borders?.precious_moments_border_id]?.mask_data || null,
     },
     
-    // Studio details - Include both logo and studio image
+    // Studio details - Use default_image_url (studio image)
     studioDetails: {
-      logo_url: wedding.theme_settings?.studio_details?.logo_url || null,
-      studio_image_url: wedding.theme_settings?.studio_details?.studio_image_url || studioImage?.url || null,
+      default_image_url: wedding.theme_settings?.studio_details?.default_image_url || null,
+      logo_url: wedding.theme_settings?.studio_details?.logo_url || null, // Kept for backward compatibility
       name: wedding.theme_settings?.studio_details?.name || '',
       email: wedding.theme_settings?.studio_details?.email || '',
       phone: wedding.theme_settings?.studio_details?.phone || '',
