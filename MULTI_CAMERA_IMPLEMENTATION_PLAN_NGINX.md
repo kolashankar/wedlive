@@ -28,37 +28,30 @@ CAMERAS (OBS) → NGINX-RTMP (Port 1935) → HLS Chunks (Port 8080)
 
 #### PHASE 1: Backend Foundation (Day 1-2)
 - [x] **1.1 Database Schema Updates**
-    - [x] Add active_camera_id field
-    - [x] Add camera_switches array
-    - [x] Add composition_config object
-    - [x] Update Pydantic models
 - [x] **1.2 Camera Switching API**
-    - [x] Add switch camera endpoint
-    - [x] Add get active camera endpoint
-    - [x] Create service placeholders for composition and websocket
 - [x] **1.3 FFmpeg Composition Service**
-    - [x] Implement FFmpegCompositionService class
-    - [x] Implement start/stop/switch logic
-    - [x] Integrate with system FFmpeg process
 - [x] **1.4 RTMP Webhook Updates**
-    - [x] Extend on-publish to handle camera streams
-    - [x] Extend on-publish-done for camera offline handling
-    - [x] Implement auto-activation/fallback logic
 - [x] **1.5 WebSocket Service**
-    - [x] Implement CameraWebSocketManager
-    - [x] Add WebSocket endpoint to streams router
-    - [x] Integrate broadcast notifications
 
-#### PHASE 2: Core Services (Day 3-4) (Completed in Phase 1)
-(Moved composition & websocket to Phase 1 as requested)
+#### PHASE 2: Frontend Camera UI (Day 3-4)
+- [x] **2.1 Camera Management Panel**
+    - [x] Create CameraManagementPanel component
+    - [x] Implement WebSocket integration
+    - [x] Add camera grid layout
+- [x] **2.2 Camera Preview Card**
+    - [x] Create CameraCard component
+    - [x] Implement thumbnail display
+    - [x] Add switch controls
+    - [x] Add active state indication
 
 #### PHASE 3: Frontend Implementation (Day 5-6)
-- [ ] **3.1 Camera Management UI**
-- [ ] **3.2 Viewer Experience**
+- [ ] **3.1 Viewer Experience**
+    - [ ] Update Viewer Page to use composed stream
+    - [ ] Add multi-angle view (optional for viewers?)
 
 #### PHASE 4: Recording & Optimization (Day 7)
 - [ ] **4.1 Multi-Stream Recording**
 - [ ] **4.2 Testing & Optimization**
 
 ### 📊 Progress Tracker
-**Current Progress:** 60%
+**Current Progress:** 75%
