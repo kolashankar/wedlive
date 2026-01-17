@@ -327,12 +327,12 @@ async def delete_studio(
 
 
 @router.post("/studios/{studio_id}/logo")
-async def upload_studio_logo(
+async def upload_studio_image(
     studio_id: str,
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload studio logo to Telegram CDN"""
+    """Upload studio image to Telegram CDN (used for layouts, not logo)"""
     tmp_path = None
     try:
         db = get_db()
