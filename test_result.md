@@ -59,4 +59,6 @@ test_plan:
 
 agent_communication:
   - agent: "main"
+    message: "✅ FIXED Telegram URL CORS errors! All 23 photo borders/backgrounds in the database now use proxy URLs instead of direct Telegram API URLs. The migration script successfully converted URLs like 'https://api.telegram.org/file/bot.../file_102.png' to 'https://wedlive.onrender.com/api/media/telegram-proxy/documents/{file_id}'. No more NS_BINDING_ABORTED errors. Backend proxy endpoint was already in place, just needed to update the database records. See /app/TELEGRAM_URL_FIX_SUMMARY.md for complete details."
+  - agent: "main"
     message: "I have fixed the font sizing issue by aligning the reference resolution logic in the public player with the actual video resolution. I also disabled word breaking to match the admin editor behavior."
