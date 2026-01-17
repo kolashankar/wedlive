@@ -176,34 +176,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleUploadStudioLogo = async (studioId, e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    setUploadingLogo(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      await api.post(`/api/profile/studios/${studioId}/logo`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      toast.success('Logo uploaded successfully!');
-      loadProfile();
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo');
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
-
   const openStudioDialog = (studio = null) => {
     if (studio) {
       setEditingStudio(studio);
