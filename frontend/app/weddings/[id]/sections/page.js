@@ -10,8 +10,9 @@ import {
 } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 
 export default function WeddingSectionBuilder() {
   const router = useRouter();
