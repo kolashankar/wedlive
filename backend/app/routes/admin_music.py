@@ -255,6 +255,7 @@ async def upload_music(
     current_user: dict = Depends(get_current_user)
 ):
     """Upload audio file to music library"""
+    db = get_db()
     
     # Validate file type
     allowed_extensions = ['.mp3', '.wav', '.aac', '.ogg', '.m4a']
