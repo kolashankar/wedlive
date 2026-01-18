@@ -189,6 +189,7 @@ export default function AlbumDetail({ albumId, onBack }) {
                     selectedSlide={slides[selectedSlideIndex]}
                     onUpdateSlide={handleUpdateSlide}
                     onApplyToAll={handleApplyToAll}
+                    onApplyRandom={handleApplyRandom}
                     musicUrl={album.music_url}
                     onSelectMusic={fetchMusicLibrary}
                 />
