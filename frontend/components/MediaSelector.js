@@ -126,6 +126,17 @@ export default function MediaSelector({
     onSelect(selectedItems);
     onClose();
   };
+  const handleUploadComplete = (newMedia) => {
+    loadMedia();
+    setActiveTab('all'); // Switch to gallery view to show new media
+    // Optionally auto-select the new media?
+    // User wants "choose and upload multiple".
+    // If they upload one, we switch to gallery.
+    // They can then select it.
+    // If they want to upload another, they go back to Upload tab.
+    toast.success('Media uploaded! Select it from the gallery.');
+  };
+
 
   const photosCount = mediaItems.filter(item => item.media_type === 'photo').length;
   const videosCount = mediaItems.filter(item => item.media_type === 'video').length;
