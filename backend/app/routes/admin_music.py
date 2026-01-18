@@ -63,6 +63,7 @@ async def create_music_folder(
     current_user: dict = Depends(get_current_user)
 ):
     """Create a new music folder"""
+    db = get_db()
     
     # Validate parent folder if specified
     if folder.parent_folder_id:
