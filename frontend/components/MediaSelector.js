@@ -178,9 +178,22 @@ export default function MediaSelector({
                 <VideoIcon className="w-4 h-4 mr-1" />
                 Videos ({videosCount})
               </TabsTrigger>
+              <TabsTrigger value="upload">
+                <Upload className="w-4 h-4 mr-1" />
+                Upload New
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value={activeTab} className="mt-4">
+            <TabsContent value="upload" className="mt-4">
+                <div className="max-w-2xl mx-auto">
+                    <MediaUploadChunked 
+                        weddingId={weddingId} 
+                        onUploadComplete={handleUploadComplete} 
+                    />
+                </div>
+            </TabsContent>
+
+            <TabsContent value="all" className="mt-4">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
