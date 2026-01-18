@@ -194,15 +194,15 @@ export default function AudioUploadModal({ open, onClose, category, folders, onU
           <div>
             <Label htmlFor="folder">Folder (Optional)</Label>
             <Select
-              value={formData.folder_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, folder_id: value }))}
+              value={formData.folder_id || "none"}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, folder_id: value === "none" ? null : value }))}
               disabled={uploading}
             >
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Select a folder" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No folder (root)</SelectItem>
+                <SelectItem value="none">No folder (root)</SelectItem>
                 {folders.map(folder => (
                   <SelectItem key={folder.id} value={folder.id}>
                     {folder.icon} {folder.name}
