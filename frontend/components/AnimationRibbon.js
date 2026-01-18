@@ -44,21 +44,24 @@ export default function AnimationRibbon({
       <Button
         key={anim.value}
         variant={isActive ? "default" : "outline"}
-        className="w-[140px] h-[60px] flex flex-col items-center justify-center gap-1 relative overflow-hidden shrink-0"
+        className="w-[140px] h-[60px] flex flex-col items-center justify-center gap-1 relative overflow-hidden shrink-0 p-0"
         onClick={() => onUpdateSlide(type, anim.value)}
+        title={anim.label}
       >
-        {anim.preview && (
+        {anim.preview ? (
           <img 
             src={anim.preview} 
             alt={anim.label} 
-            className="absolute inset-0 w-full h-full object-cover opacity-20" 
+            className="absolute inset-0 w-full h-full object-cover opacity-100" 
           />
+        ) : (
+          <span className="relative z-10 text-xs font-medium truncate w-full text-center px-1">
+            {anim.label}
+          </span>
         )}
-        <span className="relative z-10 text-xs font-medium truncate w-full text-center px-1">
-          {anim.label}
-        </span>
+        
         {isActive && (
-            <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full z-20" />
+            <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full z-20 shadow-sm border border-white" />
         )}
       </Button>
     );
