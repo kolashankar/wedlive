@@ -140,8 +140,8 @@ export default function AnimationRibbon({
       </div>
 
       {/* Ribbon Content (Excel Style Grid) */}
-      <div className="h-[160px] bg-gray-50/50 p-4">
-        <ScrollArea className="w-full h-full whitespace-nowrap">
+      <div className="h-[160px] bg-gray-50/50 p-4 flex gap-4">
+        <ScrollArea className="flex-1 whitespace-nowrap">
             <div className="flex gap-2 h-full">
                 {/* 
                     We need a grid layout that scrolls horizontally.
@@ -162,6 +162,21 @@ export default function AnimationRibbon({
             </div>
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
+
+        {/* Right Side Actions (Fixed) */}
+        {activeTab === 'transitions' && (
+            <div className="flex flex-col justify-center border-l pl-4 shrink-0">
+                <Button 
+                    variant="outline" 
+                    className="h-full flex flex-col gap-2 w-24 border-dashed"
+                    onClick={onApplyRandom}
+                    title="Apply Random Transitions to All Slides"
+                >
+                    <Shuffle className="w-6 h-6 text-purple-600" />
+                    <span className="text-xs font-medium text-center whitespace-normal">Apply Random</span>
+                </Button>
+            </div>
+        )}
       </div>
     </div>
   );
