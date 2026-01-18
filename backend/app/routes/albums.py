@@ -47,24 +47,46 @@ async def get_albums(wedding_id: str):
 
 @router.get("/detail/{album_id}")
 async def get_album_detail(album_id: str):
+    """Get album details with enriched slide media data"""
     db = get_db()
-    album = await db.albums.find_one({"id": album_id})
-    if not album:
-        raise HTTPException(status_code=404, detail="Album not found")
-        
-    # Enrich slides with media data
-    if "slides" in album and album["slides"]:
-        media_ids = [s["media_id"] for s in album["slides"]]
-        media_list = await db.media.find({"id": {"$in": media_ids}}).to_list(length=len(media_ids))
-        media_map = {m["id"]: m for m in media_list}
-        
-        for slide in album["slides"]:
-            if slide["media_id"] in media_map:
-                # Construct URL (same logic as media routes)
-                file_id = media_map[slide['media_id']]['file_id']
-                slide["media_url"] = f"/api/media/telegram-proxy/photos/{file_id}"
+    
+    try:
+        album = await db.albums.find_one({"id": album_id})
+        if not album:
+            raise HTTPException(status_code=404, detail="Album not found")
+            
+        # Enrich slides with media data
+        if "slides" in album and album["slides"]:
+            try:
+                media_ids = [s["media_id"] for s in album["slides"] if "media_id" in s]
+                if media_ids:
+                    media_list = await db.media.find({"id": {"$in": media_ids}}).to_list(length=len(media_ids))
+                    media_map = {m["id"]: m for m in media_list}
+                    
+                    for slide in album["slides"]:
+                        if "media_id" in slide and slide["media_id"] in media_map:
+                            # Construct URL (same logic as media routes)
+                            media_item = media_map[slide['media_id']]
+                            if "file_id" in media_item:
+                                file_id = media_item['file_id']
+                                slide["media_url"] = f"/api/media/telegram-proxy/photos/{file_id}"
+                            else:
+                                logger.warning(f"Media item {slide['media_id']} missing file_id")
+                                slide["media_url"] = None
+                        else:
+                            logger.warning(f"Media {slide.get('media_id')} not found in database")
+                            slide["media_url"] = None
+            except Exception as e:
+                logger.error(f"Error enriching album slides: {str(e)}")
+                # Don't fail the whole request, just log the error
                 
-    return album
+        return album
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching album detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.put("/{album_id}", response_model=Album)
 async def update_album(album_id: str, update: AlbumUpdate, current_user: dict = Depends(get_current_user)):
