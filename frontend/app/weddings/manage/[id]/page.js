@@ -1236,6 +1236,7 @@ function ManagePageContent({ params }) {
               </CardContent>
             </Card>
           </div>
+          )}
         </div>
       </div>
     </div>
