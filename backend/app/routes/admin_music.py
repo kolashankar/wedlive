@@ -239,7 +239,7 @@ async def delete_music_folder(folder_id: str):
 
 # ==================== MUSIC LIBRARY MANAGEMENT ====================
 
-@router.post("/upload", response_model=MusicLibraryResponse, dependencies=[Depends(require_admin)])
+@router.post("/upload", response_model=MusicLibraryResponse, dependencies=[Depends(get_current_admin)])
 async def upload_music(
     file: UploadFile = File(...),
     title: str = Form(...),
