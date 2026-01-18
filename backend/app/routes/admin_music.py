@@ -301,11 +301,11 @@ async def upload_music(
     # Get audio duration
     duration = await get_audio_duration(temp_file_path)
     
-    # Upload to Telegram CDN
-    upload_result = await telegram_service.upload_document(
+    # Upload to Telegram CDN as audio
+    upload_result = await telegram_service.upload_audio(
         file_path=temp_file_path,
-        caption=f"Music: {title} by {artist or 'Unknown'}",
-        wedding_id="music_library"
+        filename=file.filename,
+        caption=f"Music: {title} by {artist or 'Unknown'}"
     )
     
     # Clean up temp file
@@ -317,7 +317,7 @@ async def upload_music(
     if not upload_result.get("success"):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload file to CDN"
+            detail=f"Failed to upload file to CDN: {upload_result.get('error', 'Unknown error')}"
         )
     
     # Parse tags
