@@ -107,11 +107,45 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
   }, [isPlaying, isMuted]);
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
+    const nextIndex = (currentIndex + 1) % slides.length;
+    const nextSlideData = slides[nextIndex];
+    
+    // Check if the next slide uses an imagination transition
+    if (nextSlideData && isImaginationTransition(nextSlideData.transition)) {
+      const animPath = getImaginationAnimationPath(nextSlideData.transition);
+      setTransitionAnimationPath(animPath);
+      setShowTransitionOverlay(true);
+      
+      // Hide overlay after transition duration
+      const transitionDuration = (nextSlideData.transition_duration || 1) * 1000;
+      setTimeout(() => {
+        setShowTransitionOverlay(false);
+        setTransitionAnimationPath(null);
+      }, transitionDuration);
+    }
+    
+    setCurrentIndex(nextIndex);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+    const prevSlideData = slides[prevIndex];
+    
+    // Check if the previous slide uses an imagination transition
+    if (prevSlideData && isImaginationTransition(prevSlideData.transition)) {
+      const animPath = getImaginationAnimationPath(prevSlideData.transition);
+      setTransitionAnimationPath(animPath);
+      setShowTransitionOverlay(true);
+      
+      // Hide overlay after transition duration
+      const transitionDuration = (prevSlideData.transition_duration || 1) * 1000;
+      setTimeout(() => {
+        setShowTransitionOverlay(false);
+        setTransitionAnimationPath(null);
+      }, transitionDuration);
+    }
+    
+    setCurrentIndex(prevIndex);
   };
 
   const toggleFullscreen = () => {
