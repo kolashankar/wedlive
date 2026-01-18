@@ -201,7 +201,7 @@ async def update_music_folder(
         created_at=updated_folder["created_at"]
     )
 
-@router.delete("/folders/{folder_id}", dependencies=[Depends(require_admin)])
+@router.delete("/folders/{folder_id}", dependencies=[Depends(get_current_admin)])
 async def delete_music_folder(folder_id: str):
     """Delete a music folder (must be empty)"""
     folder = await db.music_folders.find_one({"_id": folder_id})
