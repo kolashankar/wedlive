@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Video, Star, Clock } from 'lucide-react';
 import TemplateCard from './TemplateCard';
 import TemplateDetailModal from './TemplateDetailModal';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 
 export default function TemplateGallery({ weddingId, onTemplateSelect }) {
   const [templates, setTemplates] = useState([]);
