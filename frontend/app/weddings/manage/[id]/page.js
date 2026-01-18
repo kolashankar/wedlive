@@ -1185,6 +1185,7 @@ function ManagePageContent({ params }) {
           </div>
 
           {/* Right Column - Info */}
+          {activeTab === 'stream' && (
           <div className="space-y-6">
             {/* Public URL */}
             <Card>
