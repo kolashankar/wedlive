@@ -55,8 +55,19 @@ const animations = {
   }
 };
 
-export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export default function SlideshowPlayer({ 
+  album, 
+  onClose, 
+  autoPlay = true, 
+  embedded = false,
+  controlledIndex = null,
+  onIndexChange,
+  showControls = true
+}) {
+  const [internalIndex, setInternalIndex] = useState(0);
+  // Use controlled index if provided, otherwise internal state
+  const currentIndex = controlledIndex !== null ? controlledIndex : internalIndex;
+  
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -67,8 +78,15 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
   const slides = album.slides || [];
   const currentSlide = slides[currentIndex];
   
+  // Update internal state when controlled prop changes (sync)
   useEffect(() => {
-    if (isPlaying && currentSlide) {
+    if (controlledIndex !== null) {
+      setInternalIndex(controlledIndex);
+    }
+  }, [controlledIndex]);
+
+  useEffect(() => {
+    if (isPlaying && currentSlide && !embedded) { // Don't auto-advance in embedded mode unless requested
       const rawDuration = parseFloat(currentSlide.duration);
       const slideDuration = (isFinite(rawDuration) && rawDuration > 0 ? rawDuration : 5) * 1000;
       
@@ -80,7 +98,7 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [currentIndex, isPlaying]);
+  }, [currentIndex, isPlaying, embedded]);
 
   useEffect(() => {
       if (audioRef.current) {
@@ -96,12 +114,17 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
       }
   }, [isPlaying, isMuted]);
 
+  const handleIndexChange = (newIndex) => {
+    setInternalIndex(newIndex);
+    if (onIndexChange) onIndexChange(newIndex);
+  };
+
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
+    handleIndexChange((currentIndex + 1) % slides.length);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    handleIndexChange((currentIndex - 1 + slides.length) % slides.length);
   };
 
   const toggleFullscreen = () => {
@@ -142,7 +165,7 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden group"
+      className={`${embedded ? 'relative w-full h-full' : 'fixed inset-0 z-50'} bg-black flex items-center justify-center overflow-hidden group`}
     >
         {/* Background Music */}
         {album.music_url && (
@@ -165,16 +188,16 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
                 <motion.img 
                     src={currentSlide.media_url} 
                     alt="" 
-                    className="block max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain"
+                    className={`block max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain ${embedded ? 'max-w-full max-h-full' : ''}`}
                     variants={animationVariant}
                     transition={{ duration: validSlideDuration + transitionDuration, ease: "linear" }}
                 />
                 
-                {/* Scoped Imagination Overlay - Auto-fades out after transition */}
+                {/* Scoped Imagination Overlay */}
                 {isImagination && (
                    <motion.div
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 1, 1, 0] }} // Fade In -> Stay -> Fade Out
+                      animate={{ opacity: [0, 1, 1, 0] }} 
                       transition={{ 
                           duration: transitionDuration + 0.5, 
                           times: [0, 0.1, 0.8, 1],
@@ -207,25 +230,30 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
         </AnimatePresence>
       </div>
 
-      {/* Controls Overlay */}
+      {/* Controls Overlay - Conditional */}
+      {showControls && (
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col justify-between p-4 z-50">
         
         {/* Top Bar */}
         <div className="flex justify-between items-start pointer-events-auto">
-            <div className="bg-black/40 backdrop-blur-md rounded-lg p-2 text-white">
-                <h3 className="font-bold">{album.title}</h3>
-                <p className="text-xs opacity-75">{currentIndex + 1} / {slides.length}</p>
-            </div>
-            <div className="flex gap-2">
+            {!embedded && (
+                <div className="bg-black/40 backdrop-blur-md rounded-lg p-2 text-white">
+                    <h3 className="font-bold">{album.title}</h3>
+                    <p className="text-xs opacity-75">{currentIndex + 1} / {slides.length}</p>
+                </div>
+            )}
+            <div className="flex gap-2 ml-auto">
                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => setIsMuted(!isMuted)}>
                     {isMuted ? <VolumeX /> : <Volume2 />}
                 </Button>
                 <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={toggleFullscreen}>
                     {isFullscreen ? <Minimize /> : <Maximize />}
                 </Button>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-red-500" onClick={onClose}>
-                    <X />
-                </Button>
+                {!embedded && onClose && (
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-red-500" onClick={onClose}>
+                        <X />
+                    </Button>
+                )}
             </div>
         </div>
 
@@ -262,6 +290,7 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
             </div>
         </div>
       </div>
+      )}
     </motion.div>
   );
 }
