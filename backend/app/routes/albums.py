@@ -51,16 +51,23 @@ async def get_album_detail(album_id: str):
     db = get_db()
     
     try:
+        logger.info(f"Fetching album detail for album_id: {album_id}")
         album = await db.albums.find_one({"id": album_id})
         if not album:
+            logger.warning(f"Album not found: {album_id}")
             raise HTTPException(status_code=404, detail="Album not found")
-            
+        
+        logger.info(f"Album found: {album.get('title')}, slides: {len(album.get('slides', []))}")
+        
         # Enrich slides with media data
         if "slides" in album and album["slides"]:
             try:
                 media_ids = [s["media_id"] for s in album["slides"] if "media_id" in s]
+                logger.info(f"Processing {len(media_ids)} media items")
+                
                 if media_ids:
                     media_list = await db.media.find({"id": {"$in": media_ids}}).to_list(length=len(media_ids))
+                    logger.info(f"Found {len(media_list)} media items in database")
                     media_map = {m["id"]: m for m in media_list}
                     
                     for slide in album["slides"]:
@@ -76,16 +83,22 @@ async def get_album_detail(album_id: str):
                         else:
                             logger.warning(f"Media {slide.get('media_id')} not found in database")
                             slide["media_url"] = None
+                        
+                        # Ensure duration is a valid number
+                        if "duration" not in slide or not isinstance(slide.get("duration"), (int, float)):
+                            slide["duration"] = 5.0
+                            
             except Exception as e:
-                logger.error(f"Error enriching album slides: {str(e)}")
+                logger.error(f"Error enriching album slides: {str(e)}", exc_info=True)
                 # Don't fail the whole request, just log the error
-                
+        
+        logger.info(f"Successfully returning album detail for {album_id}")
         return album
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching album detail: {str(e)}")
+        logger.error(f"Error fetching album detail for {album_id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.put("/{album_id}", response_model=Album)
