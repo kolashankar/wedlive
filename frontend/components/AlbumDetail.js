@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, Save, Loader2, Music, Play } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Loader2, Music, Play, Shuffle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,8 @@ import MediaSelector from './MediaSelector';
 import SlideshowPlayer from './SlideshowPlayer';
 import TransitionSelector from './TransitionSelector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { imaginationTransitions } from '@/lib/slideshowAnimations';
 
 export default function AlbumDetail({ albumId, onBack }) {
     const [album, setAlbum] = useState(null);
