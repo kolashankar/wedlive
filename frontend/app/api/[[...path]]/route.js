@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
 
+// Get backend URL from environment
+function getBackendUrl() {
+  // Check for environment variables (server-side)
+  return process.env.NEXT_PUBLIC_API_URL || 
+         process.env.REACT_APP_BACKEND_URL || 
+         process.env.BACKEND_URL ||
+         'http://localhost:8001';
+}
+
 // Helper function to handle CORS
 function handleCORS(response) {
   response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
@@ -22,7 +31,7 @@ async function handleRoute(request, { params }) {
 
   try {
     // Construct backend URL - all API routes go through FastAPI backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api${route}`
+    const backendUrl = `${getBackendUrl()}/api${route}`
     console.log(`Proxying ${method} request to: ${backendUrl}`)
     
     // Prepare request options
