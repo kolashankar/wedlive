@@ -112,6 +112,21 @@ export default function AlbumDetail({ albumId, onBack }) {
         setSlides(newSlides);
         toast.success('Settings applied to all slides');
     };
+    const handleApplyRandom = () => {
+        if (!confirm('Randomize transitions for all slides? This will overwrite existing transitions.')) return;
+        
+        const newSlides = slides.map(slide => {
+            const randomTrans = imaginationTransitions[Math.floor(Math.random() * imaginationTransitions.length)];
+            return { 
+                ...slide, 
+                transition: randomTrans.value,
+                // Optional: Randomize duration too? No, keep it simple.
+            };
+        });
+        setSlides(newSlides);
+        toast.success('Random transitions applied to all slides!');
+    };
+    
     
     const fetchMusicLibrary = async () => {
         try {
