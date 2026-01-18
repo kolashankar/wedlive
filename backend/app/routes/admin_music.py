@@ -343,7 +343,7 @@ async def upload_music(
         "file_size": file_size,
         "duration": duration,
         "format": get_audio_format(file.filename),
-        "uploaded_by": current_user["id"],
+        "uploaded_by": current_user["user_id"],
         "uploaded_by_role": UploadedByRole.ADMIN,
         "is_public": is_public,
         "tags": tag_list,
