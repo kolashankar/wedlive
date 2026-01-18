@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Play, Music, Settings, Clock, Zap, Check } from 'lucide-react';
+import { Play, Music, Settings, Clock, Zap, Check, Shuffle } from 'lucide-react';
 import { builtInTransitions, imaginationTransitions } from '@/lib/slideshowAnimations';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
