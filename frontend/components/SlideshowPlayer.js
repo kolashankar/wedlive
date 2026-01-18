@@ -72,12 +72,17 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
   const slides = album.slides || [];
   const currentSlide = slides[currentIndex];
   
-  // Calculate total duration for progress bar
-  const totalDuration = slides.reduce((acc, slide) => acc + (slide.duration || 5), 0);
+  // Calculate total duration for progress bar with validation
+  const totalDuration = slides.reduce((acc, slide) => {
+    const duration = parseFloat(slide.duration);
+    return acc + (isFinite(duration) && duration > 0 ? duration : 5);
+  }, 0);
 
   useEffect(() => {
-    if (isPlaying) {
-      const slideDuration = (currentSlide?.duration || 5) * 1000;
+    if (isPlaying && currentSlide) {
+      // Validate duration to prevent NaN/Infinity issues
+      const rawDuration = parseFloat(currentSlide.duration);
+      const slideDuration = (isFinite(rawDuration) && rawDuration > 0 ? rawDuration : 5) * 1000;
       
       startTimeRef.current = Date.now();
       
