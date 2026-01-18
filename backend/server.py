@@ -19,7 +19,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # Import WedLive routes
 from app.database import init_db, close_db, get_db
-from app.routes import auth, weddings, streams, subscriptions, admin, media, chat, analytics, features, premium, phase10, plan_management, storage_management, viewer_access, plan_info, recording, folders, quality, profile, security, settings, comments, theme_assets, templates, rtmp_webhooks, themes, live_controls, media_proxy, borders, sections, studios, precious_moments, youtube, layout_photos, layout_backgrounds, admin_cleanup, video_templates, admin_music
+from app.routes import auth, weddings, streams, subscriptions, admin, media, chat, analytics, features, premium, phase10, plan_management, storage_management, viewer_access, plan_info, recording, folders, quality, profile, security, settings, comments, theme_assets, templates, rtmp_webhooks, themes, live_controls, media_proxy, borders, sections, studios, precious_moments, youtube, layout_photos, layout_backgrounds, admin_cleanup, video_templates, admin_music, creator_music, wedding_music
 from app.routes import albums
 from app.services.socket_service import sio
 from fastapi import HTTPException, status, Request
