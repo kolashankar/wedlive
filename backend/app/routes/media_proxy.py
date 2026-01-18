@@ -172,11 +172,11 @@ async def telegram_proxy(file_path: str, request: Request):
         else:
             file_id = file_path
         
-        # Remove file extension if present (e.g., .jpg, .png, .mp4)
+        # Remove file extension if present (e.g., .jpg, .png, .mp4, .mp3)
         if '.' in file_id and not file_id.count('.') > 2:  # Telegram file_ids may contain dots
             # Only remove extension if it's at the end
             possible_ext = file_id.split('.')[-1].lower()
-            if possible_ext in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'mov', 'webm']:
+            if possible_ext in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'aac', 'ogg', 'm4a']:
                 file_id = file_id.rsplit('.', 1)[0]
         
         logger.info(f"Extracted file_id: {file_id}")
