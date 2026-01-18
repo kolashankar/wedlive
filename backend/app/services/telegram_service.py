@@ -271,6 +271,90 @@ class TelegramCDNService:
             logger.error(f"Error deleting message: {str(e)}")
             return False
     
+    async def upload_audio(self, file_path: str, filename: str = None, caption: str = "") -> Dict:
+        """
+        Upload audio file to Telegram channel
+        Returns: dict with file_id, file_url, and telegram_message_id
+        """
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                # Read file
+                async with aiofiles.open(file_path, 'rb') as f:
+                    file_data = await f.read()
+                
+                # Determine file extension and MIME type
+                file_ext = os.path.splitext(file_path)[1].lower()
+                if not filename:
+                    filename = os.path.basename(file_path)
+                
+                # Map MIME types
+                mime_type_map = {
+                    '.mp3': 'audio/mpeg',
+                    '.wav': 'audio/wav',
+                    '.aac': 'audio/aac',
+                    '.ogg': 'audio/ogg',
+                    '.m4a': 'audio/mp4'
+                }
+                mime_type = mime_type_map.get(file_ext, 'audio/mpeg')
+                
+                # Upload as AUDIO
+                files = {'audio': (filename, file_data, mime_type)}
+                data = {
+                    'chat_id': self.channel_id,
+                    'caption': f"{caption}\nUploaded: {datetime.utcnow().isoformat()}"
+                }
+                
+                logger.info(f"[TELEGRAM] Uploading audio: {filename}")
+                
+                response = await client.post(
+                    f"{self.api_base}/sendAudio",
+                    files=files,
+                    data=data
+                )
+                
+                result = response.json()
+                
+                if result.get("ok"):
+                    message = result["result"]
+                    
+                    # Check if audio exists
+                    if "audio" not in message:
+                        logger.error(f"No audio in Telegram response: {message}")
+                        return {"success": False, "error": "No audio in response"}
+                    
+                    audio = message["audio"]
+                    
+                    # Check if file_id exists
+                    if "file_id" not in audio:
+                        logger.error(f"No file_id in audio response: {audio}")
+                        return {"success": False, "error": "No file_id in audio response"}
+                    
+                    file_id = audio["file_id"]
+                    
+                    # Construct proxy URL
+                    backend_url = os.getenv("BACKEND_URL", "http://localhost:8001")
+                    file_url = f"{backend_url}/api/media/telegram-proxy/audio/{file_id}"
+                    
+                    logger.info(f"[TELEGRAM] Audio uploaded successfully: {file_id}")
+                    
+                    return {
+                        "success": True,
+                        "file_id": file_id,
+                        "file_url": file_url,
+                        "file_unique_id": audio.get("file_unique_id", ""),
+                        "message_id": message.get("message_id", 0),
+                        "file_size": audio.get("file_size", 0),
+                        "duration": audio.get("duration", 0),
+                        "uploaded_at": datetime.utcnow().isoformat()
+                    }
+                else:
+                    logger.error(f"Telegram audio upload failed: {result}")
+                    return {"success": False, "error": result.get("description", "Unknown error")}
+                    
+        except Exception as e:
+            logger.error(f"Error uploading audio to Telegram: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
     async def log_activity(self, message: str):
         """
         Log activity to log channel
