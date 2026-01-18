@@ -144,6 +144,9 @@ fastapi_app.include_router(albums.router, prefix="/api/albums", tags=["Albums & 
 # Video Templates System Routes
 fastapi_app.include_router(video_templates.router, prefix="/api", tags=["Video Templates"])
 
+# Admin Music Management Routes
+fastapi_app.include_router(admin_music.router, tags=["Admin Music Management"])
+
 # Add route aliases for backward compatibility and cleaner API paths
 # These allow frontend to call /api/branding instead of /api/phase10/branding
 fastapi_app.include_router(phase10.router, prefix="/api", tags=["Branding & Recording (Alias)"], include_in_schema=False)
