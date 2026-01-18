@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Search, Check, Image as ImageIcon, Video as VideoIcon, X } from 'lucide-react';
+import { Loader2, Search, Check, Image as ImageIcon, Video as VideoIcon, X, Upload } from 'lucide-react';
+import MediaUploadChunked from './MediaUploadChunked';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
