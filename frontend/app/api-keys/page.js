@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Key, Plus, Trash2, Copy, BookOpen, AlertCircle, CheckCircle } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = getApiBaseUrl();
 
 export default function ApiKeysPage() {
   const router = useRouter();
