@@ -111,12 +111,15 @@ backend:
   
   - task: "Music API Endpoints - Upload, Folder Management, Storage"
     implemented: true
-    working: "fixed"
+    working: true
     file: "/app/backend/app/routes/admin_music.py, /app/backend/app/routes/creator_music.py, /app/backend/app/routes/wedding_music.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ MUSIC API 403 FIX VERIFIED SUCCESSFUL: All 4 critical music endpoints now working correctly without 403 errors. 1) GET /api/music/my-library - Returns creator's personal music library (empty array initially as expected). 2) GET /api/music/storage - Returns storage info with used/limit/percentage fields correctly. 3) GET /api/music/library - Returns public music library with category filtering working. 4) GET /api/weddings/{wedding_id}/music/playlist - Returns wedding playlist structure correctly. JWT token 'user_id' fix is working perfectly - all endpoints return 200 status codes. Backend logs confirm no errors during API calls."
       - working: "fixed"
         agent: "main"
         comment: "✅ FIXED 403 FORBIDDEN ERRORS ON MUSIC APIS: Root cause was JWT token payload mismatch - token uses 'user_id' key but code was accessing 'id' key, causing KeyError. Fixed 13 occurrences across 3 files: creator_music.py (4), admin_music.py (2), wedding_music.py (7). All instances of current_user['id'] changed to current_user['user_id']. Backend restarted successfully. See /app/MUSIC_API_403_FIX.md for complete details."
