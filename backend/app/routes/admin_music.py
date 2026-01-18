@@ -101,7 +101,7 @@ async def create_music_folder(
         "category": folder.category,
         "icon": folder.icon or "🎵",
         "is_system": False,
-        "created_by": current_user["id"],
+        "created_by": current_user["user_id"],
         "created_at": datetime.utcnow()
     }
     
