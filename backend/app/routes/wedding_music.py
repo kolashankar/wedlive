@@ -224,7 +224,7 @@ async def remove_from_playlist(
 ):
     """Remove music from wedding playlist"""
     db = get_db()
-    user_id = current_user["id"]
+    user_id = current_user["user_id"]
     
     # Verify wedding ownership
     wedding = await db.weddings.find_one({"id": wedding_id})
