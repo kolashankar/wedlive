@@ -166,6 +166,7 @@ async def update_music_folder(
     folder_update: MusicFolderUpdate
 ):
     """Update music folder details"""
+    db = get_db()
     folder = await db.music_folders.find_one({"_id": folder_id})
     if not folder:
         raise HTTPException(
