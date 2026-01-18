@@ -528,7 +528,7 @@ async def update_music_metadata(
         updated_at=updated_music["updated_at"]
     )
 
-@router.delete("/library/{music_id}", dependencies=[Depends(require_admin)])
+@router.delete("/library/{music_id}", dependencies=[Depends(get_current_admin)])
 async def delete_music(music_id: str):
     """Delete music from library"""
     music = await db.music_library.find_one({"_id": music_id})
