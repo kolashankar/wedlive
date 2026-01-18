@@ -176,7 +176,7 @@ export default function SlideshowPlayer({
       <div className="relative w-full h-full flex items-center justify-center">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
-            key={currentIndex}
+            key={`${currentIndex}-${activeTransitionKey}-${currentSlide?.animation || 'none'}`}
             variants={activeTransition}
             initial="initial"
             animate="animate"
