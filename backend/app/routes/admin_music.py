@@ -388,6 +388,7 @@ async def list_music_library(
     skip: int = 0
 ):
     """List music library with optional filters"""
+    db = get_db()
     query = {}
     
     if category:
