@@ -175,7 +175,7 @@ async def get_my_music_library(
 ):
     """Get creator's personal music library"""
     db = get_db()
-    user_id = current_user["id"]
+    user_id = current_user["user_id"]
     
     music_items = await db.creator_music.find(
         {"creator_id": user_id}
