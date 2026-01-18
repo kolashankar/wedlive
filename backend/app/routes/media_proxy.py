@@ -160,13 +160,15 @@ async def telegram_proxy(file_path: str, request: Request):
         logger.info(f"{method} proxy request for file_path: {file_path}")
         
         # Extract the actual file_id from the path
-        # Handle "photos/file_id", "videos/file_id", "documents/file_id" formats by removing prefix
+        # Handle "photos/file_id", "videos/file_id", "documents/file_id", "audio/file_id" formats by removing prefix
         if file_path.startswith('photos/'):
             file_id = file_path.replace('photos/', '', 1)
         elif file_path.startswith('videos/'):
             file_id = file_path.replace('videos/', '', 1)
         elif file_path.startswith('documents/'):
             file_id = file_path.replace('documents/', '', 1)
+        elif file_path.startswith('audio/'):
+            file_id = file_path.replace('audio/', '', 1)
         else:
             file_id = file_path
         
