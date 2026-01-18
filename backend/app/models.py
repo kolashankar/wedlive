@@ -926,7 +926,7 @@ class AlbumSlide(BaseModel):
     media_id: str
     order: int
     duration: float = 5.0
-    transition: SlideTransition = SlideTransition.FADE
+    transition: str = "fade"
     transition_duration: float = 1.0
     animation: Optional[str] = "none" # e.g., "ken_burns"
     caption: Optional[str] = None
