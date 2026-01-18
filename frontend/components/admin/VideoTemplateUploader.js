@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Upload, Video, X, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 
 export default function VideoTemplateUploader({ onSuccess }) {
