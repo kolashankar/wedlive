@@ -184,6 +184,10 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
       // Simple random pick for demo
       animationVariant = animations.ken_burns; 
   }
+  
+  // Get validated slide duration for animation
+  const rawSlideDuration = parseFloat(currentSlide?.duration);
+  const validSlideDuration = isFinite(rawSlideDuration) && rawSlideDuration > 0 ? rawSlideDuration : 5;
 
   // Override transition duration in variant
   const activeTransition = {
