@@ -207,6 +207,7 @@ async def update_music_folder(
 @router.delete("/folders/{folder_id}", dependencies=[Depends(get_current_admin)])
 async def delete_music_folder(folder_id: str):
     """Delete a music folder (must be empty)"""
+    db = get_db()
     folder = await db.music_folders.find_one({"_id": folder_id})
     if not folder:
         raise HTTPException(
