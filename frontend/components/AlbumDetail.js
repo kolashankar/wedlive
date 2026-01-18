@@ -1,33 +1,30 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, Save, Loader2, Music, Play, Shuffle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ArrowLeft, Play, Save, Loader2, Music, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import MediaSelector from './MediaSelector';
 import SlideshowPlayer from './SlideshowPlayer';
-import TransitionSelector from './TransitionSelector';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { imaginationTransitions } from '@/lib/slideshowAnimations';
+import SlideSidebar from './SlideSidebar';
+import AnimationRibbon from './AnimationRibbon';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function AlbumDetail({ albumId, onBack }) {
     const [album, setAlbum] = useState(null);
     const [slides, setSlides] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [showPreview, setShowPreview] = useState(false);
+    
+    // Editor State
+    const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
+    const [showFullPreview, setShowFullPreview] = useState(false);
+    const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
+    
+    // Music Selection State
     const [isMusicLibraryOpen, setIsMusicLibraryOpen] = useState(false);
     const [musicLibrary, setMusicLibrary] = useState([]);
-    
-    // Global Settings State
-    const [globalDuration, setGlobalDuration] = useState(5.0);
-    const [globalTransition, setGlobalTransition] = useState('fade');
-    const [globalAnimation, setGlobalAnimation] = useState('none');
 
     useEffect(() => {
         if (albumId) {
@@ -67,67 +64,60 @@ export default function AlbumDetail({ albumId, onBack }) {
     const handleAddPhotos = (selectedMedia) => {
         const newSlides = selectedMedia.map((media, index) => ({
             media_id: media.id,
-            media_url: media.cdn_url || media.file_url || media.url, // Ensure URL is available for preview
+            media_url: media.cdn_url || media.file_url || media.url,
             order: slides.length + index,
-            duration: globalDuration,
-            transition: globalTransition,
+            duration: 5.0,
+            transition: 'fade',
             transition_duration: 1.0,
-            animation: globalAnimation
+            animation: 'none'
         }));
         setSlides([...slides, ...newSlides]);
         setIsMediaSelectorOpen(false);
     };
 
-    const removeSlide = (index) => {
+    const handleDeleteSlide = (index) => {
         const newSlides = [...slides];
         newSlides.splice(index, 1);
         setSlides(newSlides);
+        if (selectedSlideIndex >= newSlides.length) {
+            setSelectedSlideIndex(Math.max(0, newSlides.length - 1));
+        }
     };
 
-    const updateSlide = (index, field, value) => {
+    const handleUpdateSlide = (field, value) => {
+        if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
+        
         const newSlides = [...slides];
-        newSlides[index] = { ...newSlides[index], [field]: value };
+        newSlides[selectedSlideIndex] = { 
+            ...newSlides[selectedSlideIndex], 
+            [field]: value 
+        };
         setSlides(newSlides);
     };
     
-    const applyGlobalSettings = () => {
-        if (!confirm('This will apply settings to ALL slides. Continue?')) return;
+    const handleApplyToAll = () => {
+        if (selectedSlideIndex < 0) return;
+        const sourceSlide = slides[selectedSlideIndex];
+        
+        if (!confirm('Apply current slide settings (Duration, Transition, Animation) to ALL slides?')) return;
+        
         const newSlides = slides.map(slide => ({
             ...slide,
-            duration: globalDuration,
-            transition: globalTransition,
-            animation: globalAnimation
+            duration: sourceSlide.duration,
+            transition: sourceSlide.transition,
+            transition_duration: sourceSlide.transition_duration,
+            animation: sourceSlide.animation
         }));
         setSlides(newSlides);
         toast.success('Settings applied to all slides');
-    };
-    
-    const applyRandomAnimations = () => {
-        if (slides.length === 0) {
-            toast.error('No slides to apply animations to');
-            return;
-        }
-        
-        const newSlides = slides.map(slide => {
-            // Pick a random imagination transition
-            const randomTransition = imaginationTransitions[Math.floor(Math.random() * imaginationTransitions.length)];
-            return {
-                ...slide,
-                transition: randomTransition.value,
-                transition_duration: 1.0
-            };
-        });
-        
-        setSlides(newSlides);
-        toast.success(`Applied random animations to ${slides.length} slides!`);
     };
     
     const fetchMusicLibrary = async () => {
         try {
             const response = await api.get('/api/music/library');
             setMusicLibrary(response.data.music || []);
+            setIsMusicLibraryOpen(true);
         } catch (error) {
-            console.error('Error fetching music library:', error);
             toast.error('Failed to load music library');
         }
     };
@@ -145,148 +135,91 @@ export default function AlbumDetail({ albumId, onBack }) {
     if (!album) return <div>Album not found</div>;
 
     return (
-        <div className="space-y-6">
-            {showPreview && (
+        <div className="flex flex-col h-[calc(100vh-64px)] bg-gray-50 overflow-hidden">
+            {/* Full Screen Preview Overlay */}
+            {showFullPreview && (
                 <SlideshowPlayer 
-                    album={{...album, slides: slides}} // Pass current state for instant preview
-                    onClose={() => setShowPreview(false)} 
+                    album={{...album, slides: slides}} 
+                    onClose={() => setShowFullPreview(false)} 
                 />
             )}
-            <div className="flex items-center justify-between sticky top-[64px] z-10 bg-white/80 backdrop-blur py-4 border-b">
+
+            {/* Header / Top Bar */}
+            <div className="flex items-center justify-between px-4 py-2 bg-white border-b shrink-0 z-30">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={onBack}>
                         <ArrowLeft className="w-4 h-4" />
                     </Button>
                     <div>
-                        <h2 className="text-xl font-bold">{album.title}</h2>
-                        <p className="text-sm text-gray-500">{slides.length} photos</p>
+                        <h2 className="text-sm font-bold">{album.title}</h2>
+                        <p className="text-xs text-gray-500">{slides.length} photos</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="secondary" onClick={() => setShowPreview(true)}>
-                        <Play className="w-4 h-4 mr-2" />
-                        Preview
+                    <Button variant="outline" size="sm" onClick={() => setShowFullPreview(true)}>
+                        <Play className="w-3 h-3 mr-2" />
+                        Full Preview
                     </Button>
-                    <Button variant="outline" onClick={() => setIsMediaSelectorOpen(true)}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Photos
-                    </Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                        <Save className="w-4 h-4 mr-2" />
-                        {saving ? 'Saving...' : 'Save Changes'}
+                    <Button size="sm" onClick={handleSave} disabled={saving}>
+                        <Save className="w-3 h-3 mr-2" />
+                        {saving ? 'Saving...' : 'Save'}
                     </Button>
                 </div>
             </div>
 
-            {/* Global Settings Panel */}
-            <Card>
-                <CardContent className="p-4 flex flex-wrap items-end gap-4">
-                     <div className="space-y-2 w-32">
-                        <Label>Duration (s)</Label>
-                        <Input type="number" value={globalDuration} onChange={e => setGlobalDuration(parseFloat(e.target.value))} />
-                    </div>
-                    <div className="space-y-2 w-64">
-                        <Label>Transition (71+ animations available)</Label>
-                        <TransitionSelector 
-                            value={globalTransition} 
-                            onChange={setGlobalTransition}
-                        />
-                    </div>
-                     <div className="space-y-2 w-40">
-                        <Label>Animation</Label>
-                        <Select value={globalAnimation} onValueChange={setGlobalAnimation}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                <SelectItem value="ken_burns">Ken Burns</SelectItem>
-                                <SelectItem value="random">Random</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Button variant="secondary" onClick={applyGlobalSettings}>Apply to All</Button>
-                    <Button variant="outline" onClick={applyRandomAnimations} className="gap-2">
-                        <Shuffle className="w-4 h-4" />
-                        Random Animations
-                    </Button>
-                    
-                    <div className="flex-1"></div>
-                     <div className="space-y-2 w-64">
-                        <Label>Background Music</Label>
-                        <div className="flex gap-2">
-                             <Input 
-                                placeholder="Music URL or select from library" 
-                                value={album.music_url || ''} 
-                                onChange={e => setAlbum({...album, music_url: e.target.value})} 
-                             />
-                             <Dialog open={isMusicLibraryOpen} onOpenChange={setIsMusicLibraryOpen}>
-                                <DialogTrigger asChild>
-                                    <Button size="icon" variant="outline" onClick={fetchMusicLibrary}>
-                                        <Music className="w-4 h-4" />
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl max-h-[600px]">
-                                    <DialogHeader>
-                                        <DialogTitle>Select Music from Library</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="overflow-y-auto space-y-2 max-h-[500px]">
-                                        {musicLibrary.length === 0 ? (
-                                            <p className="text-center text-gray-500 py-8">No music available in library</p>
-                                        ) : (
-                                            musicLibrary.map((music) => (
-                                                <Card key={music.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleSelectMusic(music.file_url)}>
-                                                    <CardContent className="p-3 flex items-center justify-between">
-                                                        <div>
-                                                            <p className="font-medium">{music.title || 'Untitled'}</p>
-                                                            <p className="text-xs text-gray-500">
-                                                                {music.duration ? `${Math.floor(music.duration / 60)}:${String(Math.floor(music.duration % 60)).padStart(2, '0')}` : 'Unknown duration'}
-                                                            </p>
-                                                        </div>
-                                                        <Music className="w-5 h-5 text-gray-400" />
-                                                    </CardContent>
-                                                </Card>
-                                            ))
-                                        )}
-                                    </div>
-                                </DialogContent>
-                             </Dialog>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Slides Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {slides.map((slide, index) => (
-                    <Card key={index} className="group relative overflow-hidden">
-                         <div className="aspect-square bg-gray-100 relative">
-                             {slide.media_url ? (
-                                <img src={slide.media_url} className="w-full h-full object-cover" alt="" />
-                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
-                                    No Preview
-                                </div>
-                             )}
-                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <Button variant="destructive" size="icon" className="h-6 w-6" onClick={() => removeSlide(index)}>
-                                    &times;
-                                </Button>
-                            </div>
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1 text-white text-[10px] flex justify-between px-2">
-                                <span>{index + 1}</span>
-                                <span>{slide.duration}s</span>
-                            </div>
-                        </div>
-                        <CardContent className="p-2 space-y-2">
-                             <TransitionSelector 
-                                value={slide.transition} 
-                                onChange={(v) => updateSlide(index, 'transition', v)}
-                                className="w-full"
-                             />
-                        </CardContent>
-                    </Card>
-                ))}
+            {/* Excel-style Animation Ribbon */}
+            <div className="shrink-0">
+                <AnimationRibbon 
+                    selectedSlide={slides[selectedSlideIndex]}
+                    onUpdateSlide={handleUpdateSlide}
+                    onApplyToAll={handleApplyToAll}
+                    musicUrl={album.music_url}
+                    onSelectMusic={fetchMusicLibrary}
+                />
             </div>
 
+            {/* Main Editor Area */}
+            <div className="flex-1 flex overflow-hidden">
+                {/* Left Sidebar - Media List */}
+                <SlideSidebar 
+                    slides={slides}
+                    selectedIndex={selectedSlideIndex}
+                    onSelect={setSelectedSlideIndex}
+                    onAddPhotos={() => setIsMediaSelectorOpen(true)}
+                    onDeleteSlide={handleDeleteSlide}
+                />
+
+                {/* Center Canvas - Live Preview */}
+                <div className="flex-1 bg-gray-900 flex items-center justify-center p-8 relative overflow-hidden">
+                    {/* Checkerboard background for transparency reference */}
+                    <div className="absolute inset-0 opacity-10" 
+                        style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
+                    />
+                    
+                    {/* Embedded Slideshow Player */}
+                    {slides.length > 0 ? (
+                        <div className="w-full h-full max-w-5xl max-h-[80vh] shadow-2xl relative">
+                            <SlideshowPlayer 
+                                album={{...album, slides: slides}}
+                                autoPlay={false} // Editor mode is manual
+                                embedded={true}
+                                controlledIndex={selectedSlideIndex}
+                                onIndexChange={setSelectedSlideIndex} // Allow player nav to update selection
+                                showControls={true} // Show controls for manual nav inside canvas
+                            />
+                        </div>
+                    ) : (
+                        <div className="text-gray-500 flex flex-col items-center">
+                            <p>No photos added yet</p>
+                            <Button variant="outline" className="mt-4" onClick={() => setIsMediaSelectorOpen(true)}>
+                                Add Photos
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Dialogs */}
             <MediaSelector 
                 isOpen={isMediaSelectorOpen}
                 onClose={() => setIsMediaSelectorOpen(false)}
@@ -295,6 +228,36 @@ export default function AlbumDetail({ albumId, onBack }) {
                 maxSelection={50}
                 allowedTypes={['photo']}
             />
+            
+            <Dialog open={isMusicLibraryOpen} onOpenChange={setIsMusicLibraryOpen}>
+                <DialogContent className="max-w-2xl max-h-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Select Music from Library</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto space-y-2 max-h-[500px]">
+                        {musicLibrary.length === 0 ? (
+                            <p className="text-center text-gray-500 py-8">No music available in library</p>
+                        ) : (
+                            musicLibrary.map((music) => (
+                                <Card key={music.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleSelectMusic(music.file_url)}>
+                                    <CardContent className="p-3 flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium">{music.title || 'Untitled'}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {music.duration ? `${Math.floor(music.duration / 60)}:${String(Math.floor(music.duration % 60)).padStart(2, '0')}` : 'Unknown duration'}
+                                            </p>
+                                        </div>
+                                        {album.music_url === music.file_url && (
+                                            <Check className="w-5 h-5 text-green-500" />
+                                        )}
+                                        <Music className="w-5 h-5 text-gray-400" />
+                                    </CardContent>
+                                </Card>
+                            ))
+                        )}
+                    </div>
+                </DialogContent>
+             </Dialog>
         </div>
     );
 }
