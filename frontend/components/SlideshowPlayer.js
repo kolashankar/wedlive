@@ -234,6 +234,23 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
              </div>
           </motion.div>
         </AnimatePresence>
+        
+        {/* Imagination Transition Overlay */}
+        {showTransitionOverlay && transitionAnimationPath && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ zIndex: 50, mixBlendMode: 'multiply' }}
+          >
+            <img 
+              src={transitionAnimationPath} 
+              alt="Transition" 
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+        )}
       </div>
 
       {/* Controls Overlay (Visible on hover) */}
