@@ -40,9 +40,8 @@ try:
                 backend_url = line.split('=', 1)[1].strip()
                 break
     
-    # Default fallback
-    if not backend_url:
-        backend_url = "http://localhost:8001"
+    # For testing, always use local backend
+    backend_url = "http://localhost:8001"
         
     BASE_URL = f"{backend_url}/api"
     print(f"🔗 Using Backend URL: {BASE_URL}")
