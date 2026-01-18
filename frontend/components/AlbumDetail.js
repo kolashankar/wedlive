@@ -101,6 +101,42 @@ export default function AlbumDetail({ albumId, onBack }) {
         setSlides(newSlides);
         toast.success('Settings applied to all slides');
     };
+    
+    const applyRandomAnimations = () => {
+        if (slides.length === 0) {
+            toast.error('No slides to apply animations to');
+            return;
+        }
+        
+        const newSlides = slides.map(slide => {
+            // Pick a random imagination transition
+            const randomTransition = imaginationTransitions[Math.floor(Math.random() * imaginationTransitions.length)];
+            return {
+                ...slide,
+                transition: randomTransition.value,
+                transition_duration: 1.0
+            };
+        });
+        
+        setSlides(newSlides);
+        toast.success(`Applied random animations to ${slides.length} slides!`);
+    };
+    
+    const fetchMusicLibrary = async () => {
+        try {
+            const response = await api.get('/api/music/library');
+            setMusicLibrary(response.data.music || []);
+        } catch (error) {
+            console.error('Error fetching music library:', error);
+            toast.error('Failed to load music library');
+        }
+    };
+    
+    const handleSelectMusic = (musicUrl) => {
+        setAlbum({...album, music_url: musicUrl});
+        setIsMusicLibraryOpen(false);
+        toast.success('Music selected!');
+    };
 
     if (loading) {
         return <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>;
