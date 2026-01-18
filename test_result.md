@@ -30,12 +30,15 @@
 
   - task: "Fix music upload errors and album detail issues"
     implemented: true
-    working: "verified"
+    working: true
     file: "/app/frontend/components/admin/AudioUploadModal.js, /app/backend/app/services/telegram_service.py, /app/backend/app/routes/admin_music.py, /app/backend/app/routes/creator_music.py, /app/backend/app/routes/media_proxy.py, /app/backend/app/routes/albums.py"
     stuck_count: 0
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 COMPREHENSIVE MUSIC UPLOAD & PLAYBACK TESTING COMPLETED SUCCESSFULLY! ✅ **All 8/8 Core Tests Passed**: 1) **Admin Music Upload**: Successfully uploaded 8.53MB SoundHelix sample MP3, got HTTP 200, correct file_id, proxy URL format (/api/media/telegram-proxy/audio/{file_id}), duration extraction (372s), format detection (mp3). 2) **Creator Music Upload**: Personal music upload working with is_private flag, storage quota tracking (8,945,229 bytes). 3) **Music Library Retrieval**: All 3 library endpoints working - admin library shows uploaded music with metadata, creator personal library accessible, public library with category filtering. 4) **Audio Proxy Streaming**: Proxy endpoint returns correct audio/mpeg content-type, CORS headers (*), proper file size matching. 5) **Music Folder Management**: All 4 CRUD operations working - create folder, list folders, associate music with folder, delete empty folder. 6) **Storage Quota**: Tracking working with used/limit/percentage fields. 7) **Error Handling**: All 3 tests passed - invalid file type (400), missing fields (422), invalid folder (404). 8) **Delete Music**: Successfully removes from library and updates storage. ✅ **Additional Tests**: Wedding playlist operations working, audio session management (3/4 passed), Phase 5 advanced endpoints not yet implemented but basic session lifecycle works. ✅ **Backend Logs Clean**: No errors during testing. Music upload & playback system is production-ready!"
       - working: "verified"
         agent: "main"
         comment: "✅ MUSIC UPLOAD FULLY VERIFIED AND WORKING: 1) Telegram connection test passed - Bot has admin permissions, can post messages, and successfully uploaded 8.53 MB test audio file. 2) Backend API test passed - Uploaded music via /api/admin/music/upload with HTTP 200, got proper file_id, file_url with proxy format, and duration extraction working. 3) Select.Item fix verified in AudioUploadModal.js - uses 'none' value instead of empty string. 4) upload_audio() method implemented correctly in telegram_service.py with proper timeout (120s), MIME type handling, and proxy URL generation. 5) All audio files stored via telegram_cdn with proxy URLs in format /api/media/telegram-proxy/audio/{file_id}. Backend logs clean with no errors. Services restarted successfully. Ready for frontend UI testing."
