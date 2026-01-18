@@ -65,7 +65,7 @@ async def add_music_to_playlist(
 ):
     """Add music to wedding playlist"""
     db = get_db()
-    user_id = current_user["id"]
+    user_id = current_user["user_id"]
     
     # Verify wedding ownership
     wedding = await db.weddings.find_one({"id": wedding_id})
