@@ -46,6 +46,7 @@ import BorderStyleCustomizer from '@/components/BorderStyleCustomizer';
 import YouTubeBroadcastControls from '@/components/YouTubeBroadcastControls';
 import YouTubeBroadcastsList from '@/components/YouTubeBroadcastsList';
 import TemplateSelector from '@/components/TemplateSelector';
+import StreamViewMusicPlayer from '@/components/StreamViewMusicPlayer';
 
 import AlbumManager from '@/components/AlbumManager';
 function ManagePageContent({ params }) {
