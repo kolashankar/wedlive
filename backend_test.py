@@ -2139,15 +2139,17 @@ class BackendAPITester:
         return self.print_summary()
 
 def main():
-    """Main test runner"""
+    """Main test runner - focused on album detail API and music library integration"""
     tester = BackendAPITester()
-    success = tester.run_all_tests()
+    
+    # Run focused tests for the review request
+    success = tester.run_album_and_music_tests()
     
     if success:
-        print(f"\n🎉 ALL BACKEND TESTS COMPLETED SUCCESSFULLY")
+        print(f"\n🎉 ALBUM DETAIL & MUSIC LIBRARY TESTS COMPLETED SUCCESSFULLY")
         sys.exit(0)
     else:
-        print(f"\n💥 BACKEND TESTS FAILED")
+        print(f"\n💥 ALBUM DETAIL & MUSIC LIBRARY TESTS FAILED")
         sys.exit(1)
 
 if __name__ == "__main__":
