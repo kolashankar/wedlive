@@ -111,12 +111,15 @@ backend:
   
   - task: "Music API Endpoints - Upload, Folder Management, Storage"
     implemented: true
-    working: "pending_test"
-    file: "/app/backend/app/routes/admin_music.py, /app/backend/app/routes/creator_music.py"
+    working: "fixed"
+    file: "/app/backend/app/routes/admin_music.py, /app/backend/app/routes/creator_music.py, /app/backend/app/routes/wedding_music.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
+      - working: "fixed"
+        agent: "main"
+        comment: "✅ FIXED 403 FORBIDDEN ERRORS ON MUSIC APIS: Root cause was JWT token payload mismatch - token uses 'user_id' key but code was accessing 'id' key, causing KeyError. Fixed 13 occurrences across 3 files: creator_music.py (4), admin_music.py (2), wedding_music.py (7). All instances of current_user['id'] changed to current_user['user_id']. Backend restarted successfully. See /app/MUSIC_API_403_FIX.md for complete details."
       - working: "pending_test"
         agent: "main"
         comment: "Backend music APIs from Phase 1-4 need testing: admin music upload, folder management, creator music uploads with quota tracking, wedding playlist assignment."
