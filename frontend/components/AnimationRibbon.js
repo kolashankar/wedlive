@@ -15,6 +15,7 @@ export default function AnimationRibbon({
   selectedSlide,
   onUpdateSlide,
   onApplyToAll,
+  onApplyRandom,
   musicUrl,
   onSelectMusic
 }) {
