@@ -34,8 +34,8 @@ try:
                 backend_url = line.split('=', 1)[1].strip()
                 break
     
-    # Default fallback
-    if not backend_url:
+    # Default fallback - use local backend for testing
+    if not backend_url or "wedlive.onrender.com" in backend_url:
         backend_url = "http://localhost:8001"
         
     BASE_URL = f"{backend_url}/api"
