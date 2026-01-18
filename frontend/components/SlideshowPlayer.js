@@ -161,12 +161,6 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
             className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none"
             style={{ zIndex: 10 }}
           >
-             {/* 
-                Refactored Layout: 
-                Use relative wrapper with max-dimensions to tightly wrap the image.
-                This allows the overlay to be scoped strictly to the image bounds.
-                Removed bg-black from image to prevent global background transitions.
-             */}
              <div className="relative overflow-hidden flex items-center justify-center">
                 <motion.img 
                     src={currentSlide.media_url} 
@@ -176,13 +170,16 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
                     transition={{ duration: validSlideDuration + transitionDuration, ease: "linear" }}
                 />
                 
-                {/* Scoped Imagination Overlay */}
+                {/* Scoped Imagination Overlay - Auto-fades out after transition */}
                 {isImagination && (
                    <motion.div
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      // Fade out/remove overlay after transition duration so it doesn't obscure the image
-                      exit={{ opacity: 0 }}
+                      animate={{ opacity: [0, 1, 1, 0] }} // Fade In -> Stay -> Fade Out
+                      transition={{ 
+                          duration: transitionDuration + 0.5, 
+                          times: [0, 0.1, 0.8, 1],
+                          ease: "easeInOut"
+                      }}
                       className="absolute inset-0 z-20 mix-blend-multiply pointer-events-none"
                    >
                        <img 
@@ -190,64 +187,24 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
                           className="w-full h-full object-cover"
                           alt=""
                        />
-                       {/* Auto-hide overlay after transition */}
-                       <motion.div 
-                          initial={{ opacity: 1 }}
-                          animate={{ opacity: 0 }}
-                          transition={{ delay: transitionDuration, duration: 0.5 }}
-                          className="absolute inset-0 bg-transparent"
-                          onAnimationComplete={() => {
-                              // This is just a visual timer, the actual removal happens on slide unmount
-                              // But we want it to disappear from the CURRENT slide after transition
-                          }}
-                       />
-                       {/* 
-                          Better approach for hiding: 
-                          Animate the parent div opacity to 0 after delay
-                       */}
-                       <motion.div 
-                          className="absolute inset-0 bg-black"
-                          initial={{ opacity: 0 }} 
-                          animate={{ opacity: 0 }}
-                          transition={{ delay: transitionDuration, duration: 0 }}
-                          style={{ display: 'none' }} // Dummy
-                       />
                    </motion.div>
                 )}
                 
-                {/* 
-                   Correction: The overlay needs to disappear. 
-                   I'll apply the animate prop to the overlay container directly.
-                */}
+                {currentSlide.caption && (
+                    <div className="absolute bottom-10 left-0 right-0 text-center z-30 px-4 pointer-events-none">
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="inline-block bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-lg font-medium"
+                        >
+                            {currentSlide.caption}
+                        </motion.p>
+                    </div>
+                )}
              </div>
-             
-             {/* Caption Overlay - Positioned relative to screen or image? 
-                 Usually better at bottom of screen. Moving outside the shrink-wrap div if we want it at screen bottom.
-                 If we want it on image, keep here. 
-                 Current design had it "absolute bottom-20 left-0 right-0".
-                 If inside shrink-wrap, it sticks to image bottom.
-                 Let's keep it scoped to image for better UI.
-             */}
-            {currentSlide.caption && (
-                <div className="absolute bottom-10 left-0 right-0 text-center z-30 px-4 pointer-events-none">
-                    <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="inline-block bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-lg font-medium"
-                    >
-                        {currentSlide.caption}
-                    </motion.p>
-                </div>
-            )}
           </motion.div>
         </AnimatePresence>
-        
-        {/* Re-implementing Overlay Visibility Logic Properly */}
-        {/* 
-            Since we can't easily animate the removal of the overlay DOM node without complex state,
-            we will use CSS/Framer opacity animation on the overlay element itself.
-        */}
       </div>
 
       {/* Controls Overlay */}
