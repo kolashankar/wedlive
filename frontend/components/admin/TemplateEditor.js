@@ -13,8 +13,9 @@ import TimelineEditor from './TimelineEditor';
 import InteractiveOverlayCanvas from './InteractiveOverlayCanvas';
 import { Plus, Play, Pause, Save, Trash2, Eye, EyeOff, Layers, Lock, Unlock, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 
 export default function TemplateEditor({ template, onSave }) {
   const { toast } = useToast();
