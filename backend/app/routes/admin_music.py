@@ -564,6 +564,7 @@ async def delete_music(music_id: str):
 @router.get("/categories", dependencies=[Depends(get_current_admin)])
 async def get_music_categories():
     """Get all music categories with counts"""
+    db = get_db()
     categories = []
     
     for category in AudioCategory:
