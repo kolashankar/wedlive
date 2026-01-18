@@ -161,7 +161,10 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
   // Determine transition for CURRENT entering slide
   // We use the transition defined on the CURRENT slide for entering
   const activeTransitionKey = currentSlide?.transition || 'fade';
-  const transitionVariant = transitions[activeTransitionKey] || transitions.fade;
+  const isImagination = isImaginationTransition(activeTransitionKey);
+  
+  // For imagination transitions, use fade as base and overlay the animation
+  const transitionVariant = isImagination ? transitions.fade : (transitions[activeTransitionKey] || transitions.fade);
   const transitionDuration = currentSlide?.transition_duration || 1;
 
   // Determine animation
