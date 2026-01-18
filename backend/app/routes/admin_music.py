@@ -374,7 +374,7 @@ async def upload_music(
         updated_at=music_doc["updated_at"]
     )
 
-@router.get("/library", response_model=List[MusicLibraryResponse], dependencies=[Depends(require_admin)])
+@router.get("/library", response_model=List[MusicLibraryResponse], dependencies=[Depends(get_current_admin)])
 async def list_music_library(
     category: Optional[AudioCategory] = None,
     folder_id: Optional[str] = None,
