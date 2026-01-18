@@ -1912,6 +1912,118 @@ class BackendAPITester:
             self.log_test_result("Music Folder Management", False, f"Only {success_count}/{total_tests} tests passed")
             return False
 
+    def run_album_and_music_tests(self) -> bool:
+        """Run focused tests for album detail API and music library integration"""
+        print("\n" + "="*80)
+        print("🚀 TESTING ALBUM DETAIL API & MUSIC LIBRARY INTEGRATION")
+        print("="*80)
+        
+        # Track overall success
+        critical_tests_passed = 0
+        total_critical_tests = 0
+        
+        # Phase 1: Basic Setup
+        print("\n📋 PHASE 1: BASIC SETUP & AUTHENTICATION")
+        print("-" * 50)
+        
+        if not self.test_backend_health():
+            print("❌ Backend health check failed - aborting tests")
+            return False
+        
+        if not self.test_mongodb_connection():
+            print("❌ MongoDB connection failed - aborting tests")
+            return False
+        
+        if not self.setup_authentication():
+            print("❌ Authentication setup failed - aborting tests")
+            return False
+        
+        if not self.setup_test_wedding():
+            print("❌ Test wedding setup failed - aborting tests")
+            return False
+        
+        # Phase 2: Album Detail API Testing (Focus of review request)
+        print("\n📖 PHASE 2: ALBUM DETAIL API TESTING")
+        print("-" * 50)
+        
+        album_tests = [
+            ("Album Detail API Comprehensive", self.test_album_detail_api_comprehensive),
+            ("Album Slide Duration Validation", self.test_album_slide_duration_validation)
+        ]
+        
+        for test_name, test_func in album_tests:
+            total_critical_tests += 1
+            if test_func():
+                critical_tests_passed += 1
+        
+        # Phase 3: Music Library API Testing (Focus of review request)
+        print("\n🎵 PHASE 3: MUSIC LIBRARY API TESTING")
+        print("-" * 50)
+        
+        music_tests = [
+            ("Music Library API Comprehensive", self.test_music_library_api_comprehensive)
+        ]
+        
+        for test_name, test_func in music_tests:
+            total_critical_tests += 1
+            if test_func():
+                critical_tests_passed += 1
+        
+        # Phase 4: Additional Music Integration Tests
+        print("\n🎶 PHASE 4: MUSIC INTEGRATION TESTING")
+        print("-" * 50)
+        
+        # Setup admin auth for admin endpoints
+        self.setup_admin_authentication()
+        
+        integration_tests = [
+            ("Admin Music Upload", self.test_admin_music_upload),
+            ("Music Library Retrieval", self.test_music_library_retrieval),
+            ("Audio Proxy Streaming", self.test_audio_proxy_streaming)
+        ]
+        
+        for test_name, test_func in integration_tests:
+            total_critical_tests += 1
+            if test_func():
+                critical_tests_passed += 1
+        
+        # Final Summary
+        print("\n" + "="*80)
+        print("📊 ALBUM & MUSIC LIBRARY TEST RESULTS")
+        print("="*80)
+        
+        success_rate = (critical_tests_passed / total_critical_tests) * 100 if total_critical_tests > 0 else 0
+        
+        print(f"\n🎯 OVERALL SUCCESS RATE: {success_rate:.1f}% ({critical_tests_passed}/{total_critical_tests})")
+        
+        # Categorize results
+        passed_tests = [result for result in self.test_results if result["success"]]
+        failed_tests = [result for result in self.test_results if not result["success"]]
+        
+        if passed_tests:
+            print(f"\n✅ PASSED TESTS ({len(passed_tests)}):")
+            for test in passed_tests:
+                print(f"   • {test['name']}")
+                if test['details']:
+                    print(f"     {test['details']}")
+        
+        if failed_tests:
+            print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"   • {test['name']}")
+                if test['details']:
+                    print(f"     {test['details']}")
+        
+        # Determine overall success
+        if success_rate >= 80:
+            print(f"\n🎉 ALBUM & MUSIC LIBRARY TESTING COMPLETED SUCCESSFULLY!")
+            print(f"   APIs are functioning correctly with {success_rate:.1f}% success rate")
+            return True
+        else:
+            print(f"\n⚠️ TESTING COMPLETED WITH ISSUES")
+            print(f"   {len(failed_tests)} critical issues need attention")
+            return False
+
     def cleanup_test_data(self):
         """Clean up test data"""
         print("\n🧹 CLEANING UP TEST DATA")
