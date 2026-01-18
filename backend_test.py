@@ -52,13 +52,16 @@ except Exception as e:
     BASE_URL = "http://localhost:8001/api"
     print(f"🔗 Using Default Backend URL: {BASE_URL}")
 
-class MultiCameraAPITester:
+class BackendAPITester:
     def __init__(self):
         self.base_url = BASE_URL
         self.session = requests.Session()
         self.user_token = None
+        self.admin_token = None
         self.test_wedding_id = None
         self.test_cameras = []
+        self.test_music_ids = []
+        self.test_folder_ids = []
         self.test_results = []
         
     def log_test_result(self, test_name: str, success: bool, details: str = ""):
