@@ -100,8 +100,13 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
   }, [currentIndex, isPlaying]);
 
   useEffect(() => {
-      // Handle Audio
+      // Handle Audio with validation
       if (audioRef.current) {
+          // Ensure currentTime is valid before any operations
+          if (!isFinite(audioRef.current.currentTime)) {
+              audioRef.current.currentTime = 0;
+          }
+          
           if (isPlaying) {
               audioRef.current.play().catch(e => console.log("Audio play failed (interaction needed)", e));
           } else {
