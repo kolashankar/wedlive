@@ -12,7 +12,7 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.mp4 import MP4
 
 from app.auth import get_current_user, get_current_admin
-from app.database import db
+from app.database import get_db
 from app.models_music import (
     MusicLibraryCreate,
     MusicLibraryUpdate,
