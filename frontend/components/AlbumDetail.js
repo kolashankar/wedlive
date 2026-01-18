@@ -8,6 +8,7 @@ import MediaSelector from './MediaSelector';
 import SlideshowPlayer from './SlideshowPlayer';
 import SlideSidebar from './SlideSidebar';
 import AnimationRibbon from './AnimationRibbon';
+import { imaginationTransitions } from '@/lib/slideshowAnimations';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 
