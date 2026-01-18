@@ -158,7 +158,7 @@ async def list_music_folders(
     
     return result
 
-@router.put("/folders/{folder_id}", response_model=MusicFolderResponse, dependencies=[Depends(require_admin)])
+@router.put("/folders/{folder_id}", response_model=MusicFolderResponse, dependencies=[Depends(get_current_admin)])
 async def update_music_folder(
     folder_id: str,
     folder_update: MusicFolderUpdate
