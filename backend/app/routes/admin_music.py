@@ -328,9 +328,8 @@ async def upload_music(
     # Create music document
     music_id = str(uuid.uuid4())
     
-    # Construct proxy URL for audio file
-    backend_url = os.getenv("BACKEND_URL", "http://localhost:8001")
-    file_url = f"{backend_url}/api/media/telegram-proxy/documents/{upload_result['file_id']}"
+    # Use file_url from upload result (already has proxy URL)
+    file_url = upload_result['file_url']
     
     music_doc = {
         "_id": music_id,
