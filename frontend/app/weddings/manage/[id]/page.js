@@ -65,6 +65,16 @@ function ManagePageContent({ params }) {
   const [localStreamingType, setLocalStreamingType] = useState('weblive');
   const [skipStreamingTypeUpdate, setSkipStreamingTypeUpdate] = useState(false);
   
+  
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const activeTab = searchParams.get('tab') || 'stream';
+
+  const handleTabChange = (value) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', value);
+    router.push(`${pathname}?${params.toString()}`);
+  };
   const isPremium = user?.subscription_plan === 'monthly' || user?.subscription_plan === 'yearly';
 
   useEffect(() => {
