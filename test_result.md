@@ -148,6 +148,17 @@ frontend:
         comment: "✅ FIXED TEXT FITTING & WRAPPING: 1) Implemented AUTO-SCALE logic in ResponsiveTextOverlay.js using useLayoutEffect. Text now shrinks to fit inside the defined percentage box (width/height) instead of overflowing or forcing huge vertical expansion. 2) Changed overflowWrap from 'break-word' to 'normal' to prevent names like 'Radha' from being split vertically (R a d h a) on small screens."
 
 metadata:
+  - task: "Add 71 Imagination Animations to Slideshow"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/lib/slideshowAnimations.js, /app/frontend/components/TransitionSelector.js, /app/frontend/components/SlideshowPlayer.js, /app/frontend/components/AlbumDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ 71 IMAGINATION ANIMATIONS INTEGRATED: 1) Downloaded 71 animations from imagination GitHub repo (69 GIFs + 72 PNGs). 2) Copied all files to /app/frontend/public/slideshow-animations/. 3) Created /app/frontend/lib/slideshowAnimations.js with all animation definitions. 4) Created TransitionSelector.js component with grid/list view and preview thumbnails. 5) Updated AlbumDetail.js to use new TransitionSelector for both global and per-slide transitions. 6) Updated SlideshowPlayer.js to handle imagination transitions using GIF overlays with mix-blend-mode. 7) All 71 animations (imagination-1 through imagination-71) are now available in the media tab slideshow editor."
   - task: "Implement Slideshow & Album Management (Phase 1 & 2)"
     implemented: true
     working: "pending_test"
