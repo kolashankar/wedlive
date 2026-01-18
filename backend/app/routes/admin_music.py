@@ -439,6 +439,7 @@ async def list_music_library(
 @router.get("/library/{music_id}", response_model=MusicLibraryResponse, dependencies=[Depends(get_current_admin)])
 async def get_music_details(music_id: str):
     """Get specific music details"""
+    db = get_db()
     music = await db.music_library.find_one({"_id": music_id})
     if not music:
         raise HTTPException(
