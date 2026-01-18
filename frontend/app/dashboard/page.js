@@ -18,6 +18,8 @@ import api from '@/lib/api';
 import StorageWidget from '@/components/StorageWidget';
 import PlanInfoCard from '@/components/PlanInfoCard';
 import ProfileDropdown from '@/components/ProfileDropdown';
+import DashboardSidebar from '@/components/DashboardSidebar';
+import { Menu } from 'lucide-react';
 
 function DashboardContent() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -35,6 +37,7 @@ function DashboardContent() {
     location: ''
   });
   const [subscription, setSubscription] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
