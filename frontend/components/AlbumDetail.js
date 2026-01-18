@@ -21,6 +21,8 @@ export default function AlbumDetail({ albumId, onBack }) {
     const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const [isMusicLibraryOpen, setIsMusicLibraryOpen] = useState(false);
+    const [musicLibrary, setMusicLibrary] = useState([]);
     
     // Global Settings State
     const [globalDuration, setGlobalDuration] = useState(5.0);
