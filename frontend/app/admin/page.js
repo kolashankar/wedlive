@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Users, Video, TrendingUp, DollarSign, Eye, Trash2, Search, 
-  BarChart3, Calendar, Activity, Crown, AlertCircle, Image as ImageIcon 
+  BarChart3, Calendar, Activity, Crown, AlertCircle, Image as ImageIcon, Music 
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
