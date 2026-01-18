@@ -203,15 +203,11 @@ export default function AlbumDetail({ albumId, onBack }) {
                             </div>
                         </div>
                         <CardContent className="p-2 space-y-2">
-                             <Select value={slide.transition} onValueChange={(v) => updateSlide(index, 'transition', v)}>
-                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="Transition" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">None</SelectItem>
-                                    <SelectItem value="fade">Fade</SelectItem>
-                                    <SelectItem value="wipe_left">Wipe L</SelectItem>
-                                    <SelectItem value="wipe_right">Wipe R</SelectItem>
-                                </SelectContent>
-                            </Select>
+                             <TransitionSelector 
+                                value={slide.transition} 
+                                onChange={(v) => updateSlide(index, 'transition', v)}
+                                className="w-full"
+                             />
                         </CardContent>
                     </Card>
                 ))}
