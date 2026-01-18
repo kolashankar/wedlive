@@ -145,18 +145,12 @@ export default function AlbumDetail({ albumId, onBack }) {
                         <Label>Duration (s)</Label>
                         <Input type="number" value={globalDuration} onChange={e => setGlobalDuration(parseFloat(e.target.value))} />
                     </div>
-                    <div className="space-y-2 w-40">
-                        <Label>Transition</Label>
-                        <Select value={globalTransition} onValueChange={setGlobalTransition}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                <SelectItem value="fade">Fade</SelectItem>
-                                <SelectItem value="wipe_left">Wipe Left</SelectItem>
-                                <SelectItem value="wipe_right">Wipe Right</SelectItem>
-                                <SelectItem value="zoom_in">Zoom In</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="space-y-2 w-64">
+                        <Label>Transition (71+ animations available)</Label>
+                        <TransitionSelector 
+                            value={globalTransition} 
+                            onChange={setGlobalTransition}
+                        />
                     </div>
                      <div className="space-y-2 w-40">
                         <Label>Animation</Label>
