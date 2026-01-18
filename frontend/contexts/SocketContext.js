@@ -1,10 +1,11 @@
 'use client';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { getApiBaseUrl } from '@/lib/config';
 
 const SocketContext = createContext(null);
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || getApiBaseUrl();
 
 export function SocketProvider({ children, weddingId }) {
   const socketRef = useRef(null);
