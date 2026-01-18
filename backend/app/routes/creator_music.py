@@ -303,7 +303,7 @@ async def get_storage_info(
 ):
     """Get creator's storage usage info"""
     db = get_db()
-    user_id = current_user["id"]
+    user_id = current_user["user_id"]
     
     # Get storage info
     storage_info = await storage_service.update_user_storage(user_id)
