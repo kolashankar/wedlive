@@ -129,6 +129,7 @@ async def list_music_folders(
     parent_folder_id: Optional[str] = None
 ):
     """List all music folders, optionally filtered by category or parent"""
+    db = get_db()
     query = {}
     if category:
         query["category"] = category
