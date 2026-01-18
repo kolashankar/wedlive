@@ -12,8 +12,9 @@ import VideoPlayerWithOverlays from './VideoPlayerWithOverlays';
 import TemplateCustomization from './TemplateCustomization';
 import RenderJobStatus from './RenderJobStatus';
 import { useToast } from '@/hooks/use-toast';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 
 export default function TemplateDetailModal({ template, weddingId, onClose, onApply }) {
   const { toast } = useToast();
