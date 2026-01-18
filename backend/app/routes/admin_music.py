@@ -57,7 +57,7 @@ def get_audio_format(filename: str) -> AudioFormat:
 
 # ==================== FOLDER MANAGEMENT ====================
 
-@router.post("/folders", response_model=MusicFolderResponse, dependencies=[Depends(require_admin)])
+@router.post("/folders", response_model=MusicFolderResponse, dependencies=[Depends(get_current_admin)])
 async def create_music_folder(
     folder: MusicFolderCreate,
     current_user: dict = Depends(get_current_user)
