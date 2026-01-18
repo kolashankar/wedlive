@@ -459,6 +459,7 @@ function DashboardContent() {
           </div>
         )}
       </div>
+      </div> {/* Close lg:ml-64 div */}
     </div>
   );
 }
