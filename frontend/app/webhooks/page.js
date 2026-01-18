@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Webhook, Plus, Trash2, Play, Pause, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_URL = getApiBaseUrl();
 
 const EVENT_TYPES = [
   { value: 'stream.started', label: 'Stream Started', description: 'Triggered when a stream goes live' },
