@@ -97,6 +97,78 @@ backend:
       - working: "pending_test"
         agent: "main"
         comment: "✅ STUDIO IMAGE UPLOAD REFACTORED: 1) Updated /api/profile/studios/{studio_id}/logo endpoint to save uploads as 'default_image_url' instead of 'logo_url'. 2) Profile endpoint now returns default_image_url as logo_url for compatibility. 3) All logging updated from STUDIO_LOGO to STUDIO_IMAGE for clarity."
+  - task: "Phase 5: Audio Mixing & Session Management - Real-Time Audio Injection"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/services/audio_mixer_service.py, /app/backend/app/services/audio_session_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "✅ PHASE 5.1 & 5.2 COMPLETE: Enhanced audio mixer service with metadata tracking, retry logic (3 attempts), network failure handling, audio sync checking, and health monitoring. Enhanced audio session service with auto-next music handling, stream interruption/resume, playlist settings (repeat modes: none/one/all, shuffle), volume normalization. Added 7 new API endpoints for advanced audio control. Ready for comprehensive testing."
+  
+  - task: "Music API Endpoints - Upload, Folder Management, Storage"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/routes/admin_music.py, /app/backend/app/routes/creator_music.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "Backend music APIs from Phase 1-4 need testing: admin music upload, folder management, creator music uploads with quota tracking, wedding playlist assignment."
+  
+  - task: "Wedding Music Playlist & Audio Session APIs"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/routes/wedding_music.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "Wedding playlist management and audio session APIs ready for testing. Includes: add/remove/reorder playlist, start/stop/update session, handle music end, interruption handling, volume normalization, mixer health monitoring."
+  
+  - task: "Audio Session State Tracking & Persistence"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/services/audio_session_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "Audio session persistence to MongoDB needs testing: session creation, state updates, interruption handling, resume after disconnection, auto-next logic, playlist settings (shuffle/repeat)."
+  
+  - task: "Storage Quota Calculation & Enforcement"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/services/storage_service.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "Storage quota tracking for creator music uploads needs testing: calculation accuracy, quota enforcement (1GB free, 10GB premium), storage warnings."
+  
+  - task: "WebSocket Audio State Broadcasting"
+    implemented: true
+    working: "pending_test"
+    file: "/app/backend/app/services/camera_websocket.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "WebSocket integration for real-time music state updates needs testing: playback events, volume changes, effect triggers, multi-client sync."
+  
   - task: "Fix Telegram URL CORS errors for photo borders and backgrounds"
     implemented: true
     working: true
