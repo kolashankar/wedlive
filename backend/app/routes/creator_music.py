@@ -208,7 +208,7 @@ async def delete_creator_music(
 ):
     """Delete creator's personal music"""
     db = get_db()
-    user_id = current_user["id"]
+    user_id = current_user["user_id"]
     
     # Find music
     music = await db.creator_music.find_one({"_id": music_id})
