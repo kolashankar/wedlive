@@ -579,6 +579,502 @@ class BackendAPITester:
         else:
             self.log_test_result("Security and Authorization", False, f"Only {success_count}/{total_tests} tests passed")
             return False
+
+    # ==================== AUDIO & MUSIC TESTING METHODS ====================
+    
+    def test_admin_music_management(self) -> bool:
+        """Test admin music upload and folder management"""
+        print("\n🎵 TESTING ADMIN MUSIC MANAGEMENT")
+        print("=" * 50)
+        
+        if not self.admin_token:
+            self.log_test_result("Admin Music Management", False, "No admin token available")
+            return False
+        
+        success_count = 0
+        total_tests = 0
+        
+        # Test 1: Create music folder
+        try:
+            total_tests += 1
+            folder_data = {
+                "name": "Test Wedding Music",
+                "description": "Test folder for wedding background music",
+                "category": "background_music",
+                "icon": "🎶"
+            }
+            
+            response = self.session.post(f"{self.base_url}/admin/music/folders", json=folder_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                folder_id = data.get("id")
+                if folder_id:
+                    self.test_folder_ids.append(folder_id)
+                    success_count += 1
+                    print(f"  ✅ Create music folder: Success (ID: {folder_id[:8]}...)")
+                else:
+                    print(f"  ❌ Create music folder: No folder ID returned")
+            else:
+                print(f"  ❌ Create music folder: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Create music folder: Error - {str(e)}")
+        
+        # Test 2: List music folders
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/admin/music/folders")
+            
+            if response.status_code == 200:
+                folders = response.json()
+                if isinstance(folders, list):
+                    success_count += 1
+                    print(f"  ✅ List music folders: Success ({len(folders)} folders)")
+                else:
+                    print(f"  ❌ List music folders: Invalid response format")
+            else:
+                print(f"  ❌ List music folders: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ List music folders: Error - {str(e)}")
+        
+        # Test 3: Create test audio file and upload
+        try:
+            total_tests += 1
+            # Create a minimal MP3 file for testing
+            test_audio_content = self.create_test_audio_file()
+            
+            files = {"file": ("test_music.mp3", test_audio_content, "audio/mpeg")}
+            data = {
+                "title": "Test Wedding Song",
+                "artist": "Test Artist",
+                "category": "background_music",
+                "is_public": "true"
+            }
+            
+            if self.test_folder_ids:
+                data["folder_id"] = self.test_folder_ids[0]
+            
+            response = self.session.post(f"{self.base_url}/admin/music/upload", files=files, data=data)
+            
+            if response.status_code == 200:
+                music_data = response.json()
+                music_id = music_data.get("id")
+                if music_id:
+                    self.test_music_ids.append(music_id)
+                    success_count += 1
+                    print(f"  ✅ Upload music: Success (ID: {music_id[:8]}...)")
+                else:
+                    print(f"  ❌ Upload music: No music ID returned")
+            else:
+                print(f"  ❌ Upload music: HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Upload music: Error - {str(e)}")
+        
+        # Test 4: List music library
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/admin/music/library")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ List music library: Success ({len(library)} items)")
+                else:
+                    print(f"  ❌ List music library: Invalid response format")
+            else:
+                print(f"  ❌ List music library: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ List music library: Error - {str(e)}")
+        
+        if success_count >= 3:  # Allow 1 failure
+            self.log_test_result("Admin Music Management", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Admin Music Management", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_creator_music_management(self) -> bool:
+        """Test creator personal music upload and management"""
+        print("\n🎤 TESTING CREATOR MUSIC MANAGEMENT")
+        print("=" * 50)
+        
+        success_count = 0
+        total_tests = 0
+        
+        # Test 1: Upload personal music
+        try:
+            total_tests += 1
+            test_audio_content = self.create_test_audio_file()
+            
+            files = {"file": ("personal_song.mp3", test_audio_content, "audio/mpeg")}
+            data = {
+                "title": "My Personal Wedding Song",
+                "artist": "Personal Artist",
+                "is_private": "true"
+            }
+            
+            response = self.session.post(f"{self.base_url}/music/upload", files=files, data=data)
+            
+            if response.status_code == 200:
+                music_data = response.json()
+                music_id = music_data.get("id")
+                if music_id:
+                    self.test_music_ids.append(music_id)
+                    success_count += 1
+                    print(f"  ✅ Upload personal music: Success (ID: {music_id[:8]}...)")
+                else:
+                    print(f"  ❌ Upload personal music: No music ID returned")
+            else:
+                print(f"  ❌ Upload personal music: HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Upload personal music: Error - {str(e)}")
+        
+        # Test 2: Get personal music library
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/my-library")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Get personal library: Success ({len(library)} items)")
+                else:
+                    print(f"  ❌ Get personal library: Invalid response format")
+            else:
+                print(f"  ❌ Get personal library: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Get personal library: Error - {str(e)}")
+        
+        # Test 3: Check storage usage
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/storage")
+            
+            if response.status_code == 200:
+                storage_info = response.json()
+                if "storage_used" in storage_info and "storage_limit" in storage_info:
+                    success_count += 1
+                    print(f"  ✅ Check storage usage: Success (Used: {storage_info.get('storage_used_formatted', 'N/A')})")
+                else:
+                    print(f"  ❌ Check storage usage: Invalid response format")
+            else:
+                print(f"  ❌ Check storage usage: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Check storage usage: Error - {str(e)}")
+        
+        # Test 4: Browse public music library
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/library")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Browse public library: Success ({len(library)} items)")
+                else:
+                    print(f"  ❌ Browse public library: Invalid response format")
+            else:
+                print(f"  ❌ Browse public library: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Browse public library: Error - {str(e)}")
+        
+        if success_count >= 3:  # Allow 1 failure
+            self.log_test_result("Creator Music Management", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Creator Music Management", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_wedding_playlist_management(self) -> bool:
+        """Test wedding playlist operations"""
+        print("\n💒 TESTING WEDDING PLAYLIST MANAGEMENT")
+        print("=" * 50)
+        
+        if not self.test_wedding_id:
+            self.log_test_result("Wedding Playlist Management", False, "No test wedding available")
+            return False
+        
+        success_count = 0
+        total_tests = 0
+        
+        # Test 1: Add music to wedding playlist
+        if self.test_music_ids:
+            try:
+                total_tests += 1
+                playlist_data = {
+                    "music_id": self.test_music_ids[0],
+                    "source": "creator",
+                    "auto_play": False
+                }
+                
+                response = self.session.post(f"{self.base_url}/weddings/{self.test_wedding_id}/music/playlist", json=playlist_data)
+                
+                if response.status_code == 200:
+                    playlist_item = response.json()
+                    if playlist_item.get("music_id") == self.test_music_ids[0]:
+                        success_count += 1
+                        print(f"  ✅ Add music to playlist: Success")
+                    else:
+                        print(f"  ❌ Add music to playlist: Invalid response data")
+                else:
+                    print(f"  ❌ Add music to playlist: HTTP {response.status_code}")
+            except Exception as e:
+                print(f"  ❌ Add music to playlist: Error - {str(e)}")
+        
+        # Test 2: Get wedding playlist
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/weddings/{self.test_wedding_id}/music/playlist")
+            
+            if response.status_code == 200:
+                playlist = response.json()
+                if "music_playlist" in playlist and isinstance(playlist["music_playlist"], list):
+                    success_count += 1
+                    print(f"  ✅ Get wedding playlist: Success ({len(playlist['music_playlist'])} items)")
+                else:
+                    print(f"  ❌ Get wedding playlist: Invalid response format")
+            else:
+                print(f"  ❌ Get wedding playlist: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Get wedding playlist: Error - {str(e)}")
+        
+        # Test 3: Reorder playlist (if we have music)
+        if self.test_music_ids:
+            try:
+                total_tests += 1
+                reorder_data = {
+                    "music_id": self.test_music_ids[0],
+                    "new_order": 1
+                }
+                
+                response = self.session.put(f"{self.base_url}/weddings/{self.test_wedding_id}/music/playlist/reorder", json=reorder_data)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get("success"):
+                        success_count += 1
+                        print(f"  ✅ Reorder playlist: Success")
+                    else:
+                        print(f"  ❌ Reorder playlist: Operation failed")
+                else:
+                    print(f"  ❌ Reorder playlist: HTTP {response.status_code}")
+            except Exception as e:
+                print(f"  ❌ Reorder playlist: Error - {str(e)}")
+        
+        if success_count >= 2:  # Allow some failures
+            self.log_test_result("Wedding Playlist Management", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Wedding Playlist Management", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_audio_session_management(self) -> bool:
+        """Test Phase 5 audio session management"""
+        print("\n🔊 TESTING AUDIO SESSION MANAGEMENT (PHASE 5)")
+        print("=" * 50)
+        
+        if not self.test_wedding_id:
+            self.log_test_result("Audio Session Management", False, "No test wedding available")
+            return False
+        
+        success_count = 0
+        total_tests = 0
+        session_id = None
+        
+        # Test 1: Start audio session
+        try:
+            total_tests += 1
+            response = self.session.post(f"{self.base_url}/weddings/{self.test_wedding_id}/audio/session/start")
+            
+            if response.status_code == 200:
+                session_data = response.json()
+                session_id = session_data.get("session_id")
+                if session_id and session_data.get("is_active"):
+                    success_count += 1
+                    print(f"  ✅ Start audio session: Success (ID: {session_id[:8]}...)")
+                else:
+                    print(f"  ❌ Start audio session: Invalid response data")
+            else:
+                print(f"  ❌ Start audio session: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Start audio session: Error - {str(e)}")
+        
+        # Test 2: Get session state
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/weddings/{self.test_wedding_id}/audio/session/state")
+            
+            if response.status_code == 200:
+                session_state = response.json()
+                if session_state.get("is_active") and "current_state" in session_state:
+                    success_count += 1
+                    print(f"  ✅ Get session state: Success")
+                else:
+                    print(f"  ❌ Get session state: Invalid response data")
+            else:
+                print(f"  ❌ Get session state: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Get session state: Error - {str(e)}")
+        
+        # Test 3: Update session state
+        try:
+            total_tests += 1
+            state_data = {
+                "background_music": {
+                    "track_id": "test_track",
+                    "playing": True,
+                    "volume": 70
+                },
+                "active_effects": []
+            }
+            
+            response = self.session.put(f"{self.base_url}/weddings/{self.test_wedding_id}/audio/session/state", json=state_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                    success_count += 1
+                    print(f"  ✅ Update session state: Success")
+                else:
+                    print(f"  ❌ Update session state: Operation failed")
+            else:
+                print(f"  ❌ Update session state: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Update session state: Error - {str(e)}")
+        
+        # Test 4: Stop audio session
+        try:
+            total_tests += 1
+            response = self.session.post(f"{self.base_url}/weddings/{self.test_wedding_id}/audio/session/stop")
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                    success_count += 1
+                    print(f"  ✅ Stop audio session: Success")
+                else:
+                    print(f"  ❌ Stop audio session: Operation failed")
+            else:
+                print(f"  ❌ Stop audio session: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Stop audio session: Error - {str(e)}")
+        
+        if success_count >= 3:  # Allow 1 failure
+            self.log_test_result("Audio Session Management", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Audio Session Management", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_phase5_advanced_audio_endpoints(self) -> bool:
+        """Test Phase 5 advanced audio endpoints (if implemented)"""
+        print("\n🎛️ TESTING PHASE 5 ADVANCED AUDIO ENDPOINTS")
+        print("=" * 50)
+        
+        if not self.test_wedding_id:
+            self.log_test_result("Phase 5 Advanced Audio", False, "No test wedding available")
+            return False
+        
+        success_count = 0
+        total_tests = 0
+        
+        # Test endpoints mentioned in review request
+        advanced_endpoints = [
+            ("POST", f"/weddings/{self.test_wedding_id}/audio/session/handle-music-end", {"track_id": "test", "auto_next": True}),
+            ("POST", f"/weddings/{self.test_wedding_id}/audio/session/handle-interruption", {}),
+            ("POST", f"/weddings/{self.test_wedding_id}/audio/session/resume", {}),
+            ("PUT", f"/weddings/{self.test_wedding_id}/audio/playlist-settings", {"auto_next": True, "repeat_mode": "all", "shuffle": False}),
+            ("POST", f"/weddings/{self.test_wedding_id}/audio/normalize-volumes", {}),
+            ("GET", f"/weddings/{self.test_wedding_id}/audio/mixer/health", None),
+            ("POST", f"/weddings/{self.test_wedding_id}/audio/mixer/restart", {})
+        ]
+        
+        for method, endpoint, data in advanced_endpoints:
+            try:
+                total_tests += 1
+                endpoint_name = endpoint.split("/")[-1]
+                
+                if method == "GET":
+                    response = self.session.get(f"{self.base_url}{endpoint}")
+                elif method == "POST":
+                    response = self.session.post(f"{self.base_url}{endpoint}", json=data)
+                elif method == "PUT":
+                    response = self.session.put(f"{self.base_url}{endpoint}", json=data)
+                
+                if response.status_code in [200, 400, 404]:  # 400/404 acceptable if not implemented
+                    if response.status_code == 200:
+                        success_count += 1
+                        print(f"  ✅ {endpoint_name}: Implemented and working")
+                    else:
+                        print(f"  ⚠️ {endpoint_name}: Not implemented or no active session ({response.status_code})")
+                else:
+                    print(f"  ❌ {endpoint_name}: HTTP {response.status_code}")
+            except Exception as e:
+                print(f"  ❌ {endpoint_name}: Error - {str(e)}")
+        
+        # Consider test successful if at least some endpoints are implemented
+        if success_count >= 2:
+            self.log_test_result("Phase 5 Advanced Audio", True, f"Found {success_count}/{total_tests} implemented endpoints")
+            return True
+        else:
+            self.log_test_result("Phase 5 Advanced Audio", False, f"Only {success_count}/{total_tests} endpoints implemented")
+            return False
+    
+    def create_test_audio_file(self) -> bytes:
+        """Create a minimal valid MP3 file for testing"""
+        # This is a minimal MP3 header + some data
+        # In a real scenario, you'd want a proper audio file
+        mp3_header = b'\xff\xfb\x90\x00'  # MP3 sync word + basic header
+        mp3_data = b'\x00' * 1000  # Minimal data
+        return mp3_header + mp3_data
+    
+    def setup_admin_authentication(self) -> bool:
+        """Setup admin authentication for admin-only endpoints"""
+        print("\n🔐 SETTING UP ADMIN AUTHENTICATION")
+        print("=" * 50)
+        
+        # Use same credentials as regular auth but store admin token separately
+        try:
+            with open('/app/backend/.env', 'r') as f:
+                env_content = f.read()
+            
+            admin_email = None
+            admin_password = None
+            
+            for line in env_content.split('\n'):
+                if line.startswith('ADMIN_EMAIL='):
+                    admin_email = line.split('=', 1)[1].strip()
+                elif line.startswith('ADMIN_PASSWORD='):
+                    admin_password = line.split('=', 1)[1].strip()
+            
+            if not admin_email or not admin_password:
+                self.log_test_result("Admin Authentication Setup", False, "Admin credentials not found in .env")
+                return False
+            
+            # Login request
+            login_data = {
+                "email": admin_email,
+                "password": admin_password
+            }
+            
+            response = self.session.post(f"{self.base_url}/auth/login", json=login_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data.get("access_token")
+                if self.admin_token:
+                    self.log_test_result("Admin Authentication Setup", True, f"Admin logged in as {admin_email}")
+                    return True
+            
+            self.log_test_result("Admin Authentication Setup", False, f"Admin login failed: {response.status_code}")
+            return False
+            
+        except Exception as e:
+            self.log_test_result("Admin Authentication Setup", False, f"Error: {str(e)}")
+            return False
     
     def cleanup_test_data(self):
         """Clean up test data"""
