@@ -230,7 +230,7 @@ export default function SlideshowPlayer({ album, onClose, autoPlay = true }) {
                     className="w-full h-full object-contain bg-black"
                     variants={animationVariant}
                     // Apply animation duration based on slide duration so it moves throughout the whole slide
-                    transition={{ duration: (currentSlide.duration || 5) + transitionDuration, ease: "linear" }}
+                    transition={{ duration: validSlideDuration + transitionDuration, ease: "linear" }}
                 />
                  {/* Caption Overlay */}
                 {currentSlide.caption && (
