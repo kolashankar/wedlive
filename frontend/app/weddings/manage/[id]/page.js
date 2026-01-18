@@ -320,7 +320,7 @@ function ManagePageContent({ params }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className={`space-y-6 ${activeTab === 'stream' ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             {/* Wedding Locked Alert */}
             {wedding.is_locked && (
               <Alert variant="destructive">
