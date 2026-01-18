@@ -477,6 +477,7 @@ async def update_music_metadata(
     update_data: MusicLibraryUpdate
 ):
     """Update music metadata"""
+    db = get_db()
     music = await db.music_library.find_one({"_id": music_id})
     if not music:
         raise HTTPException(
