@@ -122,7 +122,7 @@ async def create_music_folder(
         created_at=folder_doc["created_at"]
     )
 
-@router.get("/folders", response_model=List[MusicFolderResponse], dependencies=[Depends(require_admin)])
+@router.get("/folders", response_model=List[MusicFolderResponse], dependencies=[Depends(get_current_admin)])
 async def list_music_folders(
     category: Optional[AudioCategory] = None,
     parent_folder_id: Optional[str] = None
