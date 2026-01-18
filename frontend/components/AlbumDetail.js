@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 import MediaSelector from './MediaSelector';
 import SlideshowPlayer from './SlideshowPlayer';
+import TransitionSelector from './TransitionSelector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AlbumDetail({ albumId, onBack }) {
