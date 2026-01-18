@@ -299,6 +299,16 @@ async def telegram_proxy(file_path: str, request: Request):
                             content_type = 'video/quicktime'
                         elif '.webm' in file_url.lower():
                             content_type = 'video/webm'
+                        elif 'audio' in file_path or '.mp3' in file_url.lower():
+                            content_type = 'audio/mpeg'
+                        elif '.wav' in file_url.lower():
+                            content_type = 'audio/wav'
+                        elif '.aac' in file_url.lower():
+                            content_type = 'audio/aac'
+                        elif '.ogg' in file_url.lower():
+                            content_type = 'audio/ogg'
+                        elif '.m4a' in file_url.lower():
+                            content_type = 'audio/mp4'
                         elif '.png' in file_url.lower():
                             content_type = 'image/png'
                         elif '.webp' in file_url.lower():
