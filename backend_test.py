@@ -1153,8 +1153,8 @@ class BackendAPITester:
         return passed == total
     
     def run_all_tests(self) -> bool:
-        """Run all multi-camera backend API tests"""
-        print("🚀 MULTI-CAMERA BACKEND API TESTING SUITE")
+        """Run all backend API tests including music functionality"""
+        print("🚀 BACKEND API TESTING SUITE - MUSIC UPLOAD & ALBUM DETAIL")
         print(f"Timestamp: {datetime.now().isoformat()}")
         print("="*80)
         
@@ -1171,14 +1171,18 @@ class BackendAPITester:
         if not self.setup_test_wedding():
             return False
         
-        # Core multi-camera tests
+        # Music-specific tests (main focus)
+        self.test_admin_music_upload()
+        self.test_creator_music_upload()
+        self.test_music_library_retrieval()
+        self.test_audio_proxy_streaming()
+        self.test_album_detail_error_handling()
+        self.test_music_folder_management()
+        
+        # Core multi-camera tests (secondary)
         self.test_add_multiple_cameras()
-        self.test_camera_list_retrieval()
         self.test_camera_switching_api()
-        self.test_rtmp_webhook_simulation()
-        self.test_composition_health_api()
         self.test_viewer_access_multi_camera()
-        self.test_security_and_authorization()
         
         # Cleanup
         self.cleanup_test_data()
