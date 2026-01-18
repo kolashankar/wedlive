@@ -128,8 +128,8 @@ access-control-max-age: 86400
 ```json
 {
   "video_template": {
-    "video_url": "https://music-error-solver.preview.emergentagent.com/api/media/telegram-proxy/videos/BAACAgUAAyEGAATO7nwaAAPHaVoRGteCoQdEz190fPZeJX88k1MAAkIkAAJxAAHRVlRpA_taReCCOAQ",
-    "thumbnail_url": "https://music-error-solver.preview.emergentagent.com/api/media/telegram-proxy/photos/AgACAgUAAyEGAATO7nwaAAO6aVkVgVQC9bMD__w9DY7wXPd53YAAAk8LaxvnRshWVpWsECLRt0ABAAMCAAN5AAM4BA",
+    "video_url": "https://event-photobook-1.preview.emergentagent.com/api/media/telegram-proxy/videos/BAACAgUAAyEGAATO7nwaAAPHaVoRGteCoQdEz190fPZeJX88k1MAAkIkAAJxAAHRVlRpA_taReCCOAQ",
+    "thumbnail_url": "https://event-photobook-1.preview.emergentagent.com/api/media/telegram-proxy/photos/AgACAgUAAyEGAATO7nwaAAO6aVkVgVQC9bMD__w9DY7wXPd53YAAAk8LaxvnRshWVpWsECLRt0ABAAMCAAN5AAM4BA",
     "text_overlays": [...]
   }
 }

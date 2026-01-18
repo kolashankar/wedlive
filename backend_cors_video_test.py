@@ -21,7 +21,7 @@ from datetime import datetime
 import time
 
 # Get backend URL from environment (using the configured URL)
-BACKEND_URL = "https://music-error-solver.preview.emergentagent.com"
+BACKEND_URL = "https://event-photobook-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test file ID for video proxy testing
