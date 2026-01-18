@@ -8,8 +8,9 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Video, Edit, Trash2, Eye, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 
 export default function VideoTemplatesAdmin() {
   const router = useRouter();
