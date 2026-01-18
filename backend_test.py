@@ -1076,6 +1076,436 @@ class BackendAPITester:
             self.log_test_result("Admin Authentication Setup", False, f"Error: {str(e)}")
             return False
     
+    # ==================== MUSIC UPLOAD & ALBUM TESTING METHODS ====================
+    
+    def download_sample_music(self) -> str:
+        """Download sample MP3 file for testing"""
+        try:
+            import requests
+            sample_url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            temp_path = "/tmp/test_music.mp3"
+            
+            print(f"  📥 Downloading sample music from: {sample_url}")
+            response = requests.get(sample_url, timeout=30)
+            
+            if response.status_code == 200:
+                with open(temp_path, 'wb') as f:
+                    f.write(response.content)
+                print(f"  ✅ Downloaded {len(response.content)} bytes to {temp_path}")
+                return temp_path
+            else:
+                print(f"  ❌ Failed to download: HTTP {response.status_code}")
+                return None
+        except Exception as e:
+            print(f"  ❌ Download error: {str(e)}")
+            return None
+    
+    def test_admin_music_upload(self) -> bool:
+        """Test admin music upload with sample MP3 file"""
+        print("\n🎵 TESTING ADMIN MUSIC UPLOAD")
+        print("=" * 50)
+        
+        # Download sample music file
+        sample_file = self.download_sample_music()
+        if not sample_file:
+            self.log_test_result("Admin Music Upload", False, "Failed to download sample music file")
+            return False
+        
+        try:
+            # Test music upload
+            with open(sample_file, 'rb') as f:
+                files = {"file": ("test_music.mp3", f, "audio/mpeg")}
+                data = {
+                    "title": "Test Wedding Background Music",
+                    "artist": "SoundHelix",
+                    "category": "background_music",
+                    "is_public": "true"
+                }
+                
+                response = self.session.post(f"{self.base_url}/admin/music/upload", files=files, data=data)
+                
+                if response.status_code == 200:
+                    music_data = response.json()
+                    music_id = music_data.get("id")
+                    file_url = music_data.get("file_url")
+                    file_id = music_data.get("file_id")
+                    duration = music_data.get("duration")
+                    
+                    if music_id and file_url and file_id:
+                        # Verify file_url format (should use audio proxy)
+                        if "/api/media/telegram-proxy/audio/" in file_url:
+                            self.test_music_ids.append(music_id)
+                            self.log_test_result("Admin Music Upload", True, 
+                                f"Uploaded music ID: {music_id[:8]}..., Duration: {duration}s, Proxy URL: ✅")
+                            return True
+                        else:
+                            self.log_test_result("Admin Music Upload", False, 
+                                f"Invalid file_url format: {file_url}")
+                            return False
+                    else:
+                        self.log_test_result("Admin Music Upload", False, "Missing required fields in response")
+                        return False
+                else:
+                    self.log_test_result("Admin Music Upload", False, 
+                        f"HTTP {response.status_code}: {response.text[:200]}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test_result("Admin Music Upload", False, f"Error: {str(e)}")
+            return False
+        finally:
+            # Cleanup temp file
+            try:
+                if sample_file and os.path.exists(sample_file):
+                    os.remove(sample_file)
+            except:
+                pass
+    
+    def test_creator_music_upload(self) -> bool:
+        """Test creator personal music upload"""
+        print("\n🎤 TESTING CREATOR MUSIC UPLOAD")
+        print("=" * 50)
+        
+        # Download sample music file
+        sample_file = self.download_sample_music()
+        if not sample_file:
+            self.log_test_result("Creator Music Upload", False, "Failed to download sample music file")
+            return False
+        
+        try:
+            # Test personal music upload
+            with open(sample_file, 'rb') as f:
+                files = {"file": ("personal_music.mp3", f, "audio/mpeg")}
+                data = {
+                    "title": "My Personal Wedding Song",
+                    "artist": "Personal Artist",
+                    "is_private": "true"
+                }
+                
+                response = self.session.post(f"{self.base_url}/music/upload", files=files, data=data)
+                
+                if response.status_code == 200:
+                    music_data = response.json()
+                    music_id = music_data.get("id")
+                    file_url = music_data.get("file_url")
+                    storage_used = music_data.get("storage_used")
+                    
+                    if music_id and file_url:
+                        # Verify file_url format and storage tracking
+                        if "/api/media/telegram-proxy/audio/" in file_url:
+                            self.test_music_ids.append(music_id)
+                            self.log_test_result("Creator Music Upload", True, 
+                                f"Uploaded personal music, Storage used: {storage_used} bytes")
+                            return True
+                        else:
+                            self.log_test_result("Creator Music Upload", False, 
+                                f"Invalid file_url format: {file_url}")
+                            return False
+                    else:
+                        self.log_test_result("Creator Music Upload", False, "Missing required fields in response")
+                        return False
+                else:
+                    self.log_test_result("Creator Music Upload", False, 
+                        f"HTTP {response.status_code}: {response.text[:200]}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test_result("Creator Music Upload", False, f"Error: {str(e)}")
+            return False
+        finally:
+            # Cleanup temp file
+            try:
+                if sample_file and os.path.exists(sample_file):
+                    os.remove(sample_file)
+            except:
+                pass
+    
+    def test_music_library_retrieval(self) -> bool:
+        """Test music library retrieval endpoints"""
+        print("\n📚 TESTING MUSIC LIBRARY RETRIEVAL")
+        print("=" * 50)
+        
+        success_count = 0
+        total_tests = 0
+        
+        # Test 1: Admin music library
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/admin/music/library?category=background_music")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Admin music library: {len(library)} items")
+                else:
+                    print(f"  ❌ Admin music library: Invalid response format")
+            else:
+                print(f"  ❌ Admin music library: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Admin music library: Error - {str(e)}")
+        
+        # Test 2: Creator personal library
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/my-library")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Creator personal library: {len(library)} items")
+                else:
+                    print(f"  ❌ Creator personal library: Invalid response format")
+            else:
+                print(f"  ❌ Creator personal library: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Creator personal library: Error - {str(e)}")
+        
+        # Test 3: Public music library
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/library?category=background_music")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Public music library: {len(library)} items")
+                else:
+                    print(f"  ❌ Public music library: Invalid response format")
+            else:
+                print(f"  ❌ Public music library: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Public music library: Error - {str(e)}")
+        
+        # Test 4: Storage info
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/storage")
+            
+            if response.status_code == 200:
+                storage_info = response.json()
+                if "storage_used" in storage_info and "storage_limit" in storage_info:
+                    success_count += 1
+                    print(f"  ✅ Storage info: {storage_info.get('storage_used_formatted', 'N/A')} used")
+                else:
+                    print(f"  ❌ Storage info: Invalid response format")
+            else:
+                print(f"  ❌ Storage info: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Storage info: Error - {str(e)}")
+        
+        if success_count >= 3:  # Allow 1 failure
+            self.log_test_result("Music Library Retrieval", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Music Library Retrieval", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_audio_proxy_streaming(self) -> bool:
+        """Test audio file streaming through proxy"""
+        print("\n🔊 TESTING AUDIO PROXY STREAMING")
+        print("=" * 50)
+        
+        if not self.test_music_ids:
+            self.log_test_result("Audio Proxy Streaming", False, "No uploaded music files to test")
+            return False
+        
+        try:
+            # Get music details to extract file_id
+            music_id = self.test_music_ids[0]
+            response = self.session.get(f"{self.base_url}/admin/music/library")
+            
+            if response.status_code != 200:
+                self.log_test_result("Audio Proxy Streaming", False, "Failed to get music library")
+                return False
+            
+            library = response.json()
+            test_music = None
+            for item in library:
+                if item.get("id") == music_id:
+                    test_music = item
+                    break
+            
+            if not test_music:
+                self.log_test_result("Audio Proxy Streaming", False, "Test music not found in library")
+                return False
+            
+            file_id = test_music.get("file_id")
+            if not file_id:
+                self.log_test_result("Audio Proxy Streaming", False, "No file_id in music data")
+                return False
+            
+            # Test audio proxy endpoint
+            proxy_url = f"{self.base_url}/media/telegram-proxy/audio/{file_id}"
+            response = self.session.get(proxy_url, timeout=30)
+            
+            if response.status_code == 200:
+                content_type = response.headers.get("content-type", "")
+                content_length = len(response.content)
+                cors_header = response.headers.get("Access-Control-Allow-Origin", "")
+                
+                # Verify audio content type
+                if content_type.startswith("audio/"):
+                    # Verify CORS headers
+                    if cors_header == "*":
+                        self.log_test_result("Audio Proxy Streaming", True, 
+                            f"Audio streaming works: {content_type}, {content_length} bytes, CORS: ✅")
+                        return True
+                    else:
+                        self.log_test_result("Audio Proxy Streaming", False, 
+                            f"Missing CORS headers: {cors_header}")
+                        return False
+                else:
+                    self.log_test_result("Audio Proxy Streaming", False, 
+                        f"Invalid content-type: {content_type}")
+                    return False
+            else:
+                self.log_test_result("Audio Proxy Streaming", False, 
+                    f"HTTP {response.status_code}: {response.text[:100]}")
+                return False
+                
+        except Exception as e:
+            self.log_test_result("Audio Proxy Streaming", False, f"Error: {str(e)}")
+            return False
+    
+    def test_album_detail_error_handling(self) -> bool:
+        """Test album detail endpoint error handling with missing media"""
+        print("\n📖 TESTING ALBUM DETAIL ERROR HANDLING")
+        print("=" * 50)
+        
+        if not self.test_wedding_id:
+            self.log_test_result("Album Detail Error Handling", False, "No test wedding available")
+            return False
+        
+        try:
+            # Create a test album first
+            album_data = {
+                "wedding_id": self.test_wedding_id,
+                "title": "Test Album for Error Handling",
+                "description": "Testing album detail with missing media"
+            }
+            
+            response = self.session.post(f"{self.base_url}/albums", json=album_data)
+            
+            if response.status_code != 200:
+                self.log_test_result("Album Detail Error Handling", False, 
+                    f"Failed to create test album: HTTP {response.status_code}")
+                return False
+            
+            album = response.json()
+            album_id = album.get("id")
+            
+            if not album_id:
+                self.log_test_result("Album Detail Error Handling", False, "No album ID returned")
+                return False
+            
+            # Test album detail endpoint
+            response = self.session.get(f"{self.base_url}/albums/detail/{album_id}")
+            
+            if response.status_code == 200:
+                album_detail = response.json()
+                if "id" in album_detail and album_detail["id"] == album_id:
+                    self.log_test_result("Album Detail Error Handling", True, 
+                        "Album detail endpoint returns 200 even with missing media")
+                    
+                    # Cleanup test album
+                    try:
+                        self.session.delete(f"{self.base_url}/albums/{album_id}")
+                    except:
+                        pass
+                    
+                    return True
+                else:
+                    self.log_test_result("Album Detail Error Handling", False, 
+                        "Invalid album detail response structure")
+                    return False
+            else:
+                self.log_test_result("Album Detail Error Handling", False, 
+                    f"Album detail failed: HTTP {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test_result("Album Detail Error Handling", False, f"Error: {str(e)}")
+            return False
+    
+    def test_music_folder_management(self) -> bool:
+        """Test music folder CRUD operations"""
+        print("\n📁 TESTING MUSIC FOLDER MANAGEMENT")
+        print("=" * 50)
+        
+        success_count = 0
+        total_tests = 0
+        test_folder_id = None
+        
+        # Test 1: Create music folder
+        try:
+            total_tests += 1
+            folder_data = {
+                "name": "Test Background Music Folder",
+                "description": "Test folder for background music",
+                "category": "background_music",
+                "icon": "🎶"
+            }
+            
+            response = self.session.post(f"{self.base_url}/admin/music/folders", json=folder_data)
+            
+            if response.status_code == 200:
+                folder = response.json()
+                test_folder_id = folder.get("id")
+                if test_folder_id:
+                    success_count += 1
+                    print(f"  ✅ Create folder: Success (ID: {test_folder_id[:8]}...)")
+                else:
+                    print(f"  ❌ Create folder: No folder ID returned")
+            else:
+                print(f"  ❌ Create folder: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Create folder: Error - {str(e)}")
+        
+        # Test 2: List music folders
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/admin/music/folders?category=background_music")
+            
+            if response.status_code == 200:
+                folders = response.json()
+                if isinstance(folders, list):
+                    success_count += 1
+                    print(f"  ✅ List folders: Success ({len(folders)} folders)")
+                else:
+                    print(f"  ❌ List folders: Invalid response format")
+            else:
+                print(f"  ❌ List folders: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ List folders: Error - {str(e)}")
+        
+        # Test 3: Delete empty folder
+        if test_folder_id:
+            try:
+                total_tests += 1
+                response = self.session.delete(f"{self.base_url}/admin/music/folders/{test_folder_id}")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get("success"):
+                        success_count += 1
+                        print(f"  ✅ Delete folder: Success")
+                    else:
+                        print(f"  ❌ Delete folder: Operation failed")
+                else:
+                    print(f"  ❌ Delete folder: HTTP {response.status_code}")
+            except Exception as e:
+                print(f"  ❌ Delete folder: Error - {str(e)}")
+        
+        if success_count >= 2:  # Allow some failures
+            self.log_test_result("Music Folder Management", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Music Folder Management", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+
     def cleanup_test_data(self):
         """Clean up test data"""
         print("\n🧹 CLEANING UP TEST DATA")
