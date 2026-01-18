@@ -335,7 +335,7 @@ function ManagePageContent({ params }) {
             )}
 
             {/* Tabs for different sections */}
-            <Tabs defaultValue="stream" className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="stream">
                   <Video className="w-4 h-4 mr-2" />
