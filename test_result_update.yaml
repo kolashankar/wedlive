@@ -1,12 +1,12 @@
 
-  - task: "Redesign Editor UI (Sidebar, Ribbon, Live Canvas)"
+  - task: "Fix 422 Error on Album Save (Transition Enum)"
     implemented: true
     working: "fixed"
-    file: "/app/frontend/components/AlbumDetail.js, /app/frontend/components/AnimationRibbon.js, /app/frontend/components/SlideSidebar.js, /app/frontend/components/SlideshowPlayer.js"
+    file: "/app/backend/app/models.py"
     stuck_count: 0
     priority: "critical"
     needs_retesting: true
     status_history:
       - working: "fixed"
         agent: "main"
-        comment: "✅ REDESIGNED EDITOR UI: 1) Created 'AnimationRibbon' component with Excel-style horizontal scrolling grid (2 rows) for animations, categorized tabs (Entrance/Exit/Transitions/Effects), and controls for Duration/Music/ApplyAll. 2) Created 'SlideSidebar' component for vertical media list with thumbnails and active animation badges. 3) Refactored 'AlbumDetail.js' to use a professional 3-pane layout (Sidebar-Canvas-Ribbon). 4) Updated 'SlideshowPlayer.js' to support 'embedded' mode and 'controlledIndex', ensuring instant live preview on the editor canvas. 5) Implemented key-based re-mounting in SlideshowPlayer to trigger transition animations instantly when selected in the Ribbon."
+        comment: "✅ FIXED 422 ERROR ON SAVE: The backend validation was failing because 'transition' field in AlbumSlide model was restricted to a strict Enum (SlideTransition) which didn't include the new 'imagination-*' animation strings. I relaxed the model to accept any 'str' for the transition field, allowing all 71+ new animations to be saved correctly. Restarted backend to apply changes."
