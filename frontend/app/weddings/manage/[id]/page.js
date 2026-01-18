@@ -28,7 +28,7 @@ import {
   Music
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { format } from 'date-fns';
