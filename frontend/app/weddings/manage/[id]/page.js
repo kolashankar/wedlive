@@ -868,6 +868,37 @@ function ManagePageContent({ params }) {
                 )}
               </TabsContent>
 
+              {/* Stream View Tab - Multi-Camera + Music Player */}
+              <TabsContent value="stream-view" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Video className="w-5 h-5" />
+                      Stream View - Multi-Camera & Music Control
+                    </CardTitle>
+                    <CardDescription>
+                      Manage cameras and control music/audio for your live stream
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+
+                <div className="grid lg:grid-cols-2 gap-6">
+                  {/* Left Half - Multi-Camera Grid */}
+                  <div className="space-y-6">
+                    <MultiCameraManager 
+                      weddingId={weddingId} 
+                      isPremium={isPremium}
+                      rtmpUrl={wedding?.stream_credentials?.rtmp_url}
+                    />
+                  </div>
+
+                  {/* Right Half - Music Player */}
+                  <div>
+                    <StreamViewMusicPlayer weddingId={weddingId} />
+                  </div>
+                </div>
+              </TabsContent>
+
               {/* Layout Tab - Enhanced with Wedding Layout Settings */}
               <TabsContent value="layout" className="space-y-6">
                 {/* Video Template Selector */}
