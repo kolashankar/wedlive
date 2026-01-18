@@ -204,17 +204,51 @@ export default function AlbumDetail({ albumId, onBack }) {
                         </Select>
                     </div>
                     <Button variant="secondary" onClick={applyGlobalSettings}>Apply to All</Button>
+                    <Button variant="outline" onClick={applyRandomAnimations} className="gap-2">
+                        <Shuffle className="w-4 h-4" />
+                        Random Animations
+                    </Button>
                     
                     <div className="flex-1"></div>
                      <div className="space-y-2 w-64">
-                        <Label>Background Music URL</Label>
+                        <Label>Background Music</Label>
                         <div className="flex gap-2">
                              <Input 
-                                placeholder="https://..." 
+                                placeholder="Music URL or select from library" 
                                 value={album.music_url || ''} 
                                 onChange={e => setAlbum({...album, music_url: e.target.value})} 
                              />
-                             <Button size="icon" variant="ghost"><Music className="w-4 h-4" /></Button>
+                             <Dialog open={isMusicLibraryOpen} onOpenChange={setIsMusicLibraryOpen}>
+                                <DialogTrigger asChild>
+                                    <Button size="icon" variant="outline" onClick={fetchMusicLibrary}>
+                                        <Music className="w-4 h-4" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl max-h-[600px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Select Music from Library</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="overflow-y-auto space-y-2 max-h-[500px]">
+                                        {musicLibrary.length === 0 ? (
+                                            <p className="text-center text-gray-500 py-8">No music available in library</p>
+                                        ) : (
+                                            musicLibrary.map((music) => (
+                                                <Card key={music.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleSelectMusic(music.file_url)}>
+                                                    <CardContent className="p-3 flex items-center justify-between">
+                                                        <div>
+                                                            <p className="font-medium">{music.title || 'Untitled'}</p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {music.duration ? `${Math.floor(music.duration / 60)}:${String(Math.floor(music.duration % 60)).padStart(2, '0')}` : 'Unknown duration'}
+                                                            </p>
+                                                        </div>
+                                                        <Music className="w-5 h-5 text-gray-400" />
+                                                    </CardContent>
+                                                </Card>
+                                            ))
+                                        )}
+                                    </div>
+                                </DialogContent>
+                             </Dialog>
                         </div>
                     </div>
                 </CardContent>
