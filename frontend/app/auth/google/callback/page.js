@@ -6,8 +6,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { getApiBaseUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_URL = getApiBaseUrl();
 
 function CallbackContent() {
   const router = useRouter();
