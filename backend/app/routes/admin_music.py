@@ -553,7 +553,7 @@ async def delete_music(music_id: str):
     
     return {"success": True, "message": "Music deleted successfully"}
 
-@router.get("/categories", dependencies=[Depends(require_admin)])
+@router.get("/categories", dependencies=[Depends(get_current_admin)])
 async def get_music_categories():
     """Get all music categories with counts"""
     categories = []
