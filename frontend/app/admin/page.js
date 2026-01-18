@@ -198,6 +198,13 @@ export default function AdminDashboard() {
             <Video className="w-4 h-4 mr-2" />
             Video Templates
           </Button>
+          <Button
+            onClick={() => router.push('/admin/music')}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          >
+            <Music className="w-4 h-4 mr-2" />
+            Music Library
+          </Button>
         </div>
 
         {/* Stats Cards */}
