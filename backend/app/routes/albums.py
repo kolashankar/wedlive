@@ -59,6 +59,10 @@ async def get_album_detail(album_id: str):
         
         logger.info(f"Album found: {album.get('title')}, slides: {len(album.get('slides', []))}")
         
+        # Remove MongoDB ObjectId to prevent serialization issues
+        if "_id" in album:
+            del album["_id"]
+        
         # Enrich slides with media data
         if "slides" in album and album["slides"]:
             try:
@@ -87,6 +91,7 @@ async def get_album_detail(album_id: str):
                         # Ensure duration is a valid number
                         if "duration" not in slide or not isinstance(slide.get("duration"), (int, float)):
                             slide["duration"] = 5.0
+                            logger.info(f"Set default duration 5.0 for slide with media_id: {slide.get('media_id')}")
                             
             except Exception as e:
                 logger.error(f"Error enriching album slides: {str(e)}", exc_info=True)
