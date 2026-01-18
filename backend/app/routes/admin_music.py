@@ -430,7 +430,7 @@ async def list_music_library(
     
     return result
 
-@router.get("/library/{music_id}", response_model=MusicLibraryResponse, dependencies=[Depends(require_admin)])
+@router.get("/library/{music_id}", response_model=MusicLibraryResponse, dependencies=[Depends(get_current_admin)])
 async def get_music_details(music_id: str):
     """Get specific music details"""
     music = await db.music_library.find_one({"_id": music_id})
