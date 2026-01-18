@@ -465,7 +465,7 @@ async def get_music_details(music_id: str):
         updated_at=music["updated_at"]
     )
 
-@router.put("/library/{music_id}", response_model=MusicLibraryResponse, dependencies=[Depends(require_admin)])
+@router.put("/library/{music_id}", response_model=MusicLibraryResponse, dependencies=[Depends(get_current_admin)])
 async def update_music_metadata(
     music_id: str,
     update_data: MusicLibraryUpdate
