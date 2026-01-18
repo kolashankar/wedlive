@@ -63,7 +63,7 @@ async def upload_creator_music(
 ):
     """Upload personal music for creator"""
     db = get_db()
-    user_id = current_user["id"]
+    user_id = current_user["user_id"]
     
     # Validate file format
     allowed_formats = [".mp3", ".wav", ".aac", ".ogg", ".m4a"]
