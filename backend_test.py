@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Multi-Camera Backend API Testing Suite
-Comprehensive testing of all multi-camera related backend functionality
+Backend API Testing Suite
+Comprehensive testing of multi-camera and audio/music functionality
 """
 
 import requests
@@ -9,6 +9,8 @@ import json
 import sys
 import time
 import uuid
+import os
+import tempfile
 from datetime import datetime
 from typing import Dict, List, Optional
 
