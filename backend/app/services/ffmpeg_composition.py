@@ -221,6 +221,143 @@ class FFmpegCompositionService:
             }
         return status
 
+    async def start_composition_with_audio(
+        self,
+        wedding_id: str,
+        camera: Dict[str, Any],
+        background_music_url: Optional[str] = None,
+        sound_effects: List[Dict] = None,
+        master_volume: float = 0.85,
+        music_volume: float = 0.70,
+        effects_volume: float = 0.80
+    ) -> Dict[str, Any]:
+        """Start FFmpeg composition with audio mixing"""
+        try:
+            output_path = self.output_dir / f"output_{wedding_id}"
+            output_path.mkdir(parents=True, exist_ok=True)
+            
+            # Get HLS URL for camera
+            hls_url = camera.get("hls_url")
+            if not hls_url and camera.get("stream_key"):
+                hls_url = f"/hls/{camera['stream_key']}.m3u8"
+            
+            input_hls = f"http://localhost:8080{hls_url}"
+            output_hls = str(output_path / "output.m3u8")
+            
+            logger.info(f"🎬 Starting FFmpeg composition with audio for {wedding_id}")
+            logger.info(f"   Video Input: {input_hls}")
+            logger.info(f"   Background Music: {background_music_url}")
+            logger.info(f"   Output: {output_hls}")
+            
+            # Stop existing if any
+            await self.stop_composition(wedding_id)
+            
+            # Build command with audio mixing
+            cmd = ["ffmpeg", "-re", "-i", input_hls]
+            
+            # Add audio inputs
+            input_count = 1
+            has_background_music = False
+            
+            if background_music_url:
+                cmd.extend(["-i", background_music_url])
+                has_background_music = True
+                input_count += 1
+            
+            # Add sound effects
+            effect_count = 0
+            if sound_effects:
+                for effect in sound_effects:
+                    cmd.extend(["-i", effect.get("url")])
+                    effect_count += 1
+                    input_count += 1
+            
+            # Build filter complex for audio mixing
+            if has_background_music or effect_count > 0:
+                filter_parts = []
+                
+                if has_background_music:
+                    filter_parts.append(
+                        f"[1:a]aloop=loop=-1:size=2e+09,volume={music_volume}[music]"
+                    )
+                
+                if effect_count > 0:
+                    for i in range(effect_count):
+                        effect_idx = 2 + i if has_background_music else 1 + i
+                        filter_parts.append(
+                            f"[{effect_idx}:a]volume={effects_volume}[effect{i}]"
+                        )
+                    
+                    # Mix effects
+                    if effect_count > 1:
+                        effect_inputs = "".join([f"[effect{i}]" for i in range(effect_count)])
+                        filter_parts.append(
+                            f"{effect_inputs}amix=inputs={effect_count}:duration=first[effects_mixed]"
+                        )
+                    else:
+                        filter_parts.append("[effect0]anull[effects_mixed]")
+                
+                # Mix all audio sources
+                final_inputs = ["[0:a]"]
+                if has_background_music:
+                    final_inputs.append("[music]")
+                if effect_count > 0:
+                    final_inputs.append("[effects_mixed]")
+                
+                if len(final_inputs) > 1:
+                    final_mix = "".join(final_inputs)
+                    filter_parts.append(
+                        f"{final_mix}amix=inputs={len(final_inputs)}:duration=first,volume={master_volume}[final]"
+                    )
+                else:
+                    filter_parts.append(f"[0:a]volume={master_volume}[final]")
+                
+                filter_complex = ";".join(filter_parts)
+                
+                cmd.extend([
+                    "-filter_complex", filter_complex,
+                    "-map", "0:v",
+                    "-map", "[final]",
+                    "-c:v", "copy",
+                    "-c:a", "aac",
+                    "-b:a", "128k"
+                ])
+            else:
+                # No audio mixing, just copy
+                cmd.extend(["-c", "copy"])
+            
+            # HLS output settings
+            cmd.extend([
+                "-f", "hls",
+                "-hls_time", "1",
+                "-hls_list_size", "3",
+                "-hls_flags", "delete_segments+independent_segments",
+                "-hls_segment_type", "mpegts",
+                "-start_number", "0",
+                output_hls
+            ])
+            
+            # Start process
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            
+            self.processes[wedding_id] = process
+            
+            return {
+                "success": True,
+                "pid": process.pid,
+                "output_url": f"/hls_output/output_{wedding_id}/output.m3u8",
+                "audio_mixed": has_background_music or effect_count > 0
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error starting composition with audio: {e}")
+            return {"success": False, "error": str(e)}
+
 # Singleton instance
 composition_service = FFmpegCompositionService()
 
@@ -231,3 +368,23 @@ async def update_composition(wedding_id: str, camera: Dict[str, Any]):
 async def start_composition(wedding_id: str, camera: Dict[str, Any]):
     """Helper function for webhooks to start composition"""
     await composition_service.start_composition(wedding_id, camera)
+
+async def start_composition_with_audio(
+    wedding_id: str,
+    camera: Dict[str, Any],
+    background_music_url: Optional[str] = None,
+    sound_effects: List[Dict] = None,
+    master_volume: float = 0.85,
+    music_volume: float = 0.70,
+    effects_volume: float = 0.80
+):
+    """Helper function to start composition with audio mixing"""
+    return await composition_service.start_composition_with_audio(
+        wedding_id,
+        camera,
+        background_music_url,
+        sound_effects,
+        master_volume,
+        music_volume,
+        effects_volume
+    )
