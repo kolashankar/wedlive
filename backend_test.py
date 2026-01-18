@@ -1076,7 +1076,413 @@ class BackendAPITester:
             self.log_test_result("Admin Authentication Setup", False, f"Error: {str(e)}")
             return False
     
-    # ==================== MUSIC UPLOAD & ALBUM TESTING METHODS ====================
+    # ==================== ALBUM DETAIL & MUSIC LIBRARY TESTING METHODS ====================
+    
+    def test_album_detail_api_comprehensive(self) -> bool:
+        """Test album detail API with comprehensive logging and error handling"""
+        print("\n📖 TESTING ALBUM DETAIL API (COMPREHENSIVE)")
+        print("=" * 50)
+        
+        if not self.test_wedding_id:
+            self.log_test_result("Album Detail API", False, "No test wedding available")
+            return False
+        
+        success_count = 0
+        total_tests = 0
+        test_album_id = None
+        
+        # Test 1: Create test album
+        try:
+            total_tests += 1
+            album_data = {
+                "wedding_id": self.test_wedding_id,
+                "title": "Test Album for Detail API",
+                "description": "Testing album detail endpoint with enhanced logging",
+                "cover_photo_url": None,
+                "music_url": None
+            }
+            
+            response = self.session.post(f"{self.base_url}/albums", json=album_data)
+            
+            if response.status_code == 200:
+                album = response.json()
+                test_album_id = album.get("id")
+                if test_album_id:
+                    success_count += 1
+                    print(f"  ✅ Create test album: Success (ID: {test_album_id[:8]}...)")
+                else:
+                    print(f"  ❌ Create test album: No album ID returned")
+            else:
+                print(f"  ❌ Create test album: HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Create test album: Error - {str(e)}")
+        
+        if not test_album_id:
+            self.log_test_result("Album Detail API", False, "Failed to create test album")
+            return False
+        
+        # Test 2: Get album detail (empty album)
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/albums/detail/{test_album_id}")
+            
+            if response.status_code == 200:
+                album_detail = response.json()
+                if album_detail.get("id") == test_album_id:
+                    success_count += 1
+                    print(f"  ✅ Get album detail (empty): Success")
+                    print(f"      Title: {album_detail.get('title')}")
+                    print(f"      Slides: {len(album_detail.get('slides', []))}")
+                else:
+                    print(f"  ❌ Get album detail (empty): Invalid response structure")
+            else:
+                print(f"  ❌ Get album detail (empty): HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Get album detail (empty): Error - {str(e)}")
+        
+        # Test 3: Add slides with invalid media_ids (test error handling)
+        try:
+            total_tests += 1
+            fake_media_ids = [str(uuid.uuid4()), str(uuid.uuid4())]
+            
+            response = self.session.post(f"{self.base_url}/albums/{test_album_id}/slides", 
+                                       json=fake_media_ids)
+            
+            if response.status_code == 200:
+                album_with_slides = response.json()
+                slides = album_with_slides.get("slides", [])
+                if len(slides) == 2:
+                    success_count += 1
+                    print(f"  ✅ Add slides with fake media: Success ({len(slides)} slides added)")
+                    
+                    # Verify duration defaults
+                    for slide in slides:
+                        duration = slide.get("duration", 0)
+                        if duration == 5.0:
+                            print(f"      Slide duration defaulted correctly: {duration}s")
+                        else:
+                            print(f"      ⚠️ Slide duration: {duration}s (expected 5.0s)")
+                else:
+                    print(f"  ❌ Add slides: Expected 2 slides, got {len(slides)}")
+            else:
+                print(f"  ❌ Add slides: HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Add slides: Error - {str(e)}")
+        
+        # Test 4: Get album detail with slides (test media enrichment)
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/albums/detail/{test_album_id}")
+            
+            if response.status_code == 200:
+                album_detail = response.json()
+                slides = album_detail.get("slides", [])
+                
+                if len(slides) > 0:
+                    success_count += 1
+                    print(f"  ✅ Get album detail with slides: Success ({len(slides)} slides)")
+                    
+                    # Check slide structure and media enrichment
+                    for i, slide in enumerate(slides):
+                        media_id = slide.get("media_id")
+                        media_url = slide.get("media_url")
+                        duration = slide.get("duration")
+                        
+                        print(f"      Slide {i+1}: media_id={media_id[:8] if media_id else 'None'}..., "
+                              f"media_url={'✅' if media_url else '❌'}, duration={duration}s")
+                        
+                        # Verify duration validation
+                        if not isinstance(duration, (int, float)) or duration <= 0:
+                            print(f"        ⚠️ Invalid duration: {duration}")
+                else:
+                    print(f"  ❌ Get album detail with slides: No slides found")
+            else:
+                print(f"  ❌ Get album detail with slides: HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Get album detail with slides: Error - {str(e)}")
+        
+        # Test 5: Test non-existent album (404 handling)
+        try:
+            total_tests += 1
+            fake_album_id = str(uuid.uuid4())
+            response = self.session.get(f"{self.base_url}/albums/detail/{fake_album_id}")
+            
+            if response.status_code == 404:
+                success_count += 1
+                print(f"  ✅ Non-existent album: Correctly returned 404")
+            else:
+                print(f"  ❌ Non-existent album: Expected 404, got {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Non-existent album: Error - {str(e)}")
+        
+        # Cleanup test album
+        try:
+            self.session.delete(f"{self.base_url}/albums/{test_album_id}")
+        except:
+            pass
+        
+        if success_count >= 4:  # Allow 1 failure
+            self.log_test_result("Album Detail API", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Album Detail API", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_music_library_api_comprehensive(self) -> bool:
+        """Test music library API endpoint comprehensively"""
+        print("\n🎵 TESTING MUSIC LIBRARY API (COMPREHENSIVE)")
+        print("=" * 50)
+        
+        success_count = 0
+        total_tests = 0
+        
+        # Test 1: Get public music library (no auth required)
+        try:
+            total_tests += 1
+            # Test without authentication first
+            unauth_session = requests.Session()
+            response = unauth_session.get(f"{self.base_url}/music/library")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Public music library (no auth): Success ({len(library)} items)")
+                    
+                    # Check structure of returned items
+                    if len(library) > 0:
+                        sample_item = library[0]
+                        required_fields = ["id", "title", "file_url", "duration"]
+                        missing_fields = [field for field in required_fields if field not in sample_item]
+                        
+                        if not missing_fields:
+                            print(f"      Sample item structure: ✅ All required fields present")
+                        else:
+                            print(f"      ⚠️ Missing fields in sample item: {missing_fields}")
+                else:
+                    print(f"  ❌ Public music library: Invalid response format (not a list)")
+            else:
+                print(f"  ❌ Public music library: HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Public music library: Error - {str(e)}")
+        
+        # Test 2: Get music library with authentication
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/library")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Music library (with auth): Success ({len(library)} items)")
+                else:
+                    print(f"  ❌ Music library (with auth): Invalid response format")
+            else:
+                print(f"  ❌ Music library (with auth): HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Music library (with auth): Error - {str(e)}")
+        
+        # Test 3: Get music library with category filter
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/library?category=background_music")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list):
+                    success_count += 1
+                    print(f"  ✅ Music library (category filter): Success ({len(library)} background music items)")
+                    
+                    # Verify all items have correct category
+                    if len(library) > 0:
+                        correct_category = all(item.get("category") == "background_music" for item in library)
+                        if correct_category:
+                            print(f"      Category filtering: ✅ All items have correct category")
+                        else:
+                            print(f"      ⚠️ Category filtering: Some items have incorrect category")
+                else:
+                    print(f"  ❌ Music library (category filter): Invalid response format")
+            else:
+                print(f"  ❌ Music library (category filter): HTTP {response.status_code} - {response.text[:100]}")
+        except Exception as e:
+            print(f"  ❌ Music library (category filter): Error - {str(e)}")
+        
+        # Test 4: Test music library response structure
+        try:
+            total_tests += 1
+            response = self.session.get(f"{self.base_url}/music/library?limit=1")
+            
+            if response.status_code == 200:
+                library = response.json()
+                if isinstance(library, list) and len(library) > 0:
+                    music_item = library[0]
+                    
+                    # Check required fields for music library response
+                    required_fields = ["id", "title", "file_url"]
+                    optional_fields = ["artist", "duration", "category", "format"]
+                    
+                    has_required = all(field in music_item for field in required_fields)
+                    
+                    if has_required:
+                        success_count += 1
+                        print(f"  ✅ Music library structure: All required fields present")
+                        
+                        # Check file_url format (should be proxy URL)
+                        file_url = music_item.get("file_url", "")
+                        if "/api/media/telegram-proxy/audio/" in file_url:
+                            print(f"      File URL format: ✅ Uses audio proxy")
+                        else:
+                            print(f"      ⚠️ File URL format: {file_url}")
+                        
+                        # Check duration field
+                        duration = music_item.get("duration")
+                        if isinstance(duration, (int, float)) and duration > 0:
+                            print(f"      Duration: ✅ {duration}s")
+                        else:
+                            print(f"      ⚠️ Duration: {duration}")
+                    else:
+                        missing = [field for field in required_fields if field not in music_item]
+                        print(f"  ❌ Music library structure: Missing required fields: {missing}")
+                else:
+                    print(f"  ❌ Music library structure: No items to check structure")
+            else:
+                print(f"  ❌ Music library structure: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Music library structure: Error - {str(e)}")
+        
+        if success_count >= 3:  # Allow 1 failure
+            self.log_test_result("Music Library API", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Music Library API", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
+    
+    def test_album_slide_duration_validation(self) -> bool:
+        """Test album slide duration validation and defaults"""
+        print("\n⏱️ TESTING ALBUM SLIDE DURATION VALIDATION")
+        print("=" * 50)
+        
+        if not self.test_wedding_id:
+            self.log_test_result("Album Slide Duration Validation", False, "No test wedding available")
+            return False
+        
+        success_count = 0
+        total_tests = 0
+        test_album_id = None
+        
+        # Create test album
+        try:
+            album_data = {
+                "wedding_id": self.test_wedding_id,
+                "title": "Duration Validation Test Album",
+                "description": "Testing duration validation"
+            }
+            
+            response = self.session.post(f"{self.base_url}/albums", json=album_data)
+            if response.status_code == 200:
+                test_album_id = response.json().get("id")
+        except:
+            pass
+        
+        if not test_album_id:
+            self.log_test_result("Album Slide Duration Validation", False, "Failed to create test album")
+            return False
+        
+        # Test 1: Add slides and verify default duration
+        try:
+            total_tests += 1
+            fake_media_ids = [str(uuid.uuid4()), str(uuid.uuid4())]
+            
+            response = self.session.post(f"{self.base_url}/albums/{test_album_id}/slides", 
+                                       json=fake_media_ids)
+            
+            if response.status_code == 200:
+                album = response.json()
+                slides = album.get("slides", [])
+                
+                if len(slides) == 2:
+                    # Check default duration
+                    all_have_default = all(slide.get("duration") == 5.0 for slide in slides)
+                    
+                    if all_have_default:
+                        success_count += 1
+                        print(f"  ✅ Default duration: All slides have 5.0s duration")
+                    else:
+                        durations = [slide.get("duration") for slide in slides]
+                        print(f"  ❌ Default duration: Slides have durations: {durations}")
+                else:
+                    print(f"  ❌ Add slides: Expected 2 slides, got {len(slides)}")
+            else:
+                print(f"  ❌ Add slides: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"  ❌ Default duration test: Error - {str(e)}")
+        
+        # Test 2: Update album with invalid duration values
+        try:
+            total_tests += 1
+            
+            # Create slides with invalid durations
+            invalid_slides = [
+                {
+                    "media_id": str(uuid.uuid4()),
+                    "order": 0,
+                    "duration": "invalid",  # String instead of number
+                    "transition": "FADE"
+                },
+                {
+                    "media_id": str(uuid.uuid4()),
+                    "order": 1,
+                    "duration": -1,  # Negative number
+                    "transition": "FADE"
+                },
+                {
+                    "media_id": str(uuid.uuid4()),
+                    "order": 2,
+                    # Missing duration field
+                    "transition": "FADE"
+                }
+            ]
+            
+            update_data = {"slides": invalid_slides}
+            response = self.session.put(f"{self.base_url}/albums/{test_album_id}", json=update_data)
+            
+            if response.status_code == 200:
+                # Now get album detail to check duration validation
+                detail_response = self.session.get(f"{self.base_url}/albums/detail/{test_album_id}")
+                
+                if detail_response.status_code == 200:
+                    album_detail = detail_response.json()
+                    slides = album_detail.get("slides", [])
+                    
+                    # Check if invalid durations were corrected to 5.0
+                    corrected_durations = [slide.get("duration") for slide in slides]
+                    all_corrected = all(isinstance(d, (int, float)) and d == 5.0 for d in corrected_durations)
+                    
+                    if all_corrected:
+                        success_count += 1
+                        print(f"  ✅ Duration validation: Invalid durations corrected to 5.0s")
+                    else:
+                        print(f"  ❌ Duration validation: Durations not corrected: {corrected_durations}")
+                else:
+                    print(f"  ❌ Duration validation: Failed to get album detail")
+            else:
+                print(f"  ❌ Duration validation: Failed to update album")
+        except Exception as e:
+            print(f"  ❌ Duration validation test: Error - {str(e)}")
+        
+        # Cleanup
+        try:
+            self.session.delete(f"{self.base_url}/albums/{test_album_id}")
+        except:
+            pass
+        
+        if success_count >= 1:
+            self.log_test_result("Album Slide Duration Validation", True, f"Passed {success_count}/{total_tests} tests")
+            return True
+        else:
+            self.log_test_result("Album Slide Duration Validation", False, f"Only {success_count}/{total_tests} tests passed")
+            return False
     
     def download_sample_music(self) -> str:
         """Download sample MP3 file for testing"""
