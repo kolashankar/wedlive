@@ -190,7 +190,7 @@ export default function AlbumDetail({ albumId, onBack }) {
                 />
 
                 {/* Center Canvas - Live Preview */}
-                <div className="flex-1 bg-gray-900 flex items-center justify-center p-8 relative overflow-hidden">
+                <div className="flex-1 bg-gray-900 flex items-center justify-center relative overflow-hidden">
                     {/* Checkerboard background for transparency reference */}
                     <div className="absolute inset-0 opacity-10" 
                         style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
@@ -198,7 +198,7 @@ export default function AlbumDetail({ albumId, onBack }) {
                     
                     {/* Embedded Slideshow Player */}
                     {slides.length > 0 ? (
-                        <div className="w-full h-full max-w-5xl max-h-[80vh] shadow-2xl relative">
+                        <div className="w-full h-full relative">
                             <SlideshowPlayer 
                                 album={{...album, slides: slides}}
                                 autoPlay={false} // Editor mode is manual
