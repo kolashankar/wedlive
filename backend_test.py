@@ -1622,14 +1622,14 @@ class BackendAPITester:
 
 def main():
     """Main test runner"""
-    tester = MultiCameraAPITester()
+    tester = BackendAPITester()
     success = tester.run_all_tests()
     
     if success:
-        print(f"\n🎉 ALL MULTI-CAMERA BACKEND TESTS COMPLETED SUCCESSFULLY")
+        print(f"\n🎉 ALL BACKEND TESTS COMPLETED SUCCESSFULLY")
         sys.exit(0)
     else:
-        print(f"\n💥 MULTI-CAMERA BACKEND TESTS FAILED")
+        print(f"\n💥 BACKEND TESTS FAILED")
         sys.exit(1)
 
 if __name__ == "__main__":
