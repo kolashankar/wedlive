@@ -182,30 +182,52 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50">
-      {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-2">
-              <Heart className="w-6 h-6 text-rose-500" />
-              <span className="text-xl font-bold bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent">
-                WedLive
-              </span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/weddings">
-                <Button variant="ghost" size="sm">
-                  <Video className="w-4 h-4 mr-2" />
-                  Browse Weddings
+      {/* Dashboard Sidebar */}
+      <DashboardSidebar 
+        isOpen={sidebarOpen} 
+        onToggle={() => setSidebarOpen(!sidebarOpen)} 
+        user={user}
+      />
+
+      {/* Main Content - with margin for sidebar on desktop */}
+      <div className="lg:ml-64">
+        {/* Navigation */}
+        <nav className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                {/* Hamburger Menu for Mobile/Tablet */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden"
+                >
+                  <Menu className="w-5 h-5" />
                 </Button>
-              </Link>
-              <ProfileDropdown user={user} onLogout={logout} />
+                
+                <Link href="/" className="flex items-center space-x-2">
+                  <Heart className="w-6 h-6 text-rose-500" />
+                  <span className="text-xl font-bold bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent">
+                    WedLive
+                  </span>
+                </Link>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Link href="/weddings">
+                  <Button variant="ghost" size="sm">
+                    <Video className="w-4 h-4 mr-2" />
+                    Browse Weddings
+                  </Button>
+                </Link>
+                <ProfileDropdown user={user} onLogout={logout} />
+              </div>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Weddings</h1>
