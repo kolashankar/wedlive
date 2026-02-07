@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { LiveKitRoom, VideoConference, RoomAudioRenderer } from '@livekit/components-react';
-import '@livekit/components-styles';
+import '@livekit/components-styles/prefabs';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 interface WeddingLiveStreamProps {
