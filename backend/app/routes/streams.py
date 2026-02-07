@@ -1300,7 +1300,6 @@ async def start_youtube_streaming(
                 detail="youtube_stream_key is required"
             )
         
-        youtube_rtmp_url = body.get("youtube_rtmp_url", "rtmp://a.rtmp.youtube.com/live2")
         quality = body.get("quality", "1080p")
         
         # Start YouTube streaming via Pulse
