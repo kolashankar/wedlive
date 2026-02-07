@@ -267,7 +267,14 @@ async def get_stream_credentials(
     wedding_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get RTMP credentials for a wedding - Auto-load on page load"""
+    """
+    [DEPRECATED - Phase 1.7] Use POST /api/streams/token/{wedding_id} instead
+    
+    Get RTMP credentials for a wedding - Auto-load on page load
+    
+    This endpoint will be removed once migration to Pulse is complete.
+    New implementations should use LiveKit tokens via /token/{wedding_id}
+    """
     db = get_db()
     
     wedding = await db.weddings.find_one({"id": wedding_id})
