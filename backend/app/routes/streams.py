@@ -360,7 +360,12 @@ async def update_stream_quality_by_id(
     request: dict,
     current_user: dict = Depends(get_current_user)
 ):
-    """Update stream quality settings for a wedding"""
+    """
+    [DEPRECATED - Phase 1.7] Pulse handles quality control
+    
+    Update stream quality settings for a wedding
+    This endpoint will be removed once migration to Pulse is complete.
+    """
     db = get_db()
     
     wedding = await db.weddings.find_one({"id": wedding_id})
