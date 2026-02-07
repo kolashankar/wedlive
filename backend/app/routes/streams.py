@@ -1103,7 +1103,7 @@ async def stop_pulse_recording(
         from app.services.stream_service import StreamService
         stream_service = StreamService()
         
-        stop_result = await stream_service.pulse_service.stop_recording(egress_id)
+        await stream_service.pulse_service.stop_recording(egress_id)
         
         # Calculate duration
         started_at = wedding.get("recording_started_at")
