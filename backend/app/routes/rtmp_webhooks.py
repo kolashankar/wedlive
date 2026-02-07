@@ -469,7 +469,6 @@ async def livekit_room_finished(request: Request, background_tasks: BackgroundTa
     try:
         payload = await request.json()
         room_name = payload.get("room_name", "")
-        room_id = payload.get("room_id", "")
         duration = payload.get("duration_seconds", 0)
         
         logger.info(f"[LIVEKIT_ROOM_FINISHED] Room: {room_name}, Duration: {duration}s")
