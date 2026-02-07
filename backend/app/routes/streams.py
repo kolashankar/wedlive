@@ -1193,12 +1193,11 @@ async def create_rtmp_ingress(
         
         ingress_result = await stream_service.pulse_service.create_rtmp_ingress(
             room_name=room_name,
-            ingress_name=ingress_name,
-            video_resolution=video_resolution,
+            wedding_id=wedding_id,
             participant_name=ingress_name,
             metadata={
-                "wedding_id": wedding_id,
-                "type": "rtmp_ingress"
+                "type": "rtmp_ingress",
+                "video_resolution": video_resolution
             }
         )
         
