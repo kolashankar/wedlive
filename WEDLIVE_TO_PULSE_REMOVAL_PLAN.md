@@ -58,7 +58,52 @@
     * POST `/rtmp-ingress/{wedding_id}` - Create RTMP ingress for OBS
     * POST `/youtube-stream/{wedding_id}` - Stream to YouTube via Pulse
 
-**Next Phase:** Phase 2 - Frontend Migration (Replace HLS player with LiveKit components)
+**Next Phase:** Phase 3 - Backend Dependencies (Update requirements.txt)
+
+---
+
+### Phase 2: Frontend Files to REMOVE/REPLACE
+**Status: ✅ COMPLETE (100% - 4 of 4 tasks complete)**
+
+| Task | Status | Completion Date |
+|------|--------|----------------|
+| 2.1 Stream Video Player | ✅ COMPLETE | Feb 7, 2025 |
+| 2.2 Stream Library | ✅ COMPLETE | Feb 7, 2025 |
+| 2.3 Camera Management Components | ✅ COMPLETE | Feb 7, 2025 |
+| 2.4 Package Dependencies | ✅ COMPLETE | Feb 7, 2025 |
+
+**Phase 2 Details:**
+- ✅ Deleted: `/app/frontend/components/StreamVideoPlayer.js` (HLS-based player)
+- ✅ Deleted: `/app/frontend/lib/stream.js` (RTMP/HLS utilities)
+- ✅ Deleted: `/app/frontend/components/camera/` directory:
+  - CameraManagementPanel.js
+  - CameraCard.js  
+  - ActiveCameraPlayer.js
+- ✅ Created: `/app/frontend/components/stream/WeddingLiveStream.tsx`
+  - LiveKit-based streaming component
+  - WebRTC low-latency playback (<500ms)
+  - Automatic quality adaptation
+  - Built-in participant management
+- ✅ Created: `/app/frontend/components/stream/HostControls.tsx`
+  - Camera/mic toggle controls
+  - Participant count display
+  - End stream functionality
+- ✅ Created: `/app/frontend/components/stream/GuestView.tsx`
+  - Multi-camera grid layout
+  - Live status badges
+  - Waiting state UI
+- ✅ Created: `/app/frontend/hooks/useWeddingStream.ts`
+  - Token management hook
+  - Credentials fetching from Pulse API
+  - Error handling and retries
+- ✅ Updated: `/app/frontend/package.json`
+  - Removed: react-player (^2.16.0)
+  - Added: @livekit/components-react (^3.0.0)
+  - Added: livekit-client (^2.0.0)
+  - Added: @livekit/components-styles (^1.1.4)
+  - Note: Kept socket.io-client (may be used elsewhere)
+
+**Next Phase:** Phase 3 - Backend Dependencies
 
 ---
 
