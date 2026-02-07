@@ -788,8 +788,6 @@ async def livekit_egress_started(request: Request):
             return {"status": "error", "message": "Wedding not found"}
         
         # Create or update recording record
-        recording_service = RecordingService(db)
-        
         # Check if recording exists
         existing_recording = await db.recordings.find_one({
             "wedding_id": wedding_id,
