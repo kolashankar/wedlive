@@ -826,3 +826,517 @@ async def recover_composition(
         "details": result
     }
 
+
+
+# ============================================================================
+# PULSE INTEGRATION ENDPOINTS - Phase 1.7
+# ============================================================================
+# New endpoints for Pulse-powered streaming using LiveKit
+# These endpoints provide token-based access and integrate with Pulse APIs
+# ============================================================================
+
+@router.post("/token/{wedding_id}")
+async def generate_livekit_token(
+    wedding_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate LiveKit access token for wedding stream
+    
+    This replaces the old RTMP credentials endpoint.
+    Returns a token that can be used to join the LiveKit room.
+    
+    Request body:
+    - role: string (host, viewer, camera) - optional, default: viewer
+    - participant_name: string - optional, default: user's name
+    
+    Returns:
+    - token: JWT token for LiveKit
+    - server_url: LiveKit WebSocket URL
+    - room_name: Room identifier
+    - expires_at: Token expiration timestamp
+    """
+    try:
+        db = get_db()
+        
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Parse request body
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        role = body.get("role", "viewer")
+        participant_name = body.get("participant_name", current_user.get("name", "Guest"))
+        
+        # Check authorization based on role
+        if role == "host":
+            # Only wedding creator can be host
+            if wedding["creator_id"] != current_user["user_id"]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Only wedding creator can be host"
+                )
+        
+        # Generate token using Pulse service
+        stream_service = StreamService()
+        
+        # Determine permissions based on role
+        can_publish = role in ["host", "camera"]
+        can_subscribe = True  # Everyone can subscribe (watch)
+        
+        room_name = f"wedding_{wedding_id}"
+        participant_id = f"{role}_{current_user['user_id']}_{uuid.uuid4().hex[:8]}"
+        
+        token_result = await stream_service.pulse_service.generate_stream_token(
+            room_name=room_name,
+            participant_name=participant_name,
+            participant_id=participant_id,
+            can_publish=can_publish,
+            can_subscribe=can_subscribe,
+            can_publish_data=True,
+            metadata={
+                "role": role,
+                "wedding_id": wedding_id,
+                "user_id": current_user["user_id"]
+            }
+        )
+        
+        logger.info(f"🎟️ Generated LiveKit token for {participant_name} ({role}) in wedding {wedding_id}")
+        
+        return {
+            "token": token_result.get("token"),
+            "server_url": token_result.get("server_url"),
+            "room_name": room_name,
+            "expires_at": token_result.get("expires_at"),
+            "participant_id": participant_id,
+            "role": role
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating LiveKit token: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate token: {str(e)}"
+        )
+
+
+@router.post("/recordings/{wedding_id}/start")
+async def start_pulse_recording(
+    wedding_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Start recording via Pulse Egress
+    
+    This replaces the old NGINX-RTMP recording system.
+    Uses LiveKit Egress to record the room composite.
+    
+    Request body:
+    - quality: string (720p, 1080p, 1440p, 4K) - optional, default: 1080p
+    - filename: string - optional, auto-generated if not provided
+    
+    Returns:
+    - egress_id: Pulse Egress identifier
+    - recording_id: WedLive recording identifier  
+    - status: Recording status
+    """
+    try:
+        db = get_db()
+        
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Check ownership
+        if wedding["creator_id"] != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Check if already recording
+        if wedding.get("recording_status") == "recording":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Recording already in progress"
+            )
+        
+        # Parse request body
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        quality = body.get("quality", "1080p")
+        filename = body.get("filename")
+        
+        # Start recording via Pulse
+        from app.services.stream_service import StreamService
+        stream_service = StreamService()
+        
+        room_name = f"wedding_{wedding_id}"
+        
+        if not filename:
+            filename = f"wedding_{wedding_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.mp4"
+        
+        egress_result = await stream_service.pulse_service.start_recording(
+            room_name=room_name,
+            wedding_id=wedding_id,
+            quality=quality
+        )
+        
+        egress_id = egress_result.get("egress_id")
+        
+        # Create recording record
+        recording_id = str(uuid.uuid4())
+        await db.recordings.insert_one({
+            "id": recording_id,
+            "wedding_id": wedding_id,
+            "pulse_egress_id": egress_id,
+            "egress_type": "room_composite",
+            "quality": quality,
+            "filename": filename,
+            "status": "recording",
+            "started_at": datetime.utcnow(),
+            "created_at": datetime.utcnow()
+        })
+        
+        # Update wedding
+        await db.weddings.update_one(
+            {"id": wedding_id},
+            {
+                "$set": {
+                    "recording_status": "recording",
+                    "recording_egress_id": egress_id,
+                    "recording_started_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        logger.info(f"📹 Started Pulse recording {recording_id} for wedding {wedding_id}")
+        
+        return {
+            "egress_id": egress_id,
+            "recording_id": recording_id,
+            "status": "recording",
+            "quality": quality,
+            "started_at": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting Pulse recording: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start recording: {str(e)}"
+        )
+
+
+@router.post("/recordings/{wedding_id}/stop")
+async def stop_pulse_recording(
+    wedding_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Stop recording via Pulse Egress
+    
+    Stops the active Pulse Egress recording for the wedding.
+    The egress-ended webhook will handle final processing and upload.
+    
+    Returns:
+    - egress_id: Pulse Egress identifier
+    - status: Recording status
+    - duration: Recording duration in seconds
+    """
+    try:
+        db = get_db()
+        
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Check ownership
+        if wedding["creator_id"] != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Check if recording is active
+        egress_id = wedding.get("recording_egress_id")
+        if not egress_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No active recording found"
+            )
+        
+        # Stop recording via Pulse
+        from app.services.stream_service import StreamService
+        stream_service = StreamService()
+        
+        stop_result = await stream_service.pulse_service.stop_recording(egress_id)
+        
+        # Calculate duration
+        started_at = wedding.get("recording_started_at")
+        duration = 0
+        if started_at:
+            duration = int((datetime.utcnow() - started_at).total_seconds())
+        
+        # Update wedding status (final status will be set by webhook)
+        await db.weddings.update_one(
+            {"id": wedding_id},
+            {
+                "$set": {
+                    "recording_status": "processing"
+                }
+            }
+        )
+        
+        logger.info(f"⏹️ Stopped Pulse recording {egress_id} for wedding {wedding_id}")
+        
+        return {
+            "egress_id": egress_id,
+            "status": "processing",
+            "duration": duration,
+            "message": "Recording stopped. Processing will complete via webhook."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error stopping Pulse recording: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to stop recording: {str(e)}"
+        )
+
+
+@router.post("/rtmp-ingress/{wedding_id}")
+async def create_rtmp_ingress(
+    wedding_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create RTMP Ingress for OBS/Professional Cameras
+    
+    Generates an RTMP endpoint that accepts streams from OBS Studio,
+    hardware encoders, or professional cameras. The stream is ingested
+    into the LiveKit room via Pulse.
+    
+    Request body:
+    - ingress_name: string - optional, descriptive name
+    - video_resolution: string - optional (1080p, 4K)
+    
+    Returns:
+    - ingress_id: Pulse Ingress identifier
+    - rtmp_url: RTMP server URL (e.g., rtmp://ingress.pulse.example.com/live)
+    - stream_key: Unique stream key for this ingress
+    - room_name: LiveKit room this ingress feeds into
+    """
+    try:
+        db = get_db()
+        
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Check ownership
+        if wedding["creator_id"] != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Parse request body
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        ingress_name = body.get("ingress_name", f"Wedding {wedding_id} OBS Feed")
+        video_resolution = body.get("video_resolution", "1080p")
+        
+        # Create RTMP ingress via Pulse
+        from app.services.stream_service import StreamService
+        stream_service = StreamService()
+        
+        room_name = f"wedding_{wedding_id}"
+        
+        ingress_result = await stream_service.pulse_service.create_rtmp_ingress(
+            room_name=room_name,
+            ingress_name=ingress_name,
+            video_resolution=video_resolution,
+            participant_name=ingress_name,
+            metadata={
+                "wedding_id": wedding_id,
+                "type": "rtmp_ingress"
+            }
+        )
+        
+        ingress_id = ingress_result.get("ingress_id")
+        rtmp_url = ingress_result.get("rtmp_url")
+        stream_key = ingress_result.get("stream_key")
+        
+        # Store ingress info in wedding
+        await db.weddings.update_one(
+            {"id": wedding_id},
+            {
+                "$set": {
+                    "rtmp_ingress": {
+                        "ingress_id": ingress_id,
+                        "rtmp_url": rtmp_url,
+                        "stream_key": stream_key,
+                        "created_at": datetime.utcnow(),
+                        "status": "ready"
+                    }
+                }
+            }
+        )
+        
+        logger.info(f"📡 Created RTMP ingress {ingress_id} for wedding {wedding_id}")
+        
+        return {
+            "ingress_id": ingress_id,
+            "rtmp_url": rtmp_url,
+            "stream_key": stream_key,
+            "room_name": room_name,
+            "status": "ready",
+            "instructions": {
+                "obs_setup": [
+                    "1. Open OBS Studio",
+                    "2. Go to Settings > Stream",
+                    f"3. Server: {rtmp_url}",
+                    f"4. Stream Key: {stream_key}",
+                    "5. Click 'Start Streaming'"
+                ],
+                "video_settings": "Set output resolution to " + video_resolution
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating RTMP ingress: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create RTMP ingress: {str(e)}"
+        )
+
+
+@router.post("/youtube-stream/{wedding_id}")
+async def start_youtube_streaming(
+    wedding_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Start streaming to YouTube via Pulse Egress
+    
+    This replaces the old custom YouTube RTMP integration.
+    Uses Pulse Egress to stream the LiveKit room directly to YouTube Live.
+    
+    Request body:
+    - youtube_stream_key: string - required, from YouTube Live dashboard
+    - youtube_rtmp_url: string - optional, default: rtmp://a.rtmp.youtube.com/live2
+    - quality: string - optional (720p, 1080p), default: 1080p
+    
+    Returns:
+    - stream_id: Pulse Stream Egress identifier
+    - status: Streaming status
+    - youtube_url: YouTube Live URL (if available)
+    """
+    try:
+        db = get_db()
+        
+        wedding = await db.weddings.find_one({"id": wedding_id})
+        if not wedding:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wedding not found"
+            )
+        
+        # Check ownership
+        if wedding["creator_id"] != current_user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized"
+            )
+        
+        # Parse request body
+        body = await request.json()
+        youtube_stream_key = body.get("youtube_stream_key")
+        
+        if not youtube_stream_key:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="youtube_stream_key is required"
+            )
+        
+        youtube_rtmp_url = body.get("youtube_rtmp_url", "rtmp://a.rtmp.youtube.com/live2")
+        quality = body.get("quality", "1080p")
+        
+        # Start YouTube streaming via Pulse
+        from app.services.youtube_service import YouTubeService
+        youtube_service = YouTubeService()
+        
+        room_name = f"wedding_{wedding_id}"
+        
+        stream_result = await youtube_service.start_youtube_stream_via_pulse(
+            room_name=room_name,
+            youtube_stream_key=youtube_stream_key
+        )
+        
+        stream_id = stream_result.get("stream_id")
+        
+        # Store YouTube stream info
+        await db.weddings.update_one(
+            {"id": wedding_id},
+            {
+                "$set": {
+                    "youtube_stream": {
+                        "stream_id": stream_id,
+                        "status": "active",
+                        "started_at": datetime.utcnow(),
+                        "quality": quality
+                    },
+                    "streaming_type": "youtube"
+                }
+            }
+        )
+        
+        logger.info(f"📺 Started YouTube streaming {stream_id} for wedding {wedding_id}")
+        
+        # Try to get YouTube broadcast URL from wedding settings
+        youtube_broadcast_id = wedding.get("youtube_settings", {}).get("broadcast_id")
+        youtube_url = None
+        if youtube_broadcast_id:
+            youtube_url = f"https://www.youtube.com/watch?v={youtube_broadcast_id}"
+        
+        return {
+            "stream_id": stream_id,
+            "status": "active",
+            "quality": quality,
+            "youtube_url": youtube_url,
+            "started_at": datetime.utcnow().isoformat(),
+            "message": "YouTube streaming started successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting YouTube streaming: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start YouTube streaming: {str(e)}"
+        )
+
