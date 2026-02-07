@@ -2,7 +2,7 @@
 
 ## Issue Summary
 Frontend getting 404 errors and CORS missing headers when trying to access:
-`https://photo-reveal-mask.preview.emergentagent.com/api/auth/login`
+`https://livestream-update.preview.emergentagent.com/api/auth/login`
 
 ## Root Cause Analysis
 
@@ -26,8 +26,8 @@ if (hostname.includes('emergentagent.com') || hostname.includes('preview.emergen
 - Frontend requests to `/api/*` → Port 8001 (backend)
 
 When the frontend uses `window.location.origin` as the backend URL:
-- Frontend at: `https://photo-reveal-mask.preview.emergentagent.com`
-- API calls to: `https://photo-reveal-mask.preview.emergentagent.com/api/auth/login`
+- Frontend at: `https://livestream-update.preview.emergentagent.com`
+- API calls to: `https://livestream-update.preview.emergentagent.com/api/auth/login`
 - Ingress routes `/api/*` → Backend on port 8001
 - **No CORS issues** (same origin!)
 
@@ -35,7 +35,7 @@ When the frontend uses `window.location.origin` as the backend URL:
 
 **Before Fix** (`.env` had hardcoded URL):
 ```bash
-REACT_APP_BACKEND_URL=https://photo-reveal-mask.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://livestream-update.preview.emergentagent.com
 ```
 
 This overrode the auto-detection, causing the config to use the explicit URL. However, the Kubernetes ingress wasn't properly routing external requests to the backend service.
@@ -53,9 +53,9 @@ Now the config falls back to auto-detection and uses `window.location.origin`.
 
 ### File: `/app/frontend/.env`
 ```diff
-- NEXT_PUBLIC_API_URL=https://photo-reveal-mask.preview.emergentagent.com
-- NEXT_PUBLIC_BACKEND_URL=https://photo-reveal-mask.preview.emergentagent.com
-- REACT_APP_BACKEND_URL=https://photo-reveal-mask.preview.emergentagent.com
+- NEXT_PUBLIC_API_URL=https://livestream-update.preview.emergentagent.com
+- NEXT_PUBLIC_BACKEND_URL=https://livestream-update.preview.emergentagent.com
+- REACT_APP_BACKEND_URL=https://livestream-update.preview.emergentagent.com
 + # NEXT_PUBLIC_API_URL=
 + # NEXT_PUBLIC_BACKEND_URL=
 + # REACT_APP_BACKEND_URL=
@@ -86,7 +86,7 @@ Now the config falls back to auto-detection and uses `window.location.origin`.
 
 ### File: `/app/backend/.env`
 ```bash
-BACKEND_URL=https://photo-reveal-mask.preview.emergentagent.com
+BACKEND_URL=https://livestream-update.preview.emergentagent.com
 ```
 
 This is **correct** and should remain. It's used for generating absolute proxy URLs in responses (like image/video CDN URLs).
@@ -102,7 +102,7 @@ location.reload(true);
 ```
 
 ### 2. Check Configuration in Browser
-Open browser console at `https://photo-reveal-mask.preview.emergentagent.com` and check:
+Open browser console at `https://livestream-update.preview.emergentagent.com` and check:
 
 ```javascript
 // Should show auto-detected config
@@ -112,7 +112,7 @@ Open browser console at `https://photo-reveal-mask.preview.emergentagent.com` an
 Expected output:
 ```
 🔧 Configuration Validation: {
-  apiBaseUrl: "https://photo-reveal-mask.preview.emergentagent.com",
+  apiBaseUrl: "https://livestream-update.preview.emergentagent.com",
   environment: "production",
   isLocal: false,
   mediaProxy: "/api/media/telegram-proxy/photos/"
@@ -127,7 +127,7 @@ Expected output:
 
 ### 4. Expected Network Request
 ```
-Request URL: https://photo-reveal-mask.preview.emergentagent.com/api/auth/login
+Request URL: https://livestream-update.preview.emergentagent.com/api/auth/login
 Request Method: POST
 Status: 200 (for valid creds) or 401 (for invalid creds)
 Response Headers: Should include CORS headers from backend
