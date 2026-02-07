@@ -302,13 +302,20 @@ async def get_stream_credentials(
     }
 
 # Quality Control Endpoints
+# [DEPRECATED - Phase 1.7] Pulse handles quality control automatically
+# These endpoints will be removed once Pulse migration is complete
 
 @router.get("/quality/{wedding_id}", response_model=StreamQualityResponse)
 async def get_stream_quality(
     wedding_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get current stream quality settings and allowed options"""
+    """
+    [DEPRECATED - Phase 1.7] Pulse handles quality control
+    
+    Get current stream quality settings and allowed options
+    This endpoint will be removed once migration to Pulse is complete.
+    """
     db = get_db()
     
     wedding = await db.weddings.find_one({"id": wedding_id})
