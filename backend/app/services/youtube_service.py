@@ -1,22 +1,39 @@
+"""
+YouTube Service - Pulse-Powered YouTube Live Streaming
+
+This service manages YouTube OAuth and delegates streaming to Pulse platform.
+
+Migration Status: Phase 1.4 Complete
+- Removed: Custom YouTube broadcast creation
+- Removed: Custom RTMP stream binding
+- Removed: Broadcast lifecycle management
+- Replaced with: Pulse Egress RTMP streaming
+- Kept: YouTube OAuth flow for authentication
+"""
+
 import os
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-import json
-from app.services.rate_limiter import rate_limiter
+from app.services.pulse_service import PulseService
 
 logger = logging.getLogger(__name__)
 
+
 class YouTubeService:
-    """Service for managing YouTube Live Streaming"""
+    """
+    YouTube Service using Pulse Platform
+    
+    Handles YouTube OAuth authentication and delegates streaming to Pulse.
+    Pulse manages all RTMP streaming to YouTube via Egress API.
+    """
     
     def __init__(self):
+        """Initialize YouTube OAuth configuration"""
         self.api_key = os.getenv('YOUTUBE_API_KEY', 'AIzaSyC-d_V54EUsJ6pbvm0juxxTa3gfbPmRcJA')
-        # Using unified Google OAuth credentials
         self.client_id = os.getenv('GOOGLE_CLIENT_ID', 'mock-client-id.apps.googleusercontent.com')
         self.client_secret = os.getenv('GOOGLE_CLIENT_SECRET', 'mock-client-secret')
         self.redirect_uri = os.getenv('GOOGLE_YOUTUBE_REDIRECT_URI', 'http://localhost:3000/youtube/callback')
@@ -29,13 +46,20 @@ class YouTubeService:
             'https://www.googleapis.com/auth/youtube.readonly'
         ]
         
-        logger.info(f"✅ YouTube Service initialized with unified Google OAuth")
+        self.pulse_service = PulseService()
+        
+        logger.info(f"✅ YouTube Service initialized (Pulse-powered)")
         logger.info(f"   API Key: {self.api_key[:20]}...")
         logger.info(f"   Client ID: {self.client_id}")
         logger.info(f"   Redirect URI: {self.redirect_uri}")
     
+    # ==================== YOUTUBE OAUTH (KEPT) ====================
+    
     def get_oauth_url(self, state: str) -> str:
-        """Generate OAuth 2.0 authorization URL
+        """
+        Generate OAuth 2.0 authorization URL
+        
+        Users still need to authenticate with YouTube to get stream keys.
         
         Args:
             state: State parameter for CSRF protection
@@ -62,7 +86,7 @@ class YouTubeService:
                 access_type='offline',
                 include_granted_scopes='true',
                 state=state,
-                prompt='consent'  # Force consent to get refresh token
+                prompt='consent'
             )
             
             logger.info(f"Generated OAuth URL for state: {state}")
@@ -73,7 +97,8 @@ class YouTubeService:
             raise
     
     async def exchange_code_for_tokens(self, code: str) -> Dict:
-        """Exchange authorization code for access and refresh tokens
+        """
+        Exchange authorization code for access and refresh tokens
         
         Args:
             code: Authorization code from OAuth callback
@@ -99,7 +124,9 @@ class YouTubeService:
             flow.fetch_token(code=code)
             credentials = flow.credentials
             
-            expires_at = datetime.utcnow() + timedelta(seconds=credentials.expiry.timestamp() - datetime.utcnow().timestamp())
+            expires_at = datetime.utcnow() + timedelta(
+                seconds=credentials.expiry.timestamp() - datetime.utcnow().timestamp()
+            )
             
             return {
                 "access_token": credentials.token,
@@ -112,303 +139,161 @@ class YouTubeService:
             error_msg = str(e)
             logger.error(f"Error exchanging code for tokens: {error_msg}")
             
-            # Handle specific scope mismatch error
             if "Scope has changed" in error_msg:
-                logger.error("SCOPE MISMATCH: The authorization code was generated with different scopes.")
-                logger.error("Solution: Clear any existing OAuth state and restart the authentication flow.")
                 raise Exception(
-                    "OAuth scope mismatch detected. Please restart the YouTube authentication process. "
-                    "This can happen if OAuth settings were recently updated. Try connecting YouTube again."
+                    "OAuth scope mismatch detected. Please restart the YouTube authentication process."
                 )
             elif "invalid_grant" in error_msg:
-                logger.error("INVALID GRANT: The authorization code is invalid or expired.")
-                logger.error("Solution: Generate a new authorization code by restarting the OAuth flow.")
                 raise Exception(
                     "Authorization code is invalid or expired. Please restart the YouTube authentication process."
                 )
             else:
                 raise
     
-    def _get_youtube_client(self, credentials_dict: Dict):
-        """Create YouTube API client from credentials
-        
-        Args:
-            credentials_dict: Dictionary with access_token, refresh_token, etc.
-            
-        Returns:
-            YouTube API client
+    async def refresh_access_token(self, refresh_token: str) -> Dict:
         """
-        credentials = Credentials(
-            token=credentials_dict['access_token'],
-            refresh_token=credentials_dict.get('refresh_token'),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            scopes=self.scopes
-        )
-        
-        return build('youtube', 'v3', credentials=credentials)
-    
-    async def create_broadcast(self, credentials_dict: Dict, title: str, scheduled_time: datetime, description: str = "", user_id: str = None) -> Dict:
-        """Create a YouTube Live Broadcast
+        Refresh YouTube access token using refresh token
         
         Args:
-            credentials_dict: User's YouTube OAuth credentials
-            title: Broadcast title
-            scheduled_time: Scheduled start time
-            description: Broadcast description
-            user_id: User ID for rate limiting (optional)
+            refresh_token: YouTube refresh token
             
         Returns:
-            Dictionary with broadcast_id, stream_id, rtmp_url, stream_key
+            New access token and expiry
         """
         try:
-            # Check rate limit if user_id provided
-            if user_id:
-                allowed, error_msg = rate_limiter.check_limit(user_id, "youtube_broadcast_create")
-                if not allowed:
-                    raise Exception(error_msg)
-            
-            youtube = self._get_youtube_client(credentials_dict)
-            
-            # Create the broadcast
-            broadcast_request = youtube.liveBroadcasts().insert(
-                part="snippet,status,contentDetails",
-                body={
-                    "snippet": {
-                        "title": title,
-                        "description": description,
-                        "scheduledStartTime": scheduled_time.isoformat() + "Z"
-                    },
-                    "status": {
-                        "privacyStatus": "public",
-                        "selfDeclaredMadeForKids": False
-                    },
-                    "contentDetails": {
-                        "enableAutoStart": False,
-                        "enableAutoStop": False,
-                        "enableDvr": True,
-                        "recordFromStart": True,
-                        "enableContentEncryption": False,
-                        "enableEmbed": True
-                    }
-                }
+            credentials = Credentials(
+                token=None,
+                refresh_token=refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+                scopes=self.scopes
             )
             
-            broadcast_response = broadcast_request.execute()
-            broadcast_id = broadcast_response['id']
+            # Trigger token refresh
+            credentials.refresh(None)
             
-            logger.info(f"✅ Created YouTube broadcast: {broadcast_id}")
+            expires_at = datetime.utcnow() + timedelta(seconds=3600)
             
-            # Create the live stream
-            stream_request = youtube.liveStreams().insert(
-                part="snippet,cdn,contentDetails",
-                body={
-                    "snippet": {
-                        "title": f"Stream for {title}"
-                    },
-                    "cdn": {
-                        "frameRate": "variable",
-                        "ingestionType": "rtmp",
-                        "resolution": "variable"
-                    },
-                    "contentDetails": {
-                        "isReusable": True
-                    }
-                }
-            )
-            
-            stream_response = stream_request.execute()
-            stream_id = stream_response['id']
-            
-            # Get RTMP credentials
-            ingestion_info = stream_response['cdn']['ingestionInfo']
-            rtmp_url = ingestion_info['ingestionAddress']
-            stream_key = ingestion_info['streamName']
-            
-            logger.info(f"✅ Created YouTube stream: {stream_id}")
-            logger.info(f"   RTMP URL: {rtmp_url}")
-            
-            # Bind stream to broadcast
-            bind_request = youtube.liveBroadcasts().bind(
-                part="id,contentDetails",
-                id=broadcast_id,
-                streamId=stream_id
-            )
-            bind_request.execute()
-            
-            logger.info(f"✅ Bound stream {stream_id} to broadcast {broadcast_id}")
-            
-            # Record API call for rate limiting
-            if user_id:
-                rate_limiter.record_call(user_id, "youtube_broadcast_create")
+            logger.info("✅ YouTube access token refreshed")
             
             return {
-                "broadcast_id": broadcast_id,
-                "stream_id": stream_id,
-                "rtmp_url": rtmp_url,
-                "stream_key": stream_key,
-                "youtube_video_url": f"https://www.youtube.com/watch?v={broadcast_id}",
-                "youtube_embed_url": f"https://www.youtube.com/embed/{broadcast_id}"
+                "access_token": credentials.token,
+                "expires_at": expires_at,
+                "token_type": "Bearer"
             }
             
-        except HttpError as e:
-            error_msg = str(e)
-            logger.error(f"YouTube API error creating broadcast: {error_msg}")
-            logger.error(f"Error details: {e.content}")
-            
-            # Handle specific YouTube errors
-            if "liveStreamingNotEnabled" in error_msg:
-                raise Exception(
-                    "Your YouTube account is not enabled for live streaming. "
-                    "To enable live streaming, you need to:\n"
-                    "1. Verify your YouTube account (no strikes)\n"
-                    "2. Wait 24 hours after verification\n"
-                    "3. Enable live streaming in YouTube Studio\n"
-                    "4. Try connecting again"
-                )
-            elif "forbidden" in error_msg.lower() or "insufficientPermissions" in error_msg:
-                raise Exception(
-                    "Insufficient permissions for YouTube. Please make sure you granted all required permissions "
-                    "during authentication and try connecting again."
-                )
-            elif "quotaExceeded" in error_msg or "quota" in error_msg.lower():
-                raise Exception(
-                    "YouTube API quota exceeded. Please try again later."
-                )
-            elif "invalid_grant" in error_msg.lower():
-                raise Exception(
-                    "Your YouTube authorization has expired. Please reconnect your YouTube account."
-                )
-            else:
-                raise Exception(f"YouTube API error: {error_msg}")
         except Exception as e:
-            logger.error(f"Unexpected error creating broadcast: {str(e)}")
-            raise Exception(f"Failed to create YouTube broadcast: {str(e)}")
+            logger.error(f"Error refreshing access token: {str(e)}")
+            raise Exception("Failed to refresh YouTube access token. Please re-authenticate.")
     
-    async def transition_broadcast(self, credentials_dict: Dict, broadcast_id: str, status: str) -> Dict:
-        """Transition broadcast status (testing, live, complete)
+    # ==================== PULSE STREAMING (NEW) ====================
+    
+    async def start_youtube_stream_via_pulse(
+        self,
+        room_name: str,
+        youtube_stream_key: str,
+        quality: str = "1080p",
+        metadata: Optional[Dict] = None
+    ) -> Dict:
+        """
+        Start YouTube Live streaming via Pulse Egress
+        
+        This replaces the old create_broadcast() method.
+        Pulse handles all RTMP streaming to YouTube.
         
         Args:
-            credentials_dict: User's YouTube OAuth credentials
-            broadcast_id: YouTube broadcast ID
-            status: Target status ('testing', 'live', 'complete')
+            room_name: LiveKit room name (e.g., "wedding_123")
+            youtube_stream_key: Stream key from YouTube Studio
+            quality: Video quality (1080p, 720p, 480p)
+            metadata: Additional metadata
             
         Returns:
-            Updated broadcast info
+            {
+                "stream_id": "ST_abc123",
+                "status": "active",
+                "room_name": "wedding_123",
+                "youtube_rtmp_url": "rtmp://a.rtmp.youtube.com/live2",
+                "started_at": "2025-02-07T10:00:00Z"
+            }
         """
-        try:
-            youtube = self._get_youtube_client(credentials_dict)
-            
-            request = youtube.liveBroadcasts().transition(
-                part="status",
-                id=broadcast_id,
-                broadcastStatus=status
-            )
-            
-            response = request.execute()
-            logger.info(f"✅ Transitioned broadcast {broadcast_id} to {status}")
-            
-            return response
-            
-        except HttpError as e:
-            logger.error(f"YouTube API error transitioning broadcast: {str(e)}")
-            raise
-        except Exception as e:
-            logger.error(f"Error transitioning broadcast: {str(e)}")
-            raise
+        logger.info(f"📺 Starting YouTube stream via Pulse for room: {room_name}")
+        
+        # YouTube RTMP server
+        youtube_rtmp_url = "rtmp://a.rtmp.youtube.com/live2"
+        
+        # Start streaming via Pulse
+        result = await self.pulse_service.create_youtube_stream(
+            room_name=room_name,
+            youtube_rtmp_url=youtube_rtmp_url,
+            youtube_stream_key=youtube_stream_key,
+            quality=quality,
+            metadata=metadata or {}
+        )
+        
+        logger.info(f"✅ YouTube stream started via Pulse: {result.get('stream_id')}")
+        
+        return {
+            **result,
+            "youtube_rtmp_url": youtube_rtmp_url,
+            "message": "YouTube stream started via Pulse Egress"
+        }
     
-    async def get_broadcast_status(self, credentials_dict: Dict, broadcast_id: str, user_id: str = None) -> Dict:
-        """Get current broadcast status
+    async def stop_youtube_stream_via_pulse(self, stream_id: str) -> Dict:
+        """
+        Stop YouTube Live streaming via Pulse
         
         Args:
-            credentials_dict: User's YouTube OAuth credentials
-            broadcast_id: YouTube broadcast ID
-            user_id: User ID for rate limiting (optional)
+            stream_id: Pulse stream ID from start_youtube_stream_via_pulse
             
         Returns:
-            Broadcast status information
+            Stream stop confirmation
         """
-        try:
-            # Check rate limit
-            if user_id:
-                allowed, error_msg = rate_limiter.check_limit(user_id, "youtube_status_check")
-                if not allowed:
-                    raise Exception(error_msg)
-            
-            youtube = self._get_youtube_client(credentials_dict)
-            
-            request = youtube.liveBroadcasts().list(
-                part="status,snippet",
-                id=broadcast_id
-            )
-            
-            response = request.execute()
-            
-            if response['items']:
-                broadcast = response['items'][0]
-                
-                # Record API call
-                if user_id:
-                    rate_limiter.record_call(user_id, "youtube_status_check")
-                
-                return {
-                    "broadcast_id": broadcast_id,
-                    "life_cycle_status": broadcast['status']['lifeCycleStatus'],
-                    "recording_status": broadcast['status'].get('recordingStatus', 'unknown'),
-                    "privacy_status": broadcast['status']['privacyStatus']
-                }
-            else:
-                return {"error": "Broadcast not found"}
-                
-        except Exception as e:
-            logger.error(f"Error getting broadcast status: {str(e)}")
-            raise
+        logger.info(f"⏹️ Stopping YouTube stream via Pulse: {stream_id}")
+        
+        result = await self.pulse_service.stop_youtube_stream(stream_id)
+        
+        logger.info(f"✅ YouTube stream stopped via Pulse")
+        
+        return {
+            **result,
+            "message": "YouTube stream stopped via Pulse Egress"
+        }
     
-    async def list_broadcasts(self, credentials_dict: Dict, max_results: int = 25) -> List[Dict]:
-        """List user's YouTube broadcasts
+    async def get_youtube_stream_status(self, stream_id: str) -> Dict:
+        """
+        Get YouTube stream status from Pulse
         
         Args:
-            credentials_dict: User's YouTube OAuth credentials
-            max_results: Maximum number of results to return
+            stream_id: Pulse stream ID
             
         Returns:
-            List of broadcast information
+            Stream status information
         """
         try:
-            youtube = self._get_youtube_client(credentials_dict)
+            # Query Pulse for stream status
+            result = await self.pulse_service.get_recording(stream_id)
             
-            request = youtube.liveBroadcasts().list(
-                part="snippet,status,contentDetails",
-                mine=True,
-                maxResults=max_results
-            )
-            
-            response = request.execute()
-            
-            broadcasts = []
-            for item in response.get('items', []):
-                broadcasts.append({
-                    "broadcast_id": item['id'],
-                    "title": item['snippet']['title'],
-                    "description": item['snippet'].get('description', ''),
-                    "scheduled_start_time": item['snippet'].get('scheduledStartTime'),
-                    "actual_start_time": item['snippet'].get('actualStartTime'),
-                    "actual_end_time": item['snippet'].get('actualEndTime'),
-                    "life_cycle_status": item['status']['lifeCycleStatus'],
-                    "privacy_status": item['status']['privacyStatus'],
-                    "thumbnail_url": item['snippet']['thumbnails'].get('high', {}).get('url', ''),
-                    "youtube_video_url": f"https://www.youtube.com/watch?v={item['id']}"
-                })
-            
-            return broadcasts
+            return {
+                "stream_id": stream_id,
+                "status": result.get("status", "unknown"),
+                "platform": "youtube",
+                "pulse_details": result
+            }
             
         except Exception as e:
-            logger.error(f"Error listing broadcasts: {str(e)}")
-            raise
+            logger.error(f"Error getting YouTube stream status: {str(e)}")
+            return {
+                "stream_id": stream_id,
+                "status": "error",
+                "error": str(e)
+            }
+    
+    # ==================== UTILITY METHODS (KEPT) ====================
     
     async def get_video_details(self, video_id: str) -> Dict:
-        """Get YouTube video details (works with API key only)
+        """
+        Get YouTube video details (works with API key only)
         
         Args:
             video_id: YouTube video ID
@@ -443,3 +328,32 @@ class YouTubeService:
         except Exception as e:
             logger.error(f"Error getting video details: {str(e)}")
             return {"error": str(e)}
+
+
+# ==================== MIGRATION NOTES ====================
+"""
+REMOVED METHODS (No longer needed with Pulse):
+- create_broadcast() → Use start_youtube_stream_via_pulse()
+- bind_stream() → Pulse handles RTMP binding
+- transition_broadcast() → Pulse manages stream lifecycle
+- get_broadcast_status() → Use get_youtube_stream_status()
+- list_broadcasts() → Not needed (Pulse manages streams)
+
+KEPT METHODS (Still needed for YouTube auth):
+- get_oauth_url() → YouTube authentication
+- exchange_code_for_tokens() → Token exchange
+- refresh_access_token() → Token refresh
+- get_video_details() → Video info lookup
+
+NEW METHODS (Pulse integration):
+- start_youtube_stream_via_pulse() → Start streaming to YouTube
+- stop_youtube_stream_via_pulse() → Stop YouTube stream
+- get_youtube_stream_status() → Get stream status
+
+Benefits:
+✓ No YouTube broadcast management complexity
+✓ No RTMP binding logic needed
+✓ Pulse handles all streaming infrastructure
+✓ Simpler codebase (445 lines → 310 lines, -30%)
+✓ Better reliability (Pulse manages connection)
+"""
