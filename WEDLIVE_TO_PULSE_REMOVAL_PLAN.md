@@ -37,8 +37,28 @@
   - Removed NGINX-RTMP URL construction
   - Now uses Pulse LiveKit token generation
   - Added RTMP ingress support for OBS
+- ✅ Updated: `/app/backend/app/routes/rtmp_webhooks.py` (359 lines → 1091 lines)
+  - Added 6 new LiveKit webhook handlers:
+    * POST `/webhooks/livekit/room-started` - Room lifecycle management
+    * POST `/webhooks/livekit/room-finished` - Room cleanup
+    * POST `/webhooks/livekit/participant-joined` - Track cameras/viewers
+    * POST `/webhooks/livekit/participant-left` - Handle disconnections
+    * POST `/webhooks/livekit/egress-started` - Recording start tracking
+    * POST `/webhooks/livekit/egress-ended` - Recording completion & upload
+  - Kept existing NGINX-RTMP webhooks for backward compatibility
+- ✅ Updated: `/app/backend/app/routes/streams.py` (828 lines → 1461 lines)
+  - Marked 3 endpoints as DEPRECATED:
+    * GET `/credentials` - Use `/token/{wedding_id}` instead
+    * GET `/quality/{wedding_id}` - Pulse handles quality
+    * POST `/quality/{wedding_id}` - Pulse handles quality
+  - Added 5 new Pulse-integrated endpoints:
+    * POST `/token/{wedding_id}` - Generate LiveKit access tokens
+    * POST `/recordings/{wedding_id}/start` - Start Pulse Egress recording
+    * POST `/recordings/{wedding_id}/stop` - Stop Pulse Egress recording
+    * POST `/rtmp-ingress/{wedding_id}` - Create RTMP ingress for OBS
+    * POST `/youtube-stream/{wedding_id}` - Stream to YouTube via Pulse
 
-**Next Phase:** Phase 1.6 - RTMP Webhook Replacement
+**Next Phase:** Phase 2 - Frontend Migration (Replace HLS player with LiveKit components)
 
 ---
 
