@@ -612,7 +612,7 @@ async def livekit_participant_joined(request: Request):
                 {"id": wedding_id},
                 {"$inc": {"viewers_count": 1}}
             )
-            logger.info(f"👁️ Viewer joined (count +1)")
+            logger.info("👁️ Viewer joined (count +1)")
         
         # Notify other participants
         try:
@@ -723,7 +723,7 @@ async def livekit_participant_left(request: Request):
                 {"id": wedding_id, "viewers_count": {"$gt": 0}},
                 {"$inc": {"viewers_count": -1}}
             )
-            logger.info(f"👁️ Viewer left (count -1)")
+            logger.info("👁️ Viewer left (count -1)")
         
         # Notify other participants
         try:
