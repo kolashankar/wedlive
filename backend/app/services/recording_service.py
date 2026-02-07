@@ -1,52 +1,57 @@
-import os
-import asyncio
-import aiofiles
+"""
+Recording Service - Pulse-Powered Recording Management
+
+This service manages recording operations using Pulse platform APIs.
+All actual recording is handled by Pulse LiveKit Egress.
+
+Migration Status: Phase 1.3 Complete
+- Removed: Custom FFmpeg recording
+- Removed: NGINX-RTMP DVR
+- Replaced with: Pulse Egress API calls
+"""
+
 import logging
 from datetime import datetime
 from typing import Optional, Dict
 from bson import ObjectId
 from app.models import RecordingStatus
-from app.services.encoding_service import EncodingService
+from app.services.pulse_service import PulseService
 
 logger = logging.getLogger(__name__)
 
 
 class RecordingService:
     """
-    DVR Recording Service for NGINX-RTMP streams
+    Recording Service using Pulse Platform
     
-    NGINX-RTMP automatically records streams to disk when configured.
-    This service manages recording metadata and provides control endpoints.
+    Delegates all recording operations to Pulse Egress API.
+    Maintains local metadata for wedding recordings.
     """
     
     def __init__(self, db):
         self.db = db
         self.recordings_collection = db.recordings
-        self.encoding_service = EncodingService()
         self.weddings_collection = db.weddings
-        
-        # NGINX-RTMP recording paths (from nginx.conf)
-        self.recording_base_path = os.getenv("RECORDING_PATH", "/tmp/recordings")
-        self.hls_server_url = os.getenv("HLS_SERVER_URL", "http://localhost:8080")
+        self.pulse_service = PulseService()
     
     async def start_recording(
         self,
         wedding_id: str,
-        quality: str = "720p",
+        quality: str = "1080p",
         user_id: str = None,
-        record_composed: bool = True
+        upload_to_telegram: bool = True
     ) -> Dict:
         """
-        Start DVR recording for a wedding stream
+        Start recording for a wedding stream using Pulse Egress
         
-        For Multi-Camera Weddings:
-        - If record_composed=True (default): Records the composed output stream (what viewers see)
-        - If record_composed=False: Records individual camera streams (future enhancement)
-        
-        Note: NGINX-RTMP handles actual recording via config for single streams.
-        For composed streams, we use FFmpeg to record the HLS output.
-        
-        This method creates metadata tracking.
+        Args:
+            wedding_id: Wedding identifier
+            quality: Video quality (1080p, 720p, 480p)
+            user_id: User who initiated recording
+            upload_to_telegram: Mirror to Telegram CDN for free bandwidth
+            
+        Returns:
+            Recording metadata with Pulse egress_id
         """
         try:
             # Check if wedding exists and is live
@@ -70,58 +75,62 @@ class RecordingService:
                 return {
                     "recording_id": str(existing_recording["_id"]),
                     "status": "already_recording",
-                    "message": "Recording already in progress"
+                    "message": "Recording already in progress",
+                    "egress_id": existing_recording.get("egress_id")
                 }
             
-            # Create recording record
+            # Get room name from wedding (Pulse uses room-based recording)
+            room_name = wedding.get("pulse_room_name", f"wedding_{wedding_id}")
+            
+            # Start recording via Pulse Egress
+            logger.info(f"📹 Starting Pulse recording for wedding {wedding_id}")
+            pulse_response = await self.pulse_service.start_recording(
+                room_name=room_name,
+                wedding_id=wedding_id,
+                quality=quality,
+                upload_to_telegram=upload_to_telegram,
+                metadata={
+                    "wedding_id": wedding_id,
+                    "started_by": user_id
+                }
+            )
+            
+            # Create local recording record
             recording_doc = {
                 "wedding_id": wedding_id,
                 "status": RecordingStatus.STARTING.value,
                 "quality": quality,
                 "started_at": datetime.utcnow(),
                 "started_by": user_id,
+                "egress_id": pulse_response.get("egress_id"),
+                "room_name": room_name,
                 "recording_url": None,
                 "file_size": None,
                 "duration_seconds": None,
                 "completed_at": None,
                 "error_message": None,
-                "is_multi_camera": len(wedding.get("multi_cameras", [])) > 0,
-                "record_type": "composed" if record_composed else "individual"
+                "upload_to_telegram": upload_to_telegram,
+                "pulse_metadata": pulse_response
             }
             
             result = await self.recordings_collection.insert_one(recording_doc)
             recording_id = str(result.inserted_id)
             
-            # Start FFmpeg recording for composed stream if multi-camera
-            if recording_doc["is_multi_camera"] and record_composed:
-                try:
-                    await self._start_composed_recording(wedding_id, recording_id)
-                except Exception as e:
-                    logger.error(f"Failed to start composed recording: {e}")
-                    # Update recording status to failed
-                    await self.recordings_collection.update_one(
-                        {"_id": result.inserted_id},
-                        {"$set": {
-                            "status": RecordingStatus.FAILED.value,
-                            "error_message": f"Failed to start composed recording: {str(e)}"
-                        }}
-                    )
-                    raise
-            
-            # Update recording status to RECORDING
+            # Update status to RECORDING
             await self.recordings_collection.update_one(
                 {"_id": result.inserted_id},
                 {"$set": {"status": RecordingStatus.RECORDING.value}}
             )
             
-            logger.info(f"📹 Recording started for wedding {wedding_id} - Recording ID: {recording_id}")
+            logger.info(f"✅ Recording started via Pulse - Recording ID: {recording_id}, Egress ID: {pulse_response.get('egress_id')}")
             
             return {
                 "recording_id": recording_id,
                 "status": "recording",
                 "quality": quality,
                 "started_at": recording_doc["started_at"].isoformat(),
-                "message": "Recording started successfully"
+                "egress_id": pulse_response.get("egress_id"),
+                "message": "Recording started successfully via Pulse"
             }
             
         except Exception as e:
@@ -134,10 +143,14 @@ class RecordingService:
         user_id: str = None
     ) -> Dict:
         """
-        Stop DVR recording for a wedding stream
+        Stop recording for a wedding stream using Pulse Egress
         
-        For multi-camera composed recordings, stops the FFmpeg process.
-        For NGINX-RTMP recordings, updates metadata.
+        Args:
+            wedding_id: Wedding identifier
+            user_id: User who stopped recording
+            
+        Returns:
+            Recording completion status
         """
         recording = None
         try:
@@ -151,6 +164,10 @@ class RecordingService:
                 raise Exception("No active recording found for this wedding")
             
             recording_id = str(recording["_id"])
+            egress_id = recording.get("egress_id")
+            
+            if not egress_id:
+                raise Exception("No Pulse egress_id found for this recording")
             
             # Update status to STOPPING
             await self.recordings_collection.update_one(
@@ -161,58 +178,29 @@ class RecordingService:
                 }}
             )
             
-            # Stop composed recording if applicable
-            if recording.get("is_multi_camera") and recording.get("record_type") == "composed":
-                await self._stop_composed_recording(recording_id)
-            
-            # Wait for processing to complete
-            await asyncio.sleep(2)
+            # Stop recording via Pulse
+            logger.info(f"⏹️ Stopping Pulse recording: {egress_id}")
+            pulse_response = await self.pulse_service.stop_recording(egress_id)
             
             # Calculate duration
             started_at = recording["started_at"]
             completed_at = datetime.utcnow()
             duration_seconds = int((completed_at - started_at).total_seconds())
             
-            # Generate recording file path
+            # Get recording details from Pulse
+            recording_details = await self.pulse_service.get_recording(egress_id)
+            
             recording_url = None
-            
-            if recording.get("is_multi_camera") and recording.get("record_type") == "composed":
-                # Use the composed recording file path
-                output_file = recording.get("output_file")
-                if output_file and os.path.exists(output_file):
-                    # Get file size
-                    file_size = os.path.getsize(output_file)
-                    # Construct URL for serving the file
-                    recording_filename = os.path.basename(output_file)
-                    recording_url = f"{self.hls_server_url}/recordings/{wedding_id}/{recording_filename}"
-                    logger.info(f"🎬 Composed recording saved: {recording_url} ({file_size} bytes)")
-                else:
-                    logger.error(f"❌ Composed recording file not found: {output_file}")
-                    recording_url = None
-            else:
-                # NGINX-RTMP saves as: {stream_key}-{timestamp}.flv
-                stream_key = f"live_{wedding_id}"
-                recording_filename = f"{stream_key}.flv"
-                recording_url = f"{self.hls_server_url}/recordings/{recording_filename}"
-            
             file_size = 0
-            if recording.get("output_file") and os.path.exists(recording.get("output_file")):
-                file_size = os.path.getsize(recording.get("output_file"))
             
-            # Encode to MP4 format if needed (only for FLV files from NGINX)
-            if recording_url and recording_url.endswith('.flv'):
-                try:
-                    encoded_result = await self.encoding_service.encode_to_mp4(recording_filename, wedding_id)
-                    
-                    if encoded_result.get("success"):
-                        recording_url = encoded_result.get("output_file")
-                        logger.info(f"🎬 Recording encoded to MP4: {recording_url}")
-                    else:
-                        recording_url = encoded_result.get("output_file", recording_url)
-                        logger.error(f"❌ MP4 encoding failed: {encoded_result.get('error')}")
-                except Exception as encoding_error:
-                    logger.error(f"⚠️ MP4 encoding error: {str(encoding_error)}")
-                    # Continue with original recording_url if encoding fails
+            # Extract URLs from Pulse response
+            if recording_details.get("urls"):
+                urls = recording_details["urls"]
+                # Prefer Telegram CDN (free), fallback to R2
+                recording_url = urls.get("telegram_cdn") or urls.get("r2") or urls.get("streaming")
+                
+            if recording_details.get("file_size"):
+                file_size = recording_details["file_size"]
             
             # Update recording record
             await self.recordings_collection.update_one(
@@ -222,7 +210,9 @@ class RecordingService:
                     "completed_at": completed_at,
                     "duration_seconds": duration_seconds,
                     "recording_url": recording_url,
-                    "file_size": file_size
+                    "file_size": file_size,
+                    "pulse_stop_response": pulse_response,
+                    "pulse_recording_details": recording_details
                 }}
             )
             
@@ -235,15 +225,16 @@ class RecordingService:
                 }}
             )
             
-            logger.info(f"✅ Recording completed for wedding {wedding_id} - Duration: {duration_seconds}s")
+            logger.info(f"✅ Recording completed via Pulse - Duration: {duration_seconds}s")
             
             return {
                 "recording_id": recording_id,
                 "status": "completed",
                 "duration_seconds": duration_seconds,
                 "recording_url": recording_url,
+                "file_size": file_size,
                 "completed_at": completed_at.isoformat(),
-                "message": "Recording completed successfully"
+                "message": "Recording completed successfully via Pulse"
             }
             
         except Exception as e:
@@ -263,7 +254,15 @@ class RecordingService:
             raise
     
     async def get_recording_status(self, recording_id: str) -> Dict:
-        """Get status of a specific recording"""
+        """
+        Get status of a specific recording
+        
+        Args:
+            recording_id: Local recording identifier
+            
+        Returns:
+            Recording status and metadata
+        """
         try:
             recording = await self.recordings_collection.find_one({
                 "_id": ObjectId(recording_id)
@@ -272,24 +271,71 @@ class RecordingService:
             if not recording:
                 raise Exception(f"Recording {recording_id} not found")
             
+            # If recording is in progress, fetch live status from Pulse
+            if recording.get("status") in ["starting", "recording"] and recording.get("egress_id"):
+                try:
+                    pulse_details = await self.pulse_service.get_recording(recording["egress_id"])
+                    # Update local record with latest info
+                    if pulse_details:
+                        await self.recordings_collection.update_one(
+                            {"_id": recording["_id"]},
+                            {"$set": {"pulse_recording_details": pulse_details}}
+                        )
+                except Exception as e:
+                    logger.warning(f"Could not fetch live recording status from Pulse: {e}")
+            
             return {
                 "recording_id": recording_id,
                 "wedding_id": recording["wedding_id"],
                 "status": recording["status"],
-                "quality": recording.get("quality", "720p"),
+                "quality": recording.get("quality", "1080p"),
                 "duration_seconds": recording.get("duration_seconds"),
                 "recording_url": recording.get("recording_url"),
+                "file_size": recording.get("file_size"),
                 "started_at": recording["started_at"].isoformat(),
                 "completed_at": recording.get("completed_at").isoformat() if recording.get("completed_at") else None,
-                "error_message": recording.get("error_message")
+                "error_message": recording.get("error_message"),
+                "egress_id": recording.get("egress_id")
             }
             
         except Exception as e:
             logger.error(f"Failed to get recording status {recording_id}: {str(e)}")
             raise
     
-    async def get_wedding_recordings(self, wedding_id: str) -> list:
-        """Get all recordings for a wedding"""
+    async def get_recording_url(self, recording_id: str) -> Optional[str]:
+        """
+        Get playback URL for a completed recording
+        
+        Args:
+            recording_id: Local recording identifier
+            
+        Returns:
+            Recording URL or None
+        """
+        try:
+            recording = await self.recordings_collection.find_one({
+                "_id": ObjectId(recording_id)
+            })
+            
+            if not recording:
+                return None
+            
+            return recording.get("recording_url")
+            
+        except Exception as e:
+            logger.error(f"Failed to get recording URL {recording_id}: {str(e)}")
+            return None
+    
+    async def list_recordings(self, wedding_id: str) -> list:
+        """
+        Get all recordings for a wedding
+        
+        Args:
+            wedding_id: Wedding identifier
+            
+        Returns:
+            List of recordings with metadata
+        """
         try:
             cursor = self.recordings_collection.find({
                 "wedding_id": wedding_id
@@ -301,11 +347,13 @@ class RecordingService:
                     "id": str(recording["_id"]),
                     "wedding_id": recording["wedding_id"],
                     "status": recording["status"],
-                    "quality": recording.get("quality", "720p"),
+                    "quality": recording.get("quality", "1080p"),
                     "duration_seconds": recording.get("duration_seconds"),
                     "recording_url": recording.get("recording_url"),
+                    "file_size": recording.get("file_size"),
                     "started_at": recording["started_at"].isoformat(),
-                    "completed_at": recording.get("completed_at").isoformat() if recording.get("completed_at") else None
+                    "completed_at": recording.get("completed_at").isoformat() if recording.get("completed_at") else None,
+                    "egress_id": recording.get("egress_id")
                 })
             
             return recordings
@@ -318,6 +366,12 @@ class RecordingService:
         """
         Auto-start recording when stream goes live
         Called by stream service when auto_record is enabled
+        
+        Args:
+            wedding_id: Wedding identifier
+            
+        Returns:
+            Recording metadata or None
         """
         try:
             # Check wedding settings
@@ -335,127 +389,22 @@ class RecordingService:
                 logger.info(f"Auto-record disabled for wedding {wedding_id}")
                 return None
             
-            # Check if DVR is enabled
-            if not settings.get("enable_dvr", False):
+            # Check if DVR is enabled (legacy setting, kept for compatibility)
+            if not settings.get("enable_dvr", True):
                 logger.info(f"DVR disabled for wedding {wedding_id}")
                 return None
             
-            # Start recording
-            recording_quality = settings.get("recording_quality", "720p")
+            # Start recording via Pulse
+            recording_quality = settings.get("recording_quality", "1080p")
             result = await self.start_recording(
                 wedding_id=wedding_id,
                 quality=recording_quality,
                 user_id="system"
             )
             
-            logger.info(f"🎬 Auto-recording started for wedding {wedding_id}")
+            logger.info(f"🎬 Auto-recording started via Pulse for wedding {wedding_id}")
             return result
             
         except Exception as e:
             logger.error(f"Failed to auto-start recording for wedding {wedding_id}: {str(e)}")
-
-    # Multi-Camera Recording Methods
-    async def _start_composed_recording(self, wedding_id: str, recording_id: str):
-        """
-        Start FFmpeg recording of the composed HLS output
-        This records what viewers see in multi-camera weddings
-        """
-        try:
-            import subprocess
-            from pathlib import Path
-            
-            # Input: Composed HLS stream
-            input_url = f"http://localhost:8080/hls_output/output_{wedding_id}/output.m3u8"
-            
-            # Output: MP4 file
-            output_dir = Path(self.recording_base_path) / wedding_id
-            output_dir.mkdir(parents=True, exist_ok=True)
-            output_file = output_dir / f"recording_{recording_id}.mp4"
-            
-            logger.info(f"🎬 Starting composed stream recording")
-            logger.info(f"   Input: {input_url}")
-            logger.info(f"   Output: {output_file}")
-            
-            # FFmpeg command for recording HLS to MP4
-            cmd = [
-                "ffmpeg",
-                "-i", input_url,
-                "-c", "copy",  # Copy codec for efficiency
-                "-movflags", "+faststart",  # Enable streaming playback
-                "-f", "mp4",
-                str(output_file)
-            ]
-            
-            # Start process in background
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE
-            )
-            
-            # Store process info in recording metadata
-            await self.recordings_collection.update_one(
-                {"_id": ObjectId(recording_id)},
-                {"$set": {
-                    "ffmpeg_pid": process.pid,
-                    "output_file": str(output_file)
-                }}
-            )
-            
-            logger.info(f"✅ Composed recording started - PID: {process.pid}")
-            
-        except Exception as e:
-            logger.error(f"❌ Failed to start composed recording: {e}")
-            raise
-    
-    async def _stop_composed_recording(self, recording_id: str):
-        """
-        Stop FFmpeg recording process and finalize the file
-        """
-        try:
-            recording = await self.recordings_collection.find_one({"_id": ObjectId(recording_id)})
-            
-            if not recording or not recording.get("ffmpeg_pid"):
-                logger.warning(f"No FFmpeg process found for recording {recording_id}")
-                return
-            
-            import subprocess
-            import signal
-            import os
-            
-            pid = recording["ffmpeg_pid"]
-            
-            try:
-                # Send quit signal to FFmpeg for graceful shutdown
-                os.kill(pid, signal.SIGTERM)
-                logger.info(f"🛑 Sent SIGTERM to FFmpeg process {pid}")
-                
-                # Wait for process to finish (with timeout)
-                import time
-                timeout = 10
-                start_time = time.time()
-                while time.time() - start_time < timeout:
-                    try:
-                        os.kill(pid, 0)  # Check if process exists
-                        await asyncio.sleep(0.5)
-                    except OSError:
-                        # Process has terminated
-                        break
-                else:
-                    # Timeout - force kill
-                    try:
-                        os.kill(pid, signal.SIGKILL)
-                        logger.warning(f"⚠️ Force killed FFmpeg process {pid}")
-                    except:
-                        pass
-                
-                logger.info(f"✅ FFmpeg recording process {pid} stopped")
-                
-            except Exception as e:
-                logger.error(f"Error stopping FFmpeg process {pid}: {e}")
-        
-        except Exception as e:
-            logger.error(f"❌ Failed to stop composed recording: {e}")
-
             return None
