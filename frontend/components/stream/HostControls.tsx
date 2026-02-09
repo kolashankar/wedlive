@@ -1,106 +1,152 @@
 'use client';
 import React from 'react';
-import { 
-  useLocalParticipant, 
-  useTracks,
-  TrackToggle
-} from '@livekit/components-react';
-import { Track } from 'livekit-client';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useLocalParticipant, useRoomContext, useTracks } from '@livekit/components-react';
+import { Track, Room } from 'livekit-client';
+import { Camera, CameraOff, Mic, MicOff, PhoneOff, Users, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Video, VideoOff, Mic, MicOff, Cast, Users } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface HostControlsProps {
-  roomName: string;
   onEndStream?: () => void;
+  weddingId: string;
 }
 
 /**
  * HostControls Component
  * 
- * Control panel for wedding stream host (broadcaster)
- * Provides camera/mic controls and participant management.
+ * Provides controls for the wedding host to manage their stream.
  * 
  * Features:
- * - Camera on/off toggle
- * - Microphone on/off toggle
- * - Active participant count
- * - End stream button
+ * - Toggle camera on/off
+ * - Toggle microphone on/off
+ * - End stream
+ * - Participant count display
+ * - Live status indicator
  * 
- * @param {string} roomName - LiveKit room name
- * @param {function} onEndStream - Callback when host ends stream
+ * @param {function} onEndStream - Callback when host ends the stream
+ * @param {string} weddingId - Wedding identifier
  */
-export function HostControls({ roomName, onEndStream }: HostControlsProps) {
+export function HostControls({ onEndStream, weddingId }: HostControlsProps) {
   const { localParticipant } = useLocalParticipant();
-  const tracks = useTracks();
+  const room = useRoomContext();
+  const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
 
-  const participantCount = tracks.length;
-  const isPublishing = localParticipant.isCameraEnabled || localParticipant.isMicrophoneEnabled;
+  const [isCameraEnabled, setIsCameraEnabled] = React.useState(true);
+  const [isMicEnabled, setIsMicEnabled] = React.useState(true);
+  const [participantCount, setParticipantCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!room) return;
+
+    const updateParticipantCount = () => {
+      setParticipantCount(room.participants.size);
+    };
+
+    updateParticipantCount();
+    room.on('participantConnected', updateParticipantCount);
+    room.on('participantDisconnected', updateParticipantCount);
+
+    return () => {
+      room.off('participantConnected', updateParticipantCount);
+      room.off('participantDisconnected', updateParticipantCount);
+    };
+  }, [room]);
+
+  const toggleCamera = async () => {
+    if (!localParticipant) return;
+
+    try {
+      const enabled = !isCameraEnabled;
+      await localParticipant.setCameraEnabled(enabled);
+      setIsCameraEnabled(enabled);
+      toast.success(enabled ? 'Camera turned on' : 'Camera turned off');
+    } catch (error) {
+      console.error('Failed to toggle camera:', error);
+      toast.error('Failed to toggle camera');
+    }
+  };
+
+  const toggleMicrophone = async () => {
+    if (!localParticipant) return;
+
+    try {
+      const enabled = !isMicEnabled;
+      await localParticipant.setMicrophoneEnabled(enabled);
+      setIsMicEnabled(enabled);
+      toast.success(enabled ? 'Microphone turned on' : 'Microphone turned off');
+    } catch (error) {
+      console.error('Failed to toggle microphone:', error);
+      toast.error('Failed to toggle microphone');
+    }
+  };
+
+  const handleEndStream = () => {
+    if (window.confirm('Are you sure you want to end the stream?')) {
+      onEndStream?.();
+      toast.info('Ending stream...');
+    }
+  };
 
   return (
-    <Card className="border-2 border-gray-800 bg-gray-950">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Cast className="w-5 h-5" />
-            <span>Host Controls</span>
+    <div className="host-controls bg-gray-900 border border-gray-700 rounded-lg p-4 shadow-lg">
+      <div className="flex items-center justify-between gap-4">
+        {/* Live Status */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-600 rounded-full">
+            <Radio className="w-4 h-4 text-white animate-pulse" />
+            <span className="text-white text-sm font-medium">LIVE</span>
           </div>
-          {isPublishing && (
-            <Badge variant="destructive" className="animate-pulse">
-              LIVE
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Device Controls */}
-        <div className="flex gap-2">
-          <TrackToggle
-            source={Track.Source.Camera}
-            className="flex-1"
-          >
-            {({ enabled }) => (
-              <Button variant={enabled ? 'default' : 'outline'} className="w-full">
-                {enabled ? <Video className="w-4 h-4 mr-2" /> : <VideoOff className="w-4 h-4 mr-2" />}
-                {enabled ? 'Camera On' : 'Camera Off'}
-              </Button>
-            )}
-          </TrackToggle>
           
-          <TrackToggle
-            source={Track.Source.Microphone}
-            className="flex-1"
-          >
-            {({ enabled }) => (
-              <Button variant={enabled ? 'default' : 'outline'} className="w-full">
-                {enabled ? <Mic className="w-4 h-4 mr-2" /> : <MicOff className="w-4 h-4 mr-2" />}
-                {enabled ? 'Mic On' : 'Mic Off'}
-              </Button>
-            )}
-          </TrackToggle>
-        </div>
-
-        {/* Stats */}
-        <div className="flex items-center justify-between text-sm text-gray-400">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            <span>{participantCount} participants</span>
+          {/* Participant Count */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 rounded-full">
+            <Users className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-300 text-sm">{participantCount}</span>
           </div>
         </div>
 
-        {/* End Stream */}
-        {onEndStream && (
-          <Button 
-            onClick={onEndStream}
-            variant="destructive"
-            className="w-full"
+        {/* Controls */}
+        <div className="flex items-center gap-2">
+          {/* Camera Toggle */}
+          <Button
+            variant={isCameraEnabled ? "default" : "destructive"}
+            size="icon"
+            onClick={toggleCamera}
+            title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
           >
-            End Stream
+            {isCameraEnabled ? (
+              <Camera className="w-5 h-5" />
+            ) : (
+              <CameraOff className="w-5 h-5" />
+            )}
           </Button>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Microphone Toggle */}
+          <Button
+            variant={isMicEnabled ? "default" : "destructive"}
+            size="icon"
+            onClick={toggleMicrophone}
+            title={isMicEnabled ? 'Mute microphone' : 'Unmute microphone'}
+          >
+            {isMicEnabled ? (
+              <Mic className="w-5 h-5" />
+            ) : (
+              <MicOff className="w-5 h-5" />
+            )}
+          </Button>
+
+          {/* End Stream */}
+          <Button
+            variant="destructive"
+            size="icon"
+            onClick={handleEndStream}
+            title="End stream"
+            className="ml-2"
+          >
+            <PhoneOff className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
