@@ -344,27 +344,15 @@ export default function TemplateSelector({ weddingId, currentTemplateId, onTempl
           <div className="space-y-4">
             {previewTemplate && previewTemplate.video_data && (
               <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-                <ReactPlayer
-                  url={previewTemplate.video_data.original_url}
+                <video
+                  src={previewTemplate.video_data.original_url}
+                  poster={previewTemplate.preview_thumbnail?.url}
                   width="100%"
                   height="100%"
-                  controls={true}
-                  playing={false}
-                  light={previewTemplate.preview_thumbnail?.url || false}
-                  playIcon={
-                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-all">
-                      <svg className="w-8 h-8 text-rose-500 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  }
-                  config={{
-                    file: {
-                      attributes: {
-                        controlsList: 'nodownload'
-                      }
-                    }
-                  }}
+                  controls
+                  playsInline
+                  controlsList="nodownload"
+                  className="w-full h-full object-contain"
                 />
                 
                 {/* Overlay Preview - Show dynamic overlays with wedding data */}
