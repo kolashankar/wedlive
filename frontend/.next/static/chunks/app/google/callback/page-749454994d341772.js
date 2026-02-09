@@ -1,0 +1,16 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[1278],{95661:function(e,r,t){Promise.resolve().then(t.bind(t,74630))},74630:function(e,r,t){"use strict";t.r(r),t.d(r,{default:function(){return c}});var n=t(57437),a=t(2265),s=t(16463),o=t(3274);function c(){let e=(0,s.useRouter)();return(0,a.useEffect)(()=>{let r=new URL(window.location.href).searchParams.toString(),t="/auth/google/callback".concat(r?"?".concat(r):"");console.log("Redirecting from /google/callback to:",t),e.replace(t)},[e]),(0,n.jsx)("div",{className:"min-h-screen bg-gradient-to-br from-rose-50 via-white to-purple-50 flex items-center justify-center",children:(0,n.jsxs)("div",{className:"text-center",children:[(0,n.jsx)(o.Z,{className:"w-16 h-16 text-rose-500 animate-spin mx-auto mb-4"}),(0,n.jsx)("p",{className:"text-gray-600",children:"Redirecting..."})]})})}},78030:function(e,r,t){"use strict";t.d(r,{Z:function(){return d}});var n=t(2265);/**
+ * @license lucide-react v0.516.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=e=>e.replace(/([a-z0-9])([A-Z])/g,"$1-$2").toLowerCase(),s=e=>e.replace(/^([A-Z])|[\s-_]+(\w)/g,(e,r,t)=>t?t.toUpperCase():r.toLowerCase()),o=e=>{let r=s(e);return r.charAt(0).toUpperCase()+r.slice(1)},c=function(){for(var e=arguments.length,r=Array(e),t=0;t<e;t++)r[t]=arguments[t];return r.filter((e,r,t)=>!!e&&""!==e.trim()&&t.indexOf(e)===r).join(" ").trim()},i=e=>{for(let r in e)if(r.startsWith("aria-")||"role"===r||"title"===r)return!0};/**
+ * @license lucide-react v0.516.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */var u={xmlns:"http://www.w3.org/2000/svg",width:24,height:24,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round"};/**
+ * @license lucide-react v0.516.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let l=(0,n.forwardRef)((e,r)=>{let{color:t="currentColor",size:a=24,strokeWidth:s=2,absoluteStrokeWidth:o,className:l="",children:d,iconNode:f,...m}=e;return(0,n.createElement)("svg",{ref:r,...u,width:a,height:a,stroke:t,strokeWidth:o?24*Number(s)/Number(a):s,className:c("lucide",l),...!d&&!i(m)&&{"aria-hidden":"true"},...m},[...f.map(e=>{let[r,t]=e;return(0,n.createElement)(r,t)}),...Array.isArray(d)?d:[d]])}),d=(e,r)=>{let t=(0,n.forwardRef)((t,s)=>{let{className:i,...u}=t;return(0,n.createElement)(l,{ref:s,iconNode:r,className:c("lucide-".concat(a(o(e))),"lucide-".concat(e),i),...u})});return t.displayName=o(e),t}},3274:function(e,r,t){"use strict";t.d(r,{Z:function(){return n}});let n=(0,t(78030).Z)("loader-circle",[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]])},16463:function(e,r,t){"use strict";var n=t(71169);t.o(n,"useParams")&&t.d(r,{useParams:function(){return n.useParams}}),t.o(n,"usePathname")&&t.d(r,{usePathname:function(){return n.usePathname}}),t.o(n,"useRouter")&&t.d(r,{useRouter:function(){return n.useRouter}}),t.o(n,"useSearchParams")&&t.d(r,{useSearchParams:function(){return n.useSearchParams}})}},function(e){e.O(0,[2971,7023,1744],function(){return e(e.s=95661)}),_N_E=e.O()}]);
