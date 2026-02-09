@@ -10,9 +10,6 @@ import api from '@/lib/api';
 import { format } from 'date-fns';
 import dynamic from 'next/dynamic';
 
-// Dynamically import ReactPlayer to avoid SSR issues
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
-
 export default function MediaGallery({ weddingId, isCreator = false }) {
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
