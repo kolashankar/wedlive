@@ -91,9 +91,16 @@ class AdminStats(BaseModel):
 class MultiCamera(BaseModel):
     camera_id: str
     name: str
-    stream_key: str
+    
+    # DEPRECATED: Legacy RTMP fields (kept for backward compatibility)
+    stream_key: str = ""  # DEPRECATED: Use LiveKit tokens instead
+    hls_url: Optional[str] = None  # DEPRECATED: Use LiveKit URLs
+    
+    # NEW: LiveKit participant tracking
+    participant_id: Optional[str] = None  # LiveKit participant ID
+    track_sid: Optional[str] = None       # LiveKit track SID
+    
     status: CameraStatus = CameraStatus.WAITING
-    hls_url: Optional[str] = None
     created_at: datetime
 
 class CameraSwitchEvent(BaseModel):
@@ -520,6 +527,14 @@ class UpdateWeddingThemeAssets(BaseModel):
 
 # Wedding Models
 
+# Pulse Session Model (LiveKit-based streaming)
+class PulseSession(BaseModel):
+    room_name: str                      # LiveKit room name
+    room_id: Optional[str] = None       # Pulse room ID
+    server_url: str                      # LiveKit WebSocket URL
+    created_at: datetime
+    status: str = "active"               # active, ended
+
 # Live Status Session Models (must be defined before WeddingResponse)
 class WeddingLiveSession(BaseModel):
     wedding_id: str
@@ -531,17 +546,22 @@ class WeddingLiveSession(BaseModel):
     pause_count: int = 0              # Track number of pauses
     total_pause_duration: int = 0     # Total seconds paused
     recording_session_id: Optional[str] = None  # Single recording across pauses
+    
+    # DEPRECATED: Legacy RTMP fields (kept for backward compatibility)
     rtmp_url: str = ""
     stream_key: str = ""
     hls_playback_url: str = ""
+    
+    # NEW: Pulse/LiveKit session (replaces RTMP)
+    pulse_session: Optional[PulseSession] = None
     
     # Transition timestamps
     status_history: List[dict] = []  # [{status, timestamp, reason}]
     
     # Recording info
     recording_started: bool = False
-    recording_path: Optional[str] = None
-    recording_segments: List[str] = []  # Multiple segments if paused/resumed
+    recording_path: Optional[str] = None  # DEPRECATED
+    recording_segments: List[str] = []  # DEPRECATED (Multiple segments if paused/resumed)
 
 class WeddingCreate(BaseModel):
     title: str
@@ -894,11 +914,34 @@ class RecordingCreate(BaseModel):
     stream_id: str
     quality: str = "480p"
 
+# Recording URL Schema (Pulse Egress)
+class RecordingUrls(BaseModel):
+    r2: Optional[str] = None                  # Cloudflare R2 URL
+    telegram_cdn: Optional[str] = None        # Telegram CDN URL (free bandwidth)
+    streaming: Optional[str] = None           # HLS streaming URL
+
+# Recording Metadata
+class RecordingMetadata(BaseModel):
+    duration_seconds: Optional[int] = 0
+    file_size_bytes: Optional[int] = 0
+    resolution: Optional[str] = None          # e.g., "1920x1080"
+    codec: Optional[str] = None               # e.g., "H264"
+    fps: Optional[int] = None                 # e.g., 30
+
 class RecordingResponse(BaseModel):
     id: str
     wedding_id: str
     stream_id: str
-    recording_url: str
+    
+    # DEPRECATED: Legacy recording URL (kept for backward compatibility)
+    recording_url: str = ""  # DEPRECATED: Use recording_urls instead
+    
+    # NEW: Pulse Egress fields
+    pulse_egress_id: Optional[str] = None       # Pulse Egress ID
+    pulse_recording_id: Optional[str] = None    # Pulse Recording ID
+    recording_urls: Optional[RecordingUrls] = None  # Multiple CDN URLs
+    metadata: Optional[RecordingMetadata] = None
+    
     duration_seconds: int = 0
     file_size_bytes: int = 0
     quality: str
