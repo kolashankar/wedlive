@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Loader2, Video, Check, X, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import ReactPlayer from 'react-player';
 
 export default function TemplateSelector({ weddingId, currentTemplateId, onTemplateAssigned }) {
   const [templates, setTemplates] = useState([]);
