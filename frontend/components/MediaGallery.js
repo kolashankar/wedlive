@@ -369,17 +369,15 @@ export default function MediaGallery({ weddingId, isCreator = false }) {
                     </>
                   ) : selectedMedia.media_type === 'youtube_video' ? (
                     <div className="w-full aspect-video">
-                      <ReactPlayer
-                        url={selectedMedia.youtube_url}
+                      <iframe
+                        src={selectedMedia.youtube_url?.includes('youtube.com') || selectedMedia.youtube_url?.includes('youtu.be') 
+                          ? selectedMedia.youtube_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')
+                          : selectedMedia.youtube_url}
                         width="100%"
                         height="100%"
-                        controls
-                        playing
-                        config={{
-                          youtube: {
-                            playerVars: { showinfo: 1 }
-                          }
-                        }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full"
                       />
                     </div>
                   ) : (
