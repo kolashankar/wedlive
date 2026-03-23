@@ -203,7 +203,7 @@ logger = logging.getLogger(__name__)
 # Files and folders to exclude from ZIP
 DOWNLOAD_EXCLUDE_PATTERNS = {
     'node_modules', '__pycache__', '.git', 'build', 'dist', 
-    'venv', 'env', '.pytest_cache', 'test_reports', 'memory',
+    'venv', '.pytest_cache', 'test_reports', 'memory',
     'hls_output', 'hls'  # Exclude HLS output directories for WedLive
 }
 DOWNLOAD_EXCLUDE_EXTENSIONS = {'.pyc', '.log', '.tmp', '.DS_Store'}
